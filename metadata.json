@@ -1,0 +1,6 @@
+{
+  "name": "Uomboni Secondary School",
+  "description": "Tovuti Rasmi ya Shule ya Sekondari Uomboni (NECTA S0486), Marangu Magharibi, Moshi Vijijini, Kilimanjaro. Mfumo kamili wa Udahili, Matokeo ya NECTA, Maisha ya Bweni, Vilabu, Walimu, Picha, Malipo ya Ada na Portal ya Wanafunzi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

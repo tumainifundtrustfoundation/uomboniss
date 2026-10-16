@@ -1,0 +1,275 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account with role, contact info, and status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Authentication UID." },
+        "fullName": { "type": "string", "description": "Full legal name." },
+        "email": { "type": "string", "format": "email", "description": "Email address." },
+        "phone": { "type": "string", "description": "Mobile phone number." },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student"], "description": "User role." },
+        "photoURL": { "type": "string", "description": "Profile picture URL." },
+        "active": { "type": "boolean", "description": "Whether user account is active." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "description": "Last update timestamp." }
+      },
+      "required": ["uid", "fullName", "email", "role", "active", "createdAt", "updatedAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student admission and biodata record.",
+      "type": "object",
+      "properties": {
+        "admissionNumber": { "type": "string", "description": "Unique admission number (e.g. S0486/0014/2026)." },
+        "fullName": { "type": "string", "description": "Student full name." },
+        "gender": { "type": "string", "enum": ["M", "F"], "description": "Gender." },
+        "dateOfBirth": { "type": "string", "description": "Date of birth (YYYY-MM-DD)." },
+        "classId": { "type": "string", "description": "Reference to class ID." },
+        "stream": { "type": "string", "description": "Stream letter or name." },
+        "userId": { "type": "string", "description": "Linked user UID if registered." },
+        "parentName": { "type": "string", "description": "Parent or guardian full name." },
+        "parentPhone": { "type": "string", "description": "Parent phone number." },
+        "photoURL": { "type": "string", "description": "Student photo URL." },
+        "active": { "type": "boolean", "description": "Enrollment status." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "description": "Last update timestamp." }
+      },
+      "required": ["admissionNumber", "fullName", "gender", "classId", "active", "createdAt", "updatedAt"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher profile with subject and class allocations.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Linked Firebase Auth UID." },
+        "fullName": { "type": "string", "description": "Teacher full name." },
+        "email": { "type": "string", "format": "email", "description": "Official email address." },
+        "phone": { "type": "string", "description": "Phone number." },
+        "subjects": { "type": "array", "description": "List of subject IDs or codes taught." },
+        "classes": { "type": "array", "description": "List of class IDs assigned." },
+        "active": { "type": "boolean", "description": "Employment status." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "description": "Last update timestamp." }
+      },
+      "required": ["userId", "fullName", "email", "phone", "active", "createdAt", "updatedAt"]
+    },
+    "SchoolClass": {
+      "title": "SchoolClass",
+      "description": "Academic grade level and stream.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Form One, Form Two, Form Three, Form Four." },
+        "stream": { "type": "string", "description": "Stream identifier (A, B, C)." },
+        "academicYear": { "type": "string", "description": "Academic year (e.g. 2025, 2026)." },
+        "classTeacherId": { "type": "string", "description": "Assigned class teacher ID." },
+        "active": { "type": "boolean", "description": "Whether class is active." }
+      },
+      "required": ["name", "stream", "academicYear", "active"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Curriculum subject taught at the school.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Subject name." },
+        "code": { "type": "string", "description": "NECTA subject code (e.g. 011, 012, 013)." },
+        "category": { "type": "string", "description": "Core, Science, Arts, Commercial." },
+        "active": { "type": "boolean", "description": "Whether subject is active in curriculum." }
+      },
+      "required": ["name", "code", "category", "active"]
+    },
+    "Exam": {
+      "title": "Exam",
+      "description": "Examination sitting record.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Exam name." },
+        "type": { "type": "string", "description": "Monthly, Terminal, Annual, Mock, Midterm." },
+        "academicYear": { "type": "string", "description": "Academic year." },
+        "term": { "type": "string", "description": "Term 1, Term 2." },
+        "classId": { "type": "string", "description": "Target class ID." },
+        "startDate": { "type": "string", "description": "Start date (YYYY-MM-DD)." },
+        "endDate": { "type": "string", "description": "End date (YYYY-MM-DD)." },
+        "status": { "type": "string", "enum": ["draft", "processing", "published"], "description": "Examination state." },
+        "createdBy": { "type": "string", "description": "UID or name of creator." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." }
+      },
+      "required": ["name", "type", "academicYear", "term", "status", "createdAt"]
+    },
+    "Result": {
+      "title": "Result",
+      "description": "Subject mark entry for an individual student.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string", "description": "Student document ID." },
+        "admissionNumber": { "type": "string", "description": "Admission / Exam number." },
+        "examId": { "type": "string", "description": "Exam ID." },
+        "subjectId": { "type": "string", "description": "Subject ID or code." },
+        "classId": { "type": "string", "description": "Class ID." },
+        "marks": { "type": "number", "description": "Score (0-100)." },
+        "grade": { "type": "string", "enum": ["A", "B", "C", "D", "F"], "description": "NECTA grade." },
+        "remarks": { "type": "string", "description": "Teacher remarks." },
+        "enteredBy": { "type": "string", "description": "Teacher who entered score." },
+        "verifiedBy": { "type": "string", "description": "Academic Master who verified." },
+        "status": { "type": "string", "description": "Status (e.g. pending, verified, published)." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." },
+        "updatedAt": { "type": "string", "description": "Last update timestamp." }
+      },
+      "required": ["studentId", "admissionNumber", "examId", "subjectId", "marks", "grade", "createdAt", "updatedAt"]
+    },
+    "PublishedResult": {
+      "title": "PublishedResult",
+      "description": "Aggregated published examination result for a student.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string", "description": "Student document ID." },
+        "examId": { "type": "string", "description": "Exam ID." },
+        "admissionNumber": { "type": "string", "description": "Admission / Exam number." },
+        "totalMarks": { "type": "number", "description": "Total sum of marks." },
+        "average": { "type": "number", "description": "Average percentage mark." },
+        "division": { "type": "string", "description": "Division I, II, III, IV, 0." },
+        "position": { "type": "number", "description": "Class rank/position." },
+        "subjects": { "type": "array", "description": "Array of subject scores, grades, and remarks." },
+        "publishedBy": { "type": "string", "description": "UID or name of publisher." },
+        "publishedAt": { "type": "string", "description": "Publication timestamp." }
+      },
+      "required": ["studentId", "examId", "admissionNumber", "totalMarks", "average", "division", "subjects", "publishedAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "School announcement and circular notice.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Announcement headline." },
+        "message": { "type": "string", "description": "Body message text." },
+        "imageURL": { "type": "string", "description": "Optional illustration or flyer URL." },
+        "target": { "type": "string", "description": "Target audience (all, students, teachers, parents)." },
+        "createdBy": { "type": "string", "description": "Author UID or name." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." }
+      },
+      "required": ["title", "message", "target", "createdAt"]
+    },
+    "SchoolSettings": {
+      "title": "SchoolSettings",
+      "description": "Master institution settings and identity.",
+      "type": "object",
+      "properties": {
+        "schoolName": { "type": "string", "description": "Official school name." },
+        "registrationNumber": { "type": "string", "description": "NECTA registration number (e.g. S0486)." },
+        "address": { "type": "string", "description": "Physical and postal address." },
+        "phone": { "type": "string", "description": "Contact telephone." },
+        "email": { "type": "string", "format": "email", "description": "Official email." },
+        "logoURL": { "type": "string", "description": "School crest/logo URL." },
+        "motto": { "type": "string", "description": "School motto." },
+        "website": { "type": "string", "description": "Website URL." }
+      },
+      "required": ["schoolName", "registrationNumber", "address", "phone", "email", "motto"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Legacy compatible portal profile.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" }
+      }
+    },
+    "SchoolVideo": {
+      "title": "SchoolVideo",
+      "description": "Official school video item with YouTube embed info, titles, and publication status.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "titleSw": { "type": "string" },
+        "description": { "type": "string" },
+        "descriptionSw": { "type": "string" },
+        "youtubeUrl": { "type": "string" },
+        "videoId": { "type": "string" },
+        "embedUrl": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "published": { "type": "boolean" },
+        "featured": { "type": "boolean" },
+        "category": { "type": "string" },
+        "publishedDate": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["title", "youtubeUrl", "videoId", "embedUrl", "published"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": { "$ref": "User" },
+      "description": "User accounts with roles (admin | teacher | student), contact info, and status."
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "Student" },
+      "description": "Student admissions, personal biodata, classes, streams, and parent contacts."
+    },
+    "/teachers/{teacherId}": {
+      "schema": { "$ref": "Teacher" },
+      "description": "Teacher profiles, subjects taught, classes assigned, and contact information."
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "SchoolClass" },
+      "description": "Class levels (Form One, Form Two, etc.), streams, and class teachers."
+    },
+    "/subjects/{subjectId}": {
+      "schema": { "$ref": "Subject" },
+      "description": "Curriculum subjects with NECTA codes and categories."
+    },
+    "/exams/{examId}": {
+      "schema": { "$ref": "Exam" },
+      "description": "Examination records (Monthly, Terminal, Annual), terms, and publication states."
+    },
+    "/results/{resultId}": {
+      "schema": { "$ref": "Result" },
+      "description": "Individual student subject scores, grades, and teacher verification."
+    },
+    "/published_results/{resultId}": {
+      "schema": { "$ref": "PublishedResult" },
+      "description": "Official certified broadsheet results with totals, averages, divisions, and ranks."
+    },
+    "/announcements/{announcementId}": {
+      "schema": { "$ref": "Announcement" },
+      "description": "Broadcast announcements and institutional bulletins."
+    },
+    "/academicDirectives/{directiveId}": {
+      "schema": { "title": "AcademicDirective", "type": "object" },
+      "description": "Directives, circulars, and mark entry window authorizations from the Academic Master to teachers."
+    },
+    "/settings/school": {
+      "schema": { "$ref": "SchoolSettings" },
+      "description": "Official institutional profile, NECTA code S0486, motto, address, and contacts."
+    },
+    "/pendingResults/{pendingDocId}": {
+      "schema": { "title": "PendingResults", "type": "object" },
+      "description": "Teacher-uploaded subject mark batches pending certification."
+    },
+    "/subjectSubmissions/{subDocId}": {
+      "schema": { "title": "SubjectSubmissions", "type": "object" },
+      "description": "Teacher submission tracking records."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "title": "AuditLog", "type": "object" },
+      "description": "Administrative and security audit trails."
+    },
+    "/feePayments/{paymentDocId}": {
+      "schema": { "title": "FeePayment", "type": "object" },
+      "description": "School fee payment receipts."
+    },
+    "/test/{testDocId}": {
+      "schema": { "title": "TestProbe", "type": "object" },
+      "description": "Test connectivity probe documents."
+    },
+    "/school_videos/{videoId}": {
+      "schema": { "$ref": "SchoolVideo" },
+      "description": "Official school video clips, spotlights, and documentaries."
+    }
+  }
+}

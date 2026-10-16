@@ -1,0 +1,47 @@
+# Robots.txt for Uomboni Secondary School (NECTA S0486)
+# Canonical Website: https://www.uomboniss.sc.tz/
+
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /admissions
+Allow: /admission-documents
+Allow: /academics
+Allow: /facilities
+Allow: /news
+Allow: /faq
+Allow: /contact
+Allow: /location
+Allow: /results
+Allow: /offline.html
+Allow: /manifest.webmanifest
+Allow: /manifest.json
+Allow: /favicon.ico
+Allow: /favicon.svg
+
+# Allow all critical static assets for search engine rendering (Googlebot, Bingbot, etc.)
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.woff$
+Allow: /*.woff2$
+
+# Disallow private administrative, staff, student dashboards, and API endpoints
+Disallow: /api/
+Disallow: /admin
+Disallow: /staff
+Disallow: /teacher
+Disallow: /bursar
+Disallow: /portal
+Disallow: /student
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /verify-email
+
+# Official XML Sitemap Location
+Sitemap: https://www.uomboniss.sc.tz/sitemap.xml

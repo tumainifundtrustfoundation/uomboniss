@@ -1,0 +1,63 @@
+{
+  "id": "/",
+  "name": "Uomboni Secondary School",
+  "short_name": "Uomboni SS",
+  "description": "Tovuti Rasmi & Mfumo wa Shule ya Sekondari Uomboni (NECTA S0486), Marangu, Moshi Vijijini, Kilimanjaro. Mfumo wa Udahili, Matokeo na Portal ya Shule.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#102A43",
+  "theme_color": "#102A43",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "STUDENT ADMISSION",
+      "short_name": "Admission",
+      "description": "Fomu na Nyaraka Rasmi za Udahili Uomboni Secondary",
+      "url": "/#admissions-documents",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Matokeo ya Mitihani",
+      "short_name": "Matokeo",
+      "description": "Angalia matokeo ya wanafunzi na NECTA",
+      "url": "/#results",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Portal ya Taaluma",
+      "short_name": "Taaluma",
+      "description": "Lango la walimu na usimamizi wa masomo",
+      "url": "/#academic",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

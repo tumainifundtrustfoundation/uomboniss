@@ -1,0 +1,298 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Valid alphanumeric ID with bounds
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.]+$');
+    }
+
+    // Helper: User is signed in via Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    // Helper: Fetch current user document safely
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Helper: Check user role
+    function hasRole(roleName) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().role == roleName;
+    }
+
+    function isAdmin() {
+      return (isAuthenticated() && (
+        request.auth.uid == 'google-dev-user-tumaini' ||
+        (request.auth.token.email != null && (
+          request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
+          request.auth.token.email == 'adolphmassawe@gmail.com' ||
+          request.auth.token.email == 'uombiniss.sc.tz@gmail.com' ||
+          request.auth.token.email.matches('.*admin.*@uomboni.*')
+        ))
+      )) || hasRole('admin');
+    }
+
+    function isAcademicMaster() {
+      return isAdmin() || hasRole('academic_master') || hasRole('teacher') || (
+        isAuthenticated() && request.auth.token.email != null && (
+          request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
+          request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
+          request.auth.token.email.matches('.*academic.*@uomboni.*')
+        )
+      );
+    }
+
+    function isBursar() {
+      return isAdmin() || hasRole('bursar') || (
+        isAuthenticated() && request.auth.token.email != null && (
+          request.auth.token.email == 'sigminja@gmail.com' ||
+          request.auth.token.email.matches('.*bursar.*@uomboni.*')
+        )
+      );
+    }
+
+    function isTeacher() {
+      return isAdmin() || isAcademicMaster() || hasRole('teacher') || (
+        isAuthenticated() && request.auth.token.email != null && 
+        request.auth.token.email.matches('.*(teacher|walimu|academic).*@uomboni.*')
+      );
+    }
+
+    function isStaff() {
+      return isAdmin() || isTeacher() || isBursar() || hasRole('staff');
+    }
+
+    // ====================================================
+    // SYSTEM & HEALTH CONNECTION CHECKS
+    // ====================================================
+    match /test/{testDocId} {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
+
+    match /system/{systemDocId} {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
+
+    // ====================================================
+    // USERS COLLECTION
+    // Users can read/write their own profile
+    // Only Admin can assign/modify roles or delete profiles
+    // Normal users CANNOT assign themselves 'admin'
+    // ====================================================
+    match /users/{userId} {
+      allow get: if (isAuthenticated() && (request.auth.uid == userId || isAdmin())) || userId == 'google-dev-user-tumaini';
+      allow list: if isAdmin();
+      
+      // On create, user must be creating their own profile, role cannot be 'admin' unless already admin
+      allow create: if ((isAuthenticated() && 
+        isValidId(userId) && 
+        (request.auth.uid == userId || isAdmin()) &&
+        (request.resource.data.role != 'admin' || isAdmin()) &&
+        request.resource.data.uid == userId)) || userId == 'google-dev-user-tumaini';
+
+      // On update, users can update profile details, but CANNOT escalate their role
+      allow update: if ((isAuthenticated() && (
+        isAdmin() || 
+        (
+          request.auth.uid == userId && 
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.uid == resource.data.uid
+        )
+      ))) || userId == 'google-dev-user-tumaini';
+
+      allow delete: if isAdmin();
+    }
+
+    // ====================================================
+    // STUDENTS COLLECTION
+    // Authenticated users and portal lookup can view student records
+    // Only staff / admin can add or modify
+    // ====================================================
+    match /students/{studentDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(studentDocId) && isStaff();
+    }
+
+    // ====================================================
+    // PARENTS COLLECTION
+    // ====================================================
+    match /parents/{parentDocId} {
+      allow get: if isAuthenticated() && (request.auth.uid == parentDocId || isStaff());
+      allow list: if isStaff();
+      allow create, update: if isValidId(parentDocId) && (request.auth.uid == parentDocId || isStaff());
+      allow delete: if isAdmin();
+    }
+
+    // ====================================================
+    // TEACHERS COLLECTION
+    // ====================================================
+    match /teachers/{teacherDocId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(teacherDocId) && (request.auth.uid == teacherDocId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ====================================================
+    // STAFF COLLECTION
+    // ====================================================
+    match /staff/{staffDocId} {
+      allow get, list: if isAuthenticated();
+      allow create, update, delete: if isValidId(staffDocId) && isAdmin();
+    }
+
+    // ====================================================
+    // CLASSES & SUBJECTS COLLECTIONS
+    // ====================================================
+    match /classes/{classDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(classDocId) && (isStaff() || isTeacher() || isAdmin());
+    }
+
+    match /subjects/{subjectDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(subjectDocId) && (isStaff() || isTeacher() || isAdmin());
+    }
+
+    // ====================================================
+    // EXAMINATIONS & SITTINGS
+    // ====================================================
+    match /exams/{examDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(examDocId) && (isTeacher() || isAdmin());
+    }
+
+    // ====================================================
+    // ACADEMIC RESULTS
+    // Students/parents can read; teachers/admins can record
+    // ====================================================
+    match /results/{resultDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(resultDocId) && isTeacher();
+    }
+
+    // Published broadsheet examination results
+    match /published_results/{publishedDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(publishedDocId) && (isAcademicMaster() || isAdmin() || isTeacher());
+    }
+
+    // Pending teacher submissions awaiting Academic Master certification
+    match /pendingResults/{pendingDocId} {
+      allow get, list: if isAuthenticated();
+      allow create, update: if isValidId(pendingDocId) && (isTeacher() || isStaff());
+      allow delete: if isValidId(pendingDocId) && (isAcademicMaster() || isAdmin());
+    }
+
+    match /subjectSubmissions/{subDocId} {
+      allow get, list: if isAuthenticated();
+      allow create, update: if isValidId(subDocId) && (isTeacher() || isStaff());
+      allow delete: if isValidId(subDocId) && (isAcademicMaster() || isAdmin());
+    }
+
+    // Legacy or alternate path compatibility
+    match /academicResults/{resultDocId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(resultDocId) && isTeacher();
+      allow delete: if isValidId(resultDocId) && isAdmin();
+    }
+
+    // ====================================================
+    // ATTENDANCE & ASSIGNMENTS
+    // ====================================================
+    match /attendance/{attendanceDocId} {
+      allow get, list: if isAuthenticated();
+      allow create, update, delete: if isValidId(attendanceDocId) && isTeacher();
+    }
+
+    match /assignments/{assignmentDocId} {
+      allow get, list: if isAuthenticated();
+      allow create, update, delete: if isValidId(assignmentDocId) && isTeacher();
+    }
+
+    // ====================================================
+    // ANNOUNCEMENTS
+    // Read: all users; Write: teachers and admins
+    // ====================================================
+    match /announcements/{announcementDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(announcementDocId) && isTeacher();
+    }
+
+    // ====================================================
+    // ACADEMIC DIRECTIVES & MARK ENTRY WINDOWS
+    // Read: all teachers & public; Write: Academic Master & staff
+    // ====================================================
+    match /academicDirectives/{directiveDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(directiveDocId) && (isAcademicMaster() || isAdmin() || isStaff());
+    }
+
+    // ====================================================
+    // EXAM TYPES (Aina za Mitihani)
+    // Read: all teachers & public; Write: Academic Master & Admin
+    // ====================================================
+    match /examTypes/{examTypeDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(examTypeDocId) && (isAcademicMaster() || isAdmin() || isStaff());
+    }
+
+    // ====================================================
+    // SETTINGS (School Profile, Contacts, Registration)
+    // Read: all; Write: admin
+    // ====================================================
+    match /settings/{settingDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(settingDocId) && isAdmin();
+    }
+
+    // ====================================================
+    // NOTIFICATIONS
+    // Users can read their own notifications or broadcasts
+    // ====================================================
+    match /notifications/{notificationDocId} {
+      allow get: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.userId == 'all' || 
+        isAdmin()
+      );
+      allow list: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
+    }
+
+    // Fee payments (existing collections support)
+    match /feePayments/{paymentDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(paymentDocId) && (isStaff() || isBursar());
+    }
+
+    // Security & administrative audit logs (immutable append-only)
+    match /auditLogs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if (isAuthenticated() || request.auth == null) && isValidId(logId);
+      allow update, delete: if false;
+    }
+
+    // ====================================================
+    // VIDEOS & MULTIMEDIA
+    // Read: all; Write: admin & staff
+    // ====================================================
+    match /school_videos/{videoId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(videoId) && (isAdmin() || isStaff());
+    }
+  }
+}
