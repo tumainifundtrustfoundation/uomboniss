@@ -32,12 +32,12 @@ import {
 export const DEFAULT_SCHOOL_SETTINGS: FirestoreSchoolSettings = {
   schoolName: 'UOMBONI SECONDARY SCHOOL',
   registrationNumber: 'S0486',
-  address: 'P.O. Box 297, Marangu, Moshi, Kilimanjaro, Tanzania',
-  phone: '+255 782 558 127 / +255 752 717 191',
-  email: 'uombonisec@gmail.com',
-  logoURL: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=300&q=80',
-  motto: 'Tobumbeeze Sisi Wenyewe • Prayer, Education, Work',
-  website: 'https://uombonisec.ac.tz',
+  address: 'P.O. Box 361, Marangu - Moshi, Kilimanjaro, Tanzania',
+  phone: '0767 207 688 / +255 782 558 127',
+  email: 'uombonisecondary@gmail.com',
+  logoURL: '/uomboni_official_logo.jpg',
+  motto: 'Tujiendeleze sisi wenyewe.',
+  website: 'https://www.uomboniss.sc.tz',
 };
 
 export async function getSchoolSettings(): Promise<FirestoreSchoolSettings> {

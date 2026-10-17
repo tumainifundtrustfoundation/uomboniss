@@ -180,39 +180,60 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
               </p>
             </div>
 
-            {/* Prominent Motto Highlight Card from Flyer & Logo */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#102A43] via-[#0b2545] to-[#102A43] text-white border-2 border-[#C9A227] shadow-md space-y-3">
+            {/* Prominent Official Document Identity Card */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#102A43] via-[#0b2545] to-[#102A43] text-white border-2 border-[#C9A227] shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
-                  {language === 'sw' ? '★ KAULIMBIU RASMI YA SHULE (OFFICIAL MOTTO)' : '★ OFFICIAL SCHOOL MOTTO'}
+                  {language === 'sw' ? '★ KAULIMBIU & UTAMBULISHO RASMI (OFFICIAL IDENTITY)' : '★ OFFICIAL SCHOOL IDENTITY & MOTTO'}
                 </span>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
                   Catholic Diocese of Moshi
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <p className="font-serif text-2xl sm:text-3xl font-black text-amber-300 tracking-wide">
-                  “ELIMU NI MAISHA”
-                </p>
-                <p className="text-xs sm:text-sm font-bold text-white/95">
-                  “TUJENDELEE SISI WENYEWE”
-                </p>
-                <p className="text-xs text-amber-200/90 font-medium">
-                  Misingi ya Nembo: <span className="font-black text-white">PRAYER · EDUCATION · WORK</span> (Sala, Elimu na Kazi)
+              <div className="space-y-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-amber-400 tracking-widest block">
+                    {language === 'sw' ? 'Kauli Mbiu (Motto)' : 'Official Motto'}
+                  </span>
+                  <p className="font-serif text-2xl sm:text-3xl font-black text-amber-300 tracking-wide mt-0.5">
+                    “Tujiendeleze sisi wenyewe.”
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <span className="text-[10px] font-bold text-amber-300 uppercase block">
+                      {language === 'sw' ? 'Dira (Vision)' : 'Vision'}
+                    </span>
+                    <p className="text-white/90 font-medium mt-0.5 leading-snug">
+                      {language === 'sw'
+                        ? '“Kuwa kitovu cha ubora katika kutoa elimu bora nchini.”'
+                        : '“To be the centre of excellence in providing quality education in the country.”'}
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <span className="text-[10px] font-bold text-amber-300 uppercase block">
+                      {language === 'sw' ? 'Dhima (Mission)' : 'Mission'}
+                    </span>
+                    <p className="text-white/90 font-medium mt-0.5 leading-snug">
+                      {language === 'sw'
+                        ? '“Kutoa elimu bora na ufaulu wa juu wa kitaaluma wenye tija.”'
+                        : '“To provide quality education and impressive academic performance.”'}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-amber-200/90 font-medium pt-1">
+                  Misingi ya Shule: <span className="font-black text-white">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
                 </p>
               </div>
-
-              <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed pt-1">
-                {language === 'sw'
-                  ? 'Kaulimbiu hii inayopatikana kwenye nembo na karatasi rasmi ya shule inasisitiza kwamba elimu ya kweli ni chachu ya maisha, ikishirikiana na maombi, heshima, na kazi ya bidii ili kujiendeleza wenyewe.'
-                  : 'Our institutional motto embodies education as the foundation of meaningful life, combining persistent prayer, academic rigor, and diligent work to achieve true self-reliance.'}
-              </p>
             </div>
           </div>
         </div>
 
-        {/* 4 Core Pillars: Vision, Mission, Core Values, Foundation */}
+        {/* 4 Core Pillars: Vision, Mission, Motto, Institutional Identity */}
         <div className="space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-1.5">
             <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#102A43]">
@@ -220,8 +241,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             </h3>
             <p className="text-xs sm:text-sm text-slate-600">
               {language === 'sw'
-                ? 'Misingi thabiti inayoongoza kila hatua ya utendaji wetu na malezi ya wanafunzi.'
-                : 'Guiding tenets shaping our curriculum, pastoral care, and student character formation.'}
+                ? 'Nyaraka na misingi rasmi inayoongoza kila hatua ya malezi na taaluma katika Shule ya Sekondari Uomboni.'
+                : 'Official institutional tenets guiding our academic curriculum, moral discipline, and student development.'}
             </p>
           </div>
 
@@ -237,12 +258,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 </h4>
                 <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-semibold">
                   “{language === 'sw'
-                    ? (schoolProfile?.visionSw || 'Kutoa elimu bora na ufaulu wa kuvutia kitaaluma')
-                    : (schoolProfile?.vision || schoolProfile?.visionEn || 'To provide quality education and impressive academic performance')}”
+                    ? 'Kuwa kitovu cha ubora katika kutoa elimu bora nchini.'
+                    : 'To be the centre of excellence in providing quality education in the country.'}”
                 </p>
               </div>
               <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded self-start border border-amber-200">
-                Ubora wa Kitaaluma
+                Centre of Excellence
               </span>
             </div>
 
@@ -255,65 +276,148 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
                   {language === 'sw' ? 'Dhima Yetu (Mission)' : 'Our Mission'}
                 </h4>
-                <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-normal">
-                  {language === 'sw'
-                    ? 'Kuelimisha wavulana na wasichana kufikia uwezo wao kamili wawe watu wanaojitegemea na wenye nidhamu thabiti.'
-                    : 'To educate boys and girls to their full potential to become self-reliant, disciplined citizens.'}
+                <p className="mt-1.5 text-xs text-slate-700 leading-relaxed font-semibold">
+                  “{language === 'sw'
+                    ? 'Kutoa elimu bora na ufaulu wa juu wa kitaaluma wenye tija.'
+                    : 'To provide quality education and impressive academic performance.'}”
                 </p>
               </div>
               <span className="text-[10px] font-bold text-[#102A43] bg-blue-50 px-2 py-0.5 rounded self-start border border-blue-200">
-                Wajibu na Utendaji
+                Quality Education &amp; High Performance
               </span>
             </div>
 
-            {/* 3. Core Values */}
-            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-emerald-600 shadow-xs flex flex-col justify-between space-y-2.5">
-              <div>
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 mb-2">
-                  <HeartHandshake className="w-4 h-4" />
-                </div>
-                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
-                  {language === 'sw' ? 'Maadili ya Msingi' : 'Core Values'}
-                </h4>
-                <ul className="mt-1.5 space-y-1 text-[11px] text-slate-600 leading-snug">
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Bidii &amp; Uadilifu</strong> kitaaluma</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Nidhamu &amp; Kujitambua</strong></span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-600 font-bold">•</span>
-                    <span><strong>Sala na Kazi:</strong> Prayer &amp; Work</span>
-                  </li>
-                </ul>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded self-start border border-emerald-200">
-                Malezi ya Kikatoliki
-              </span>
-            </div>
-
-            {/* 4. Institutional Foundation */}
+            {/* 3. Motto (Kauli Mbiu) */}
             <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-[#C9A227] shadow-xs flex flex-col justify-between space-y-2.5">
               <div>
                 <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-700 mb-2">
                   <Award className="w-4 h-4" />
                 </div>
                 <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
-                  {language === 'sw' ? 'Kaulimbiu ya Shule' : 'Motto'}
+                  {language === 'sw' ? 'Kauli Mbiu (Motto)' : 'School Motto'}
                 </h4>
                 <p className="mt-1 text-sm font-serif font-black text-[#102A43]">
-                  “ELIMU NI MAISHA”
+                  “Tujiendeleze sisi wenyewe.”
                 </p>
                 <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                  Tujendelee Sisi Wenyewe: Prayer · Education · Work.
+                  {language === 'sw'
+                    ? 'Kujenga uwezo wa kujitegemea, kukuza maarifa na nidhamu ya kudumu.'
+                    : 'Fostering self-reliance, academic excellence, and enduring discipline.'}
                 </p>
               </div>
               <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded self-start border border-amber-200">
+                Self-Reliance &amp; Development
+              </span>
+            </div>
+
+            {/* 4. Catholic Foundation & Diocese */}
+            <div className="bg-white p-4.5 rounded-2xl border border-[#102A43]/15 border-t-4 border-t-emerald-600 shadow-xs flex flex-col justify-between space-y-2.5">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-700 mb-2">
+                  <HeartHandshake className="w-4 h-4" />
+                </div>
+                <h4 className="text-xs sm:text-sm font-black text-[#102A43] uppercase tracking-wide">
+                  {language === 'sw' ? 'Mamlaka ya Shule' : 'Diocese Oversight'}
+                </h4>
+                <p className="mt-1 text-xs font-bold text-slate-800">
+                  Catholic Diocese of Moshi
+                </p>
+                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
+                  P.O. Box 361, Marangu - Moshi · NECTA Centre S0486.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded self-start border border-emerald-200">
                 Jimbo Katoliki Moshi
               </span>
+            </div>
+          </div>
+
+          {/* Dedicated 6 Core Values Grid (Exact Document Match) */}
+          <div className="bg-gradient-to-br from-white to-[#FFFFF0] p-5 sm:p-7 rounded-2xl border border-[#102A43]/15 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#102A43]/10">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#C9A227]" />
+                <h4 className="text-sm sm:text-base font-black text-[#102A43] uppercase tracking-wide">
+                  {language === 'sw' ? 'Maadili ya Msingi ya Shule (Our Core Values)' : 'Our Core Values'}
+                </h4>
+              </div>
+              <span className="text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2.5 py-0.5 rounded-full border border-amber-300">
+                Nyaraka Rasmi za Shule · Official Document
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* 1. Prayer and work */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">🙏</span>
+                  <span className="text-xs font-black text-[#102A43] block">1. Prayer and work.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Sala na Kazi</span>
+                </div>
+                <span className="text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  Ora et Labora
+                </span>
+              </div>
+
+              {/* 2. Efficiency */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">⚡</span>
+                  <span className="text-xs font-black text-[#102A43] block">2. Efficiency.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Ufanisi</span>
+                </div>
+                <span className="text-[9px] font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  High Standards
+                </span>
+              </div>
+
+              {/* 3. Team work */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">🤝</span>
+                  <span className="text-xs font-black text-[#102A43] block">3. Team work.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Kazi ya Pamoja</span>
+                </div>
+                <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  Unity &amp; Synergy
+                </span>
+              </div>
+
+              {/* 4. Discipline */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">💎</span>
+                  <span className="text-xs font-black text-[#102A43] block">4. Discipline.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Nidhamu</span>
+                </div>
+                <span className="text-[9px] font-bold text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  Character &amp; Order
+                </span>
+              </div>
+
+              {/* 5. Accountability */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">⚖️</span>
+                  <span className="text-xs font-black text-[#102A43] block">5. Accountability.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Uwajibikaji</span>
+                </div>
+                <span className="text-[9px] font-bold text-rose-800 bg-rose-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  Responsibility
+                </span>
+              </div>
+
+              {/* 6. Transparency */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/10 shadow-xs hover:border-[#C9A227] transition-all flex flex-col justify-between">
+                <div>
+                  <span className="text-xl block mb-1.5">🔍</span>
+                  <span className="text-xs font-black text-[#102A43] block">6. Transparency.</span>
+                  <span className="text-[11px] text-slate-600 font-medium mt-0.5 block">Uwazi</span>
+                </div>
+                <span className="text-[9px] font-bold text-cyan-800 bg-cyan-50 px-1.5 py-0.5 rounded mt-2 self-start">
+                  Integrity &amp; Openness
+                </span>
+              </div>
             </div>
           </div>
         </div>

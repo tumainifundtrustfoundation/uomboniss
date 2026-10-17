@@ -32,10 +32,16 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
         </div>
 
         {/* Headline */}
-        <div className="space-y-2.5 max-w-4xl mx-auto">
+        <div className="space-y-3 max-w-4xl mx-auto">
+          <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#C9A227] block">
+            Kauli Mbiu: “Tujiendeleze sisi wenyewe.”
+          </span>
           <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
-            Tujendelee Sisi Wenyewe: Prayer · Education · Work
+            Uomboni Secondary School
           </h1>
+          <p className="text-xs sm:text-base text-amber-200/90 font-medium max-w-2xl mx-auto">
+            To Provide Quality Education and Impressive Academic Performance
+          </p>
         </div>
 
         {/* Action Buttons */}

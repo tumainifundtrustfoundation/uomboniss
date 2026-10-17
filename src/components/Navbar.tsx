@@ -214,8 +214,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="block text-sm sm:text-base font-bold text-[#102A43] tracking-tight group-hover:text-[#102A43]/85 transition-colors">
                 Uomboni Secondary School
               </span>
-              <span className="block text-[11px] text-slate-500 font-medium">
-                Building Knowledge, Character &amp; Excellence
+              <span className="block text-[11px] text-[#C9A227] font-bold tracking-wide">
+                Tujiendeleze sisi wenyewe
               </span>
             </div>
           </button>

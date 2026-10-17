@@ -66,6 +66,7 @@ export const ContactSection: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Telephone Hotlines</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1 font-mono font-medium">
+                    <span className="block text-[#102A43] font-bold">0767 207 688 (Simu Kuu ya Shule / Official Line)</span>
                     <span className="block">+255 752 000 939 (Admissions Desk)</span>
                     <span className="block">+255 782 558 127 (Headmaster)</span>
                     <span className="block">+255 754 532 949 (Second Master)</span>
@@ -81,10 +82,11 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Official Email &amp; Web</span>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 font-mono">
+                    <strong className="text-[#102A43]">uombonisecondary@gmail.com</strong><br />
                     info@uomboniss.ac.tz<br />
                     uombonisec@gmail.com<br />
-                    <span className="font-mono text-xs text-[#102A43] font-semibold">www.uomboniss.ac.tz</span>
+                    <span className="text-xs text-[#102A43] font-semibold">www.uomboniss.ac.tz</span>
                   </p>
                 </div>
               </div>

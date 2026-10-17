@@ -78,10 +78,10 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             <p className="text-xs text-amber-300 font-bold tracking-wide">
-              Motto: “ELIMU NI MAISHA” — Tujendelee Sisi Wenyewe
+              Motto: “Tujiendeleze sisi wenyewe.”
             </p>
             <p className="text-xs text-[#FFFFF0]/80 leading-relaxed max-w-sm">
-              A registered Catholic Ordinary Level (Forms 1–4) day and boarding secondary school under the Catholic Diocese of Moshi. Dedicated to academic excellence, discipline, and moral integrity.
+              Shule ya Sekondari Uomboni chini ya Jimbo Katoliki la Moshi (Catholic Diocese of Moshi). Kituo cha NECTA S0486, Marangu-Moshi.
             </p>
 
             <div className="pt-2 text-xs space-y-2.5 text-[#FFFFF0]/80">
@@ -89,16 +89,16 @@ export const Footer: React.FC<FooterProps> = ({
                 <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
                 <div className="leading-snug">
                   <span className="block font-semibold text-white">Uomboni Secondary School</span>
-                  <span className="text-[#FFFFF0]/85">Marangu, Moshi, Tanzania</span>
+                  <span className="text-[#FFFFF0]/85">P.O. Box 361, Marangu - Moshi, Tanzania</span>
                 </div>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="tel:+255782558127" className="hover:text-[#C9A227] transition-colors">+255 782 558 127 / +255 754 532 949</a>
+                <a href="tel:+255767207688" className="hover:text-[#C9A227] transition-colors font-mono">0767 207 688 / +255 782 558 127</a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="mailto:info@uomboniss.ac.tz" className="hover:text-[#C9A227] transition-colors">info@uomboniss.ac.tz</a>
+                <a href="mailto:uombonisecondary@gmail.com" className="hover:text-[#C9A227] transition-colors font-mono">uombonisecondary@gmail.com</a>
               </div>
             </div>
 

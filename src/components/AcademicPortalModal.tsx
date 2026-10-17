@@ -2892,17 +2892,29 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Aina ya Mtihani</label>
-                  <select
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-stone-700 block">Aina ya Mtihani</label>
+                    <span className="text-[10px] text-amber-700 font-bold">✍️ Andika au chagua</span>
+                  </div>
+                  <input
+                    type="text"
+                    list="academicExamList"
                     value={newResultData.examType}
                     onChange={(e) => setNewResultData({ ...newResultData, examType: e.target.value as any })}
-                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-stone-900 font-bold focus:outline-hidden focus:border-red-600 cursor-pointer"
-                  >
-                    <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-                    <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
-                    <option value="Annual Examination 2025">Annual Examination 2025</option>
-                    <option value="Pre-NECTA 2025">Pre-NECTA 2025</option>
-                  </select>
+                    placeholder="Andika au chagua aina ya mtihani..."
+                    className="w-full p-2 rounded-xl bg-[#FFFDF8] border border-red-300 text-stone-900 font-bold focus:outline-hidden focus:border-red-600"
+                  />
+                  <datalist id="academicExamList">
+                    <option value="NECTA Mock 2025" />
+                    <option value="NECTA Mock 2026" />
+                    <option value="Mid-Term Exam 2025" />
+                    <option value="Mid-Term Exam 2026" />
+                    <option value="Annual Examination 2025" />
+                    <option value="Annual Examination 2026" />
+                    <option value="Pre-NECTA 2025" />
+                    <option value="Pre-NECTA 2026" />
+                    <option value="Jaribio la Mwezi (Monthly Test)" />
+                  </datalist>
                 </div>
               </div>
 

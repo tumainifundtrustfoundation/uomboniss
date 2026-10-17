@@ -72,7 +72,7 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
             </h1>
           </div>
           <p className="text-[10px] sm:text-[11px] font-semibold text-[#C9A227] tracking-wider leading-tight mt-0.5">
-            Tujendelee Sisi Wenyewe
+            Tujiendeleze sisi wenyewe
           </p>
           <p
             className={`text-[9px] font-normal leading-none mt-0.5 ${

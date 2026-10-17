@@ -72,6 +72,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');
   const [selectedStream, setSelectedStream] = useState<string>('ALL');
   const [selectedExam, setSelectedExam] = useState<string>('NECTA Mock 2025');
+  const [isCustomExamMode, setIsCustomExamMode] = useState<boolean>(false);
   const [academicYear, setAcademicYear] = useState<string>('2025/2026');
   const [selectedSubject, setSelectedSubject] = useState<string>(() => {
     return assignedSubjects.length > 0 ? assignedSubjects[0] : 'Chemistry';
@@ -833,19 +834,102 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
           {/* Exam Type */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {language === 'sw' ? '4. Aina ya Mtihani (Exam)' : '4. Exam Period'}
-            </label>
-            <select
-              value={selectedExam}
-              onChange={(e) => setSelectedExam(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-            >
-              <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-              <option value="Annual Examination 2025">Mtihani wa Mwaka (Annual)</option>
-              <option value="Mid-Term Exam 2025">Mtihani wa Nusu Muhula (Mid-Term)</option>
-              <option value="Pre-NECTA 2025">Pre-NECTA Mtihani wa Majaribio</option>
-            </select>
+            <div className="flex items-center justify-between mb-1 gap-1">
+              <label className="block text-xs font-bold text-slate-700">
+                {language === 'sw' ? '4. Aina ya Mtihani (Exam)' : '4. Exam Period'}
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsCustomExamMode((prev) => !prev)}
+                className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                title={isCustomExamMode ? 'Bonyeza kuchagua mtihani kwenye orodha' : 'Bonyeza kuandika mtihani wako mwenyewe'}
+              >
+                {isCustomExamMode ? (
+                  <>
+                    <span>📋 Chagua kwenye orodha</span>
+                  </>
+                ) : (
+                  <>
+                    <span>✍️ Andika Mtihani</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {isCustomExamMode ? (
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  list="examTypePresetsList"
+                  value={selectedExam}
+                  onChange={(e) => setSelectedExam(e.target.value)}
+                  placeholder={
+                    language === 'sw'
+                      ? 'Andika jina la mtihani hapa (k.m. Jaribio la Mwezi Machi, Mock 2026)...'
+                      : 'Type custom exam name (e.g. Monthly Test, Mock 2026)...'
+                  }
+                  className="w-full px-3 py-2 rounded-xl bg-white border-2 border-emerald-500 text-slate-900 font-bold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-xs"
+                  autoFocus
+                />
+                <datalist id="examTypePresetsList">
+                  <option value="NECTA Mock 2025" />
+                  <option value="NECTA Mock 2026" />
+                  <option value="Annual Examination 2025" />
+                  <option value="Annual Examination 2026" />
+                  <option value="Mid-Term Exam 2025" />
+                  <option value="Mid-Term Exam 2026" />
+                  <option value="Pre-NECTA 2025" />
+                  <option value="Pre-NECTA 2026" />
+                  <option value="Jaribio la Mwezi (Monthly Test)" />
+                  <option value="Jaribio la Kwanza (Test 1)" />
+                  <option value="Jaribio la Pili (Test 2)" />
+                  <option value="Mtihani wa Ufunguzi (Entry Exam)" />
+                </datalist>
+                <div className="flex items-center justify-between text-[10px] text-emerald-700 font-semibold">
+                  <span>✍️ Unaandika aina ya mtihani mwenyewe moja kwa moja.</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomExamMode(false)}
+                    className="underline hover:text-emerald-900 cursor-pointer"
+                  >
+                    Rudi kwenye orodha
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <select
+                  value={selectedExam}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      setIsCustomExamMode(true);
+                    } else {
+                      setSelectedExam(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+                >
+                  <option value="NECTA Mock 2025">NECTA Mock 2025</option>
+                  <option value="Annual Examination 2025">Mtihani wa Mwaka (Annual)</option>
+                  <option value="Mid-Term Exam 2025">Mtihani wa Nusu Muhula (Mid-Term)</option>
+                  <option value="Pre-NECTA 2025">Pre-NECTA Mtihani wa Majaribio</option>
+                  <option value="Jaribio la Mwezi (Monthly Test)">Jaribio la Mwezi (Monthly Test)</option>
+                  {selectedExam &&
+                    ![
+                      'NECTA Mock 2025',
+                      'Annual Examination 2025',
+                      'Mid-Term Exam 2025',
+                      'Pre-NECTA 2025',
+                      'Jaribio la Mwezi (Monthly Test)',
+                    ].includes(selectedExam) && (
+                      <option value={selectedExam}>{selectedExam} (Aina Uliyoweka)</option>
+                    )}
+                  <option value="__custom__" className="font-bold text-emerald-700">
+                    ✍️ + Weka Aina Nyingine (Andika Wewe Mwenyewe)...
+                  </option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Academic Year */}

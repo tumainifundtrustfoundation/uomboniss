@@ -3342,51 +3342,67 @@ export const SAVED_SCHOOL_PROFILE = {
   ],
   "phonesFormatted": [
     "+255 752 000 939",
+    "+255 767 207 688",
     "+255 782 558 127",
+    "+255 752 000 939",
     "+255 745 548 225",
     "+255 754 532 949"
   ],
   "location": "Marangu, Moshi Vijijini, Mkoa wa Kilimanjaro, Tanzania",
-  "motto": "“ELIMU NI MAISHA” — PRAYER, EDUCATION AND WORK",
-  "mottoSw": "“ELIMU NI MAISHA” — SALA, ELIMU NA KAZI",
-  "slogan": "TUJIENDELEZE SISI WENYEWE (TUJENDELEE SISI WENYEWE)",
+  "motto": "Tujiendeleze sisi wenyewe.",
+  "mottoSw": "Tujiendeleze sisi wenyewe.",
+  "slogan": "Tujiendeleze sisi wenyewe.",
   "diocese": "Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)",
   "website": "www.uomboniss.ac.tz",
-  "email": "info@uomboniss.ac.tz",
-  "vision": "To provide quality education and impressive academic performance",
-  "visionSw": "Kutoa elimu bora na ufaulu wa kuvutia kitaaluma",
-  "mission": "To educate boys and girls to their full potential so that they become independent and disciplined persons who can face contemporary and future challenges through the cooperation with parents and relevant community.",
-  "missionSw": "Kuelimisha wavulana na wasichana kufikia uwezo wao kamili ili wawe watu wanaojitegemea na wenye nidhamu wanaoweza kukabiliana na changamoto za sasa na zijazo kupitia ushirikiano na wazazi na jamii husika.",
+  "email": "uombonisecondary@gmail.com",
+  "vision": "To be the centre of excellence in providing quality education in the country.",
+  "visionSw": "Kuwa kitovu cha ubora katika kutoa elimu bora nchini kote.",
+  "mission": "To provide quality education and impressive academic performance.",
+  "missionSw": "Kutoa elimu bora na ufaulu wa juu wa kitaaluma wenye tija na viwango vya kupigiwa mfano.",
   "historySummarySw": "Shule ya Sekondari Uomboni ilianzishwa rasmi mwaka 1985 na kufanya mitihani yake ya kwanza ya Taifa ya NECTA (CSEE) mwaka 1988, ikijenga historia ya zaidi ya miaka 40 ya uongozi bora wa kitaaluma na maadili mema.",
   "historySummaryEn": "Uomboni Secondary School was founded in 1985 and its pioneer class sat for NECTA CSEE national examinations in 1988, establishing over 40 years of academic distinction and moral leadership.",
   "coreValues": [
     {
-      "title": "PRAYER",
-      "titleSw": "SALA (Kumcha Mungu)",
-      "description": "To enhance students to rely on prayer through different religious practices.",
-      "descriptionSw": "Kukuza wanafunzi kumtegemea Mungu kupitia maombi na taratibu mbalimbali za kiimani.",
+      "title": "PRAYER AND WORK",
+      "titleSw": "SALA NA KAZI",
+      "description": "Prayer and work.",
+      "descriptionSw": "Kumuomba Mungu na kufanya kazi kwa bidii, heshima na umakini mkubwa.",
       "icon": "🙏"
     },
     {
+      "title": "EFFICIENCY",
+      "titleSw": "UFANISI",
+      "description": "Efficiency.",
+      "descriptionSw": "Ufanisi wa hali ya juu katika utoaji elimu na matumizi bora ya rasilimali.",
+      "icon": "⚡"
+    },
+    {
+      "title": "TEAM WORK",
+      "titleSw": "KAZI YA PAMOJA",
+      "description": "Team work.",
+      "descriptionSw": "Kufanya kazi kwa pamoja na mshikamano imara baina ya walimu, wanafunzi na wazazi.",
+      "icon": "🤝"
+    },
+    {
       "title": "DISCIPLINE",
-      "titleSw": "NIDHAMU NA MAADILI",
-      "description": "To assist students adhere to standard social and moral behaviour.",
-      "descriptionSw": "Kuwasaidia wanafunzi kuzingatia misingi imara ya maadili mema na nidhamu ya kijamii.",
+      "titleSw": "NIDHAMU",
+      "description": "Discipline.",
+      "descriptionSw": "Nidhamu thabiti ya kiroho, kimaadili, mavazi na masomo kila siku.",
       "icon": "💎"
     },
     {
-      "title": "HARD WORKING",
-      "titleSw": "KAZI KWA BIDII",
-      "description": "To empower students to focus on hard working so as to achieve expected academic goals.",
-      "descriptionSw": "Kuwawezesha wanafunzi kujituma na kufanya kazi kwa bidii ili kufikia malengo ya kitaaluma.",
-      "icon": "🔥"
+      "title": "ACCOUNTABILITY",
+      "titleSw": "UWAJIBAKAJI",
+      "description": "Accountability.",
+      "descriptionSw": "Kuwajibika kikamilifu kwa matokeo ya kitaaluma na maadili ya vijana wetu.",
+      "icon": "⚖️"
     },
     {
-      "title": "CO-OPERATION",
-      "titleSw": "USHIRIKIANO THABITI",
-      "description": "To build mutual understanding and interaction among students, parents, teachers, and non-teaching staff.",
-      "descriptionSw": "Kujenga maelewano na mshikamano thabiti baina ya wanafunzi, wazazi, walimu na wafanyakazi wasio walimu.",
-      "icon": "🤝"
+      "title": "TRANSPARENCY",
+      "titleSw": "UWAZI",
+      "description": "Transparency.",
+      "descriptionSw": "Uwazi na uaminifu kamili katika mawasiliano, michakato na utawala wa shule.",
+      "icon": "🔍"
     }
   ]
 };

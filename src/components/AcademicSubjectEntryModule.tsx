@@ -73,9 +73,9 @@ export const AcademicSubjectEntryModule: React.FC<AcademicSubjectEntryModuleProp
   const [pendingSubmissions, setPendingSubmissions] = useState<PendingSubjectSubmission[]>([]);
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
-  // Selected Form and Exam
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');
   const [selectedExam, setSelectedExam] = useState<string>('NECTA Mock 2025');
+  const [isCustomExamMode, setIsCustomExamMode] = useState<boolean>(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('Chemistry');
 
   // Search filter for students
@@ -619,19 +619,60 @@ export const AcademicSubjectEntryModule: React.FC<AcademicSubjectEntryModuleProp
           </div>
 
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">
-              {language === 'sw' ? 'Mtihani' : 'Exam'}
-            </label>
-            <select
-              value={selectedExam}
-              onChange={(e) => setSelectedExam(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-emerald-600 cursor-pointer shadow-xs"
-            >
-              <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-              <option value="Annual Examination 2025">Annual Examination 2025</option>
-              <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
-              <option value="Pre-NECTA 2025">Pre-NECTA 2025</option>
-            </select>
+            <div className="flex items-center justify-between mb-1 gap-2">
+              <label className="text-[10px] uppercase font-bold text-slate-500 block">
+                {language === 'sw' ? 'Mtihani' : 'Exam'}
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsCustomExamMode((prev) => !prev)}
+                className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-300 hover:bg-emerald-100 transition-colors cursor-pointer"
+                title={isCustomExamMode ? 'Chagua kwenye orodha' : 'Andika mtihani mwenyewe'}
+              >
+                {isCustomExamMode ? '📋 Orodha' : '✍️ Andika'}
+              </button>
+            </div>
+            {isCustomExamMode ? (
+              <input
+                type="text"
+                value={selectedExam}
+                onChange={(e) => setSelectedExam(e.target.value)}
+                placeholder="Andika mtihani..."
+                className="px-3 py-2 rounded-xl bg-white border-2 border-emerald-500 text-xs font-bold text-slate-800 focus:outline-none shadow-xs w-48"
+                autoFocus
+              />
+            ) : (
+              <select
+                value={selectedExam}
+                onChange={(e) => {
+                  if (e.target.value === '__custom__') {
+                    setIsCustomExamMode(true);
+                  } else {
+                    setSelectedExam(e.target.value);
+                  }
+                }}
+                className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-emerald-600 cursor-pointer shadow-xs"
+              >
+                <option value="NECTA Mock 2025">NECTA Mock 2025</option>
+                <option value="Annual Examination 2025">Annual Examination 2025</option>
+                <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
+                <option value="Pre-NECTA 2025">Pre-NECTA 2025</option>
+                <option value="Jaribio la Mwezi (Monthly Test)">Jaribio la Mwezi</option>
+                {selectedExam &&
+                  ![
+                    'NECTA Mock 2025',
+                    'Annual Examination 2025',
+                    'Mid-Term Exam 2025',
+                    'Pre-NECTA 2025',
+                    'Jaribio la Mwezi (Monthly Test)',
+                  ].includes(selectedExam) && (
+                    <option value={selectedExam}>{selectedExam} (Iliyowekwa)</option>
+                  )}
+                <option value="__custom__" className="text-emerald-700 font-bold">
+                  ✍️ + Weka Aina Mpya...
+                </option>
+              </select>
+            )}
           </div>
 
           <div>
