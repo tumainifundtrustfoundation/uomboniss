@@ -66,7 +66,22 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
     academicDirectives,
     checkMarkEntryPermission,
     toggleMarkEntryAuthorization,
-  } = useData();
+    examTypes,
+  } = useData() as any;
+
+  // Filter selectable subjects: strictly restricted to assigned subjects for regular teachers
+  const selectableSubjects = useMemo(() => {
+    if (isAcademicMaster) return OFFICIAL_NECTA_SUBJECTS;
+    if (!assignedSubjects || assignedSubjects.length === 0) return [];
+    return OFFICIAL_NECTA_SUBJECTS.filter((sub) =>
+      assignedSubjects.some(
+        (a) =>
+          a.trim().toLowerCase() === sub.name.trim().toLowerCase() ||
+          a.trim().toLowerCase() === sub.code.trim().toLowerCase() ||
+          sub.name.trim().toLowerCase().includes(a.trim().toLowerCase())
+      )
+    );
+  }, [isAcademicMaster, assignedSubjects]);
 
   // Primary Selection States
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');
@@ -75,8 +90,41 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
   const [isCustomExamMode, setIsCustomExamMode] = useState<boolean>(false);
   const [academicYear, setAcademicYear] = useState<string>('2025/2026');
   const [selectedSubject, setSelectedSubject] = useState<string>(() => {
-    return assignedSubjects.length > 0 ? assignedSubjects[0] : 'Chemistry';
+    if (isAcademicMaster) return 'Chemistry';
+    return assignedSubjects && assignedSubjects.length > 0 ? assignedSubjects[0] : 'Chemistry';
   });
+
+  // Clamp regular teacher to their assigned subjects
+  useEffect(() => {
+    if (!isAcademicMaster && selectableSubjects.length > 0) {
+      const match = selectableSubjects.some(
+        (sub) => sub.name.toLowerCase() === selectedSubject.toLowerCase()
+      );
+      if (!match) {
+        setSelectedSubject(selectableSubjects[0].name);
+      }
+    }
+  }, [isAcademicMaster, selectableSubjects, selectedSubject]);
+
+  // Available exam names from Mtaaluma (Academic Master)
+  const availableExamNames = useMemo(() => {
+    const namesSet = new Set<string>();
+    if (examTypes && Array.isArray(examTypes)) {
+      examTypes.forEach((et: any) => {
+        if (et.name) namesSet.add(et.name);
+      });
+    }
+    [
+      'NECTA Mock 2025',
+      'Annual Examination 2025',
+      'Mid-Term Exam 2025',
+      'Pre-NECTA 2025',
+      'Jaribio la Mwezi (Monthly Test)',
+    ].forEach((name) => namesSet.add(name));
+
+    if (selectedExam) namesSet.add(selectedExam);
+    return Array.from(namesSet);
+  }, [examTypes, selectedExam]);
 
   // Entry method tabs
   const [entryMethod, setEntryMethod] = useState<'gradebook' | 'upload_file' | 'paste_text'>('gradebook');
@@ -132,11 +180,12 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
     if (!assignedSubjects || assignedSubjects.length === 0) return false;
     return assignedSubjects.some(
       (a) =>
-        a.toLowerCase() === selectedSubject.toLowerCase() ||
+        a.toLowerCase().trim() === selectedSubject.toLowerCase().trim() ||
+        a.toLowerCase().trim() === currentSubjectObj.code.toLowerCase().trim() ||
         a.toLowerCase().includes(selectedSubject.toLowerCase()) ||
         selectedSubject.toLowerCase().includes(a.toLowerCase())
     );
-  }, [isAcademicMaster, assignedSubjects, selectedSubject]);
+  }, [isAcademicMaster, assignedSubjects, selectedSubject, currentSubjectObj.code]);
 
   const isEntryAllowed = isAcademicMaster || permission.isAllowed;
   const canEditMarks = isEntryAllowed && isSubjectAssigned;
@@ -231,6 +280,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Handle individual score change
   const handleScoreChange = (examNumber: string, value: string) => {
+    if (!canEditMarks) return;
     const numeric = value === '' ? 0 : Math.min(100, Math.max(0, parseInt(value, 10) || 0));
     const gradeInfo = scoreToNectaGrade(numeric);
     setMarksDraft((prev) => ({
@@ -245,6 +295,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Handle remarks change
   const handleRemarksChange = (examNumber: string, remarks: string) => {
+    if (!canEditMarks) return;
     setMarksDraft((prev) => ({
       ...prev,
       [examNumber]: {
@@ -257,6 +308,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Quick fill benchmarks
   const handleQuickFillBenchmark = (score: number) => {
+    if (!canEditMarks) return;
     const draft: Record<string, { score: number; remarks: string }> = {};
     const gradeInfo = scoreToNectaGrade(score);
     currentClassStudents.forEach((st) => {
@@ -293,6 +345,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Parse Excel / CSV File
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canEditMarks) return;
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadFile(file);
@@ -355,6 +408,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Parse Pasted Text (CSV or Tab-delimited)
   const handleParsePastedText = () => {
+    if (!canEditMarks) return;
     if (!pastedText.trim()) return;
     setIsParsing(true);
     const lines = pastedText.trim().split('\n');
@@ -397,6 +451,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Apply parsed upload rows to active draft
   const handleApplyParsedToDraft = () => {
+    if (!canEditMarks) return;
     setMarksDraft((prev) => {
       const next = { ...prev };
       parsedUploadRows.forEach((r) => {
@@ -444,6 +499,14 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
   // Primary Action: Submit and Save to Cloud Firestore as 'pending' results
   const handleSubmitToFirestore = async () => {
+    if (!canEditMarks) {
+      alert(
+        language === 'sw'
+          ? `⛔ Umezuiliwa: Huna mamlaka ya kuingiza au kubadilisha matokeo ya somo hili ("${selectedSubject}"). Masomo yako uliyopangiwa ni: [${assignedSubjects.join(', ')}].`
+          : `⛔ Restricted: You are not authorized to submit marks for unassigned subject "${selectedSubject}".`
+      );
+      return;
+    }
     setIsSavingToFirestore(true);
 
     // Prepare list of scores to save
@@ -772,6 +835,25 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           </span>
         </div>
 
+        {/* Restriction Alert for Unassigned Subjects */}
+        {!isSubjectAssigned && !isAcademicMaster && (
+          <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 flex items-start gap-3 shadow-xs">
+            <Lock className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h5 className="font-bold text-sm text-rose-900">
+                {language === 'sw'
+                  ? `⛔ UMEZUILIWA: Huna Ruhusa ya Kujaza Matokeo ya Somo la "${selectedSubject}"`
+                  : `⛔ RESTRICTED: Not Authorized for "${selectedSubject}"`}
+              </h5>
+              <p className="text-xs text-rose-800 leading-relaxed">
+                {language === 'sw'
+                  ? `Wewe kama Mwalimu umepangiwa kufundisha masomo haya pekee: [${assignedSubjects.join(', ')}]. Mfumo umezima uwezo wa kuandika, kupakia, au kuwasilisha matokeo ya somo lingine. Mabadiliko ya masomo yanafanywa na Mkuu wa Taaluma (Academic Master) pekee.`
+                  : `You are only assigned to teach: [${assignedSubjects.join(', ')}]. You cannot fill marks for other subjects.`}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* Form */}
           <div>
@@ -811,25 +893,57 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
           {/* Subject */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {language === 'sw' ? '3. Somo (Subject)' : '3. Subject'}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-slate-700">
+                {language === 'sw' ? '3. Somo (Subject)' : '3. Subject'}
+              </label>
+              {!isAcademicMaster && (
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+                  🔒 Somo Lako Pekee
+                </span>
+              )}
+            </div>
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-emerald-400 text-slate-900 font-bold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm"
+              className={`w-full px-3 py-2 rounded-xl text-xs font-bold shadow-sm focus:outline-none focus:ring-2 ${
+                !isSubjectAssigned && !isAcademicMaster
+                  ? 'bg-rose-50 border-2 border-rose-400 text-rose-900 focus:ring-rose-500'
+                  : 'bg-slate-50 border border-emerald-400 text-slate-900 focus:ring-emerald-500'
+              }`}
             >
-              {OFFICIAL_NECTA_SUBJECTS.map((sub) => {
-                const isAssigned = assignedSubjects.some(
-                  (a) => a.toLowerCase() === sub.name.toLowerCase()
-                );
-                return (
-                  <option key={sub.code} value={sub.name}>
-                    {sub.name} ({sub.code}) {isAssigned ? '★ Mwalimu Mhusika' : ''}
+              {!isAcademicMaster ? (
+                selectableSubjects.length > 0 ? (
+                  selectableSubjects.map((sub) => (
+                    <option key={sub.code} value={sub.name}>
+                      {sub.name} ({sub.code}) ★ Somo Lako
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    ⚠️ Hujapangiwa somo lolote na Mtaaluma
                   </option>
-                );
-              })}
+                )
+              ) : (
+                OFFICIAL_NECTA_SUBJECTS.map((sub) => {
+                  const isAssigned = assignedSubjects.some(
+                    (a) => a.toLowerCase() === sub.name.toLowerCase()
+                  );
+                  return (
+                    <option key={sub.code} value={sub.name}>
+                      {sub.name} ({sub.code}) {isAssigned ? '★ Mwalimu Mhusika' : ''}
+                    </option>
+                  );
+                })
+              )}
             </select>
+            {!isAcademicMaster && (
+              <p className="text-[10px] text-slate-500 mt-1">
+                {selectableSubjects.length > 0
+                  ? `Umepangiwa: ${assignedSubjects.join(', ')}`
+                  : 'Wasiliana na Mkuu wa Taaluma kupangiwa masomo.'}
+              </p>
+            )}
           </div>
 
           {/* Exam Type */}
@@ -838,25 +952,26 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
               <label className="block text-xs font-bold text-slate-700">
                 {language === 'sw' ? '4. Aina ya Mtihani (Exam)' : '4. Exam Period'}
               </label>
-              <button
-                type="button"
-                onClick={() => setIsCustomExamMode((prev) => !prev)}
-                className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                title={isCustomExamMode ? 'Bonyeza kuchagua mtihani kwenye orodha' : 'Bonyeza kuandika mtihani wako mwenyewe'}
-              >
-                {isCustomExamMode ? (
-                  <>
-                    <span>📋 Chagua kwenye orodha</span>
-                  </>
-                ) : (
-                  <>
-                    <span>✍️ Andika Mtihani</span>
-                  </>
-                )}
-              </button>
+              {isAcademicMaster ? (
+                <button
+                  type="button"
+                  onClick={() => setIsCustomExamMode((prev) => !prev)}
+                  className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                  title={isCustomExamMode ? 'Chagua kwenye orodha ya mitihani' : 'Andika aina ya mtihani mwenyewe'}
+                >
+                  {isCustomExamMode ? <span>📋 Orodha</span> : <span>✍️ Andika Mtihani</span>}
+                </button>
+              ) : (
+                <span
+                  className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300"
+                  title="Aina za mitihani huwekwa na Mkuu wa Taaluma"
+                >
+                  🔒 Mtaaluma Mkuu
+                </span>
+              )}
             </div>
 
-            {isCustomExamMode ? (
+            {isCustomExamMode && isAcademicMaster ? (
               <div className="space-y-1">
                 <input
                   type="text"
@@ -872,21 +987,12 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                   autoFocus
                 />
                 <datalist id="examTypePresetsList">
-                  <option value="NECTA Mock 2025" />
-                  <option value="NECTA Mock 2026" />
-                  <option value="Annual Examination 2025" />
-                  <option value="Annual Examination 2026" />
-                  <option value="Mid-Term Exam 2025" />
-                  <option value="Mid-Term Exam 2026" />
-                  <option value="Pre-NECTA 2025" />
-                  <option value="Pre-NECTA 2026" />
-                  <option value="Jaribio la Mwezi (Monthly Test)" />
-                  <option value="Jaribio la Kwanza (Test 1)" />
-                  <option value="Jaribio la Pili (Test 2)" />
-                  <option value="Mtihani wa Ufunguzi (Entry Exam)" />
+                  {availableExamNames.map((examName) => (
+                    <option key={examName} value={examName} />
+                  ))}
                 </datalist>
                 <div className="flex items-center justify-between text-[10px] text-emerald-700 font-semibold">
-                  <span>✍️ Unaandika aina ya mtihani mwenyewe moja kwa moja.</span>
+                  <span>✍️ Mtaaluma anaweka aina ya mtihani mwenyewe.</span>
                   <button
                     type="button"
                     onClick={() => setIsCustomExamMode(false)}
@@ -901,7 +1007,7 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                 <select
                   value={selectedExam}
                   onChange={(e) => {
-                    if (e.target.value === '__custom__') {
+                    if (isAcademicMaster && e.target.value === '__custom__') {
                       setIsCustomExamMode(true);
                     } else {
                       setSelectedExam(e.target.value);
@@ -909,25 +1015,22 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                   }}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
                 >
-                  <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-                  <option value="Annual Examination 2025">Mtihani wa Mwaka (Annual)</option>
-                  <option value="Mid-Term Exam 2025">Mtihani wa Nusu Muhula (Mid-Term)</option>
-                  <option value="Pre-NECTA 2025">Pre-NECTA Mtihani wa Majaribio</option>
-                  <option value="Jaribio la Mwezi (Monthly Test)">Jaribio la Mwezi (Monthly Test)</option>
-                  {selectedExam &&
-                    ![
-                      'NECTA Mock 2025',
-                      'Annual Examination 2025',
-                      'Mid-Term Exam 2025',
-                      'Pre-NECTA 2025',
-                      'Jaribio la Mwezi (Monthly Test)',
-                    ].includes(selectedExam) && (
-                      <option value={selectedExam}>{selectedExam} (Aina Uliyoweka)</option>
-                    )}
-                  <option value="__custom__" className="font-bold text-emerald-700">
-                    ✍️ + Weka Aina Nyingine (Andika Wewe Mwenyewe)...
-                  </option>
+                  {availableExamNames.map((examName) => (
+                    <option key={examName} value={examName}>
+                      {examName}
+                    </option>
+                  ))}
+                  {isAcademicMaster && (
+                    <option value="__custom__" className="font-bold text-emerald-700">
+                      ✍️ + Weka Aina Nyingine (Andika Mtaaluma Mwenyewe)...
+                    </option>
+                  )}
                 </select>
+                {!isAcademicMaster && (
+                  <p className="text-[10px] text-slate-500">
+                    Aina za mtihani zilizowekwa na Mtaaluma Mkuu.
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -1071,26 +1174,46 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
             </span>
             <div className="flex flex-wrap items-center gap-1.5">
               <button
+                disabled={!canEditMarks}
                 onClick={() => handleQuickFillBenchmark(82)}
-                className="px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-[11px] cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  !canEditMarks
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900 cursor-pointer'
+                }`}
               >
                 Weka 82 (Grade A)
               </button>
               <button
+                disabled={!canEditMarks}
                 onClick={() => handleQuickFillBenchmark(70)}
-                className="px-2.5 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-900 font-bold text-[11px] cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  !canEditMarks
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-blue-100 hover:bg-blue-200 text-blue-900 cursor-pointer'
+                }`}
               >
                 Weka 70 (Grade B)
               </button>
               <button
+                disabled={!canEditMarks}
                 onClick={() => handleQuickFillBenchmark(58)}
-                className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  !canEditMarks
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-amber-100 hover:bg-amber-200 text-amber-900 cursor-pointer'
+                }`}
               >
                 Weka 58 (Grade C)
               </button>
               <button
+                disabled={!canEditMarks}
                 onClick={() => handleQuickFillBenchmark(0)}
-                className="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-[11px] cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  !canEditMarks
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-800 cursor-pointer'
+                }`}
               >
                 Safisha Alama Zote
               </button>
@@ -1152,17 +1275,17 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                         </td>
 
                         {/* Interactive Score Input */}
-                        <td className={`px-3 py-2 text-center border-x ${!isEntryAllowed ? 'bg-slate-100 border-slate-200' : 'bg-emerald-50/40 border-emerald-100'}`}>
+                        <td className={`px-3 py-2 text-center border-x ${!canEditMarks ? 'bg-slate-100 border-slate-200' : 'bg-emerald-50/40 border-emerald-100'}`}>
                           <input
                             type="number"
                             min="0"
                             max="100"
-                            disabled={!isEntryAllowed}
+                            disabled={!canEditMarks}
                             value={entry.score === 0 && !hasUnsavedChanges ? '' : entry.score}
                             onChange={(e) => handleScoreChange(st.examNumber, e.target.value)}
-                            placeholder={!isEntryAllowed ? '🔒' : '0'}
+                            placeholder={!canEditMarks ? (!isSubjectAssigned ? '🔒' : '🔒 Funga') : '0'}
                             className={`w-20 px-2 py-1.5 rounded-lg text-center font-black text-sm shadow-sm transition-all ${
-                              !isEntryAllowed
+                              !canEditMarks
                                 ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed'
                                 : 'bg-white border-2 border-emerald-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600'
                             }`}
@@ -1197,12 +1320,18 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
                         <td className="px-3.5 py-2">
                           <input
                             type="text"
-                            disabled={!isEntryAllowed}
+                            disabled={!canEditMarks}
                             value={entry.remarks}
                             onChange={(e) => handleRemarksChange(st.examNumber, e.target.value)}
-                            placeholder={!isEntryAllowed ? 'Dirisha limefungwa na Taaluma' : gradeInfo.remarks}
+                            placeholder={
+                              !canEditMarks
+                                ? (!isSubjectAssigned
+                                    ? 'Somo la mwalimu mwingine (Umezuiliwa)'
+                                    : 'Dirisha limefungwa na Taaluma')
+                                : gradeInfo.remarks
+                            }
                             className={`w-full px-2.5 py-1 rounded-lg text-xs transition-all ${
-                              !isEntryAllowed
+                              !canEditMarks
                                 ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed'
                                 : 'bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500'
                             }`}
@@ -1242,21 +1371,23 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
             </div>
             <div>
               <label
-                htmlFor={isEntryAllowed ? "file-upload-input" : undefined}
+                htmlFor={canEditMarks ? "file-upload-input" : undefined}
                 className={`inline-block px-5 py-2.5 rounded-xl font-black text-xs shadow-md transition-all ${
-                  !isEntryAllowed
+                  !canEditMarks
                     ? 'bg-slate-300 text-slate-500 cursor-not-allowed border border-slate-400'
                     : 'bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer'
                 }`}
               >
-                {!isEntryAllowed
-                  ? language === 'sw' ? '🔒 Uingizaji Umefungwa na Mkuu wa Taaluma' : '🔒 Mark Entry Locked by Academic Master'
+                {!canEditMarks
+                  ? !isSubjectAssigned
+                    ? (language === 'sw' ? '⛔ Umezuiliwa: Si Somo Lako' : '⛔ Restricted: Unassigned Subject')
+                    : (language === 'sw' ? '🔒 Uingizaji Umefungwa na Mkuu wa Taaluma' : '🔒 Mark Entry Locked by Academic Master')
                   : uploadFile ? uploadFile.name : language === 'sw' ? 'Chagua Faili la Excel / CSV' : 'Choose Spreadsheet File'}
               </label>
               <input
                 id="file-upload-input"
                 type="file"
-                disabled={!isEntryAllowed}
+                disabled={!canEditMarks}
                 accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
                 className="hidden"
@@ -1338,11 +1469,22 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
           </div>
 
           <textarea
+            disabled={!canEditMarks}
             value={pastedText}
             onChange={(e) => setPastedText(e.target.value)}
             rows={6}
-            placeholder={`S0486/0001/2025, 84, Vizuri Sana\nS0486/0002/2025, 76, Vizuri Sana\nS0486/0003/2025, 62, Wastani`}
-            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-300 font-mono text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder={
+              !canEditMarks
+                ? (!isSubjectAssigned
+                    ? '⛔ Hauruhusiwi kuingiza au kubandika alama za somo lingine.'
+                    : '🔒 Dirisha la kuingiza alama limefungwa na Taaluma.')
+                : `S0486/0001/2025, 84, Vizuri Sana\nS0486/0002/2025, 76, Vizuri Sana\nS0486/0003/2025, 62, Wastani`
+            }
+            className={`w-full p-4 rounded-2xl border font-mono text-xs focus:outline-none focus:ring-2 ${
+              !canEditMarks
+                ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed'
+                : 'bg-slate-50 border-slate-300 text-slate-900 focus:ring-emerald-500'
+            }`}
           />
 
           <div className="flex items-center justify-between">
@@ -1350,8 +1492,13 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
               Mstari: {pastedText.trim() ? pastedText.trim().split('\n').length : 0}
             </span>
             <button
+              disabled={!canEditMarks}
               onClick={handleParsePastedText}
-              className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs cursor-pointer shadow-md"
+              className={`px-4 py-2 rounded-xl font-black text-xs shadow-md transition-all ${
+                !canEditMarks
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer'
+              }`}
             >
               Chakata Maandishi (Parse Text)
             </button>
@@ -1363,8 +1510,13 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-slate-900">Mstari Zilizochakatwa: {parsedUploadRows.length}</span>
                 <button
+                  disabled={!canEditMarks}
                   onClick={handleApplyParsedToDraft}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-2 cursor-pointer shadow-md"
+                  className={`px-4 py-2 rounded-xl font-black text-xs flex items-center gap-2 shadow-md ${
+                    !canEditMarks
+                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                  }`}
                 >
                   <Check className="w-4 h-4" />
                   <span>{language === 'sw' ? 'Weka Kwenye Daftari la Alama' : 'Load Into Gradebook'}</span>
@@ -1404,9 +1556,9 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
 
           <button
             onClick={handleSubmitToFirestore}
-            disabled={!isEntryAllowed || isSavingToFirestore || statistics.total === 0}
+            disabled={!canEditMarks || isSavingToFirestore || statistics.total === 0}
             className={`px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2.5 shadow-md transition-all cursor-pointer ${
-              !isEntryAllowed || isSavingToFirestore || statistics.total === 0
+              !canEditMarks || isSavingToFirestore || statistics.total === 0
                 ? 'bg-[#FAF7EE] text-stone-400 border border-red-200 cursor-not-allowed'
                 : 'bg-red-700 hover:bg-red-800 text-[#FFFFF0] border border-red-800 scale-102 font-black'
             }`}
@@ -1415,6 +1567,15 @@ export const TeacherSubjectScoreUploadForm: React.FC<TeacherSubjectScoreUploadFo
               <>
                 <RefreshCw className="w-4 h-4 animate-spin text-[#FFFFF0]" />
                 <span>Inahifadhi kwenye Firestore...</span>
+              </>
+            ) : !isSubjectAssigned ? (
+              <>
+                <Lock className="w-4 h-4 text-rose-500" />
+                <span className="text-rose-600 font-bold">
+                  {language === 'sw'
+                    ? '⛔ Somo la Mwalimu Mwingine (Umezuiliwa)'
+                    : '⛔ Unassigned Subject (Restricted)'}
+                </span>
               </>
             ) : !isEntryAllowed ? (
               <>

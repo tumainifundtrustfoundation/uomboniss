@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SchoolLogo } from './SchoolLogo';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
@@ -20,7 +20,11 @@ import {
   Trees,
   Laptop,
   Church,
-  Trophy
+  Trophy,
+  Eye,
+  Download,
+  X,
+  FileText
 } from 'lucide-react';
 
 interface AboutSectionProps {
@@ -31,6 +35,7 @@ interface AboutSectionProps {
 export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAdmissions }) => {
   const { language } = useLanguage();
   const { schoolProfile } = useData();
+  const [showFlyerModal, setShowFlyerModal] = useState(false);
 
   // 7 Core Features verbatim from the official School Flyer / Karatasi ya Udahili
   const flyerFeatures = [
@@ -341,9 +346,15 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                   {language === 'sw' ? 'Maadili ya Msingi ya Shule (Our Core Values)' : 'Our Core Values'}
                 </h4>
               </div>
-              <span className="text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2.5 py-0.5 rounded-full border border-amber-300">
-                Nyaraka Rasmi za Shule · Official Document
-              </span>
+              <button
+                type="button"
+                onClick={() => setShowFlyerModal(true)}
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 active:scale-98 px-3 py-1 rounded-full border border-amber-300 transition-all cursor-pointer shadow-2xs"
+                title={language === 'sw' ? 'Bofya kutazama Nyaraka / Brosha Rasmi ya Shule' : 'Click to view official school brochure / flyer'}
+              >
+                <Eye className="w-3.5 h-3.5 text-amber-800" />
+                <span>{language === 'sw' ? 'Nyaraka Rasmi za Shule (Tazama Brosha)' : 'Official Document (View Brochure)'}</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -496,7 +507,102 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
           </div>
         </div>
       </div>
+
+      {/* Official School Document / Flyer Modal */}
+      {showFlyerModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setShowFlyerModal(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#102A43] text-white border-b border-[#102A43]/30">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-sm sm:text-base font-bold text-white leading-tight">
+                    {language === 'sw'
+                      ? 'Nyaraka Rasmi: Tangazo na Mwongozo wa Shule'
+                      : 'Official Institutional Document & Prospectus'}
+                  </h3>
+                  <p className="text-[11px] text-amber-200/90 font-medium">
+                    UOMBONI SECONDARY SCHOOL · NECTA S0486 · MARANGU, MOSHI
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href="/uomboni_flyer_2026.jpg"
+                  download="Uomboni_Secondary_School_Official_Prospectus.jpg"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C9A227] hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-xs"
+                  title="Pakua Nyaraka Hii (Download)"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{language === 'sw' ? 'Pakua' : 'Download'}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowFlyerModal(false)}
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Funga"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50">
+              {/* Document Identity Banner */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-slate-800 space-y-1">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wide">
+                  <Award className="w-4 h-4 text-amber-700" />
+                  <span>Kauli Mbiu Rasmi: &ldquo;TUJIENDELEZE SISI WENYEWE&rdquo;</span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  {language === 'sw'
+                    ? 'Hii ndio nyaraka rasmi ya Shule ya Sekondari Uomboni inayobeba Dira (Vision), Dhima (Mission), Maadili ya Msingi 6 (Core Values: Sala na Kazi, Ufanisi, Kazi ya Pamoja, Nidhamu, Uwajibikaji na Uwazi), pamoja na vigezo vyote vya udahili na mazingira ya shule.'
+                    : 'Official Uomboni Secondary School flyer containing the official Motto, Vision, Mission, and 6 institutional Core Values.'}
+                </p>
+              </div>
+
+              {/* Document Image */}
+              <div className="rounded-xl overflow-hidden border border-slate-300 shadow-sm bg-white flex justify-center">
+                <img
+                  src="/uomboni_flyer_2026.jpg"
+                  alt="Uomboni Secondary School Official Prospectus & Flyer"
+                  className="w-full max-w-2xl h-auto object-contain"
+                  loading="eager"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-4 sm:px-6 py-3 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+              <span className="text-[11px]">
+                Catholic Diocese of Moshi · P.O. Box 361 Marangu
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowFlyerModal(false)}
+                className="px-4 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold cursor-pointer transition-colors"
+              >
+                {language === 'sw' ? 'Funga Dirisha' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
+
 

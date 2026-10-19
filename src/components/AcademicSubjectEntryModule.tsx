@@ -67,16 +67,38 @@ export const AcademicSubjectEntryModule: React.FC<AcademicSubjectEntryModuleProp
     submitTeacherSubjectMarks,
     subjectSubmissions,
     teachers,
-  } = useData();
+    examTypes,
+  } = useData() as any;
 
-  // Firestore Pending Submissions state for Academic Master
-  const [pendingSubmissions, setPendingSubmissions] = useState<PendingSubjectSubmission[]>([]);
-  const [approvingId, setApprovingId] = useState<string | null>(null);
-
+  // Primary Selection States
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');
   const [selectedExam, setSelectedExam] = useState<string>('NECTA Mock 2025');
   const [isCustomExamMode, setIsCustomExamMode] = useState<boolean>(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('Chemistry');
+
+  // Available exam types from Mtaaluma / DataContext
+  const availableExamNames = useMemo(() => {
+    const namesSet = new Set<string>();
+    if (examTypes && Array.isArray(examTypes)) {
+      examTypes.forEach((et: any) => {
+        if (et.name) namesSet.add(et.name);
+      });
+    }
+    [
+      'NECTA Mock 2025',
+      'Annual Examination 2025',
+      'Mid-Term Exam 2025',
+      'Pre-NECTA 2025',
+      'Jaribio la Mwezi (Monthly Test)',
+    ].forEach((name) => namesSet.add(name));
+
+    if (selectedExam) namesSet.add(selectedExam);
+    return Array.from(namesSet);
+  }, [examTypes, selectedExam]);
+
+  // Firestore Pending Submissions state for Academic Master
+  const [pendingSubmissions, setPendingSubmissions] = useState<PendingSubjectSubmission[]>([]);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   // Search filter for students
   const [searchStudent, setSearchStudent] = useState<string>('');
@@ -653,21 +675,11 @@ export const AcademicSubjectEntryModule: React.FC<AcademicSubjectEntryModuleProp
                 }}
                 className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-emerald-600 cursor-pointer shadow-xs"
               >
-                <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-                <option value="Annual Examination 2025">Annual Examination 2025</option>
-                <option value="Mid-Term Exam 2025">Mid-Term Exam 2025</option>
-                <option value="Pre-NECTA 2025">Pre-NECTA 2025</option>
-                <option value="Jaribio la Mwezi (Monthly Test)">Jaribio la Mwezi</option>
-                {selectedExam &&
-                  ![
-                    'NECTA Mock 2025',
-                    'Annual Examination 2025',
-                    'Mid-Term Exam 2025',
-                    'Pre-NECTA 2025',
-                    'Jaribio la Mwezi (Monthly Test)',
-                  ].includes(selectedExam) && (
-                    <option value={selectedExam}>{selectedExam} (Iliyowekwa)</option>
-                  )}
+                {availableExamNames.map((examName) => (
+                  <option key={examName} value={examName}>
+                    {examName}
+                  </option>
+                ))}
                 <option value="__custom__" className="text-emerald-700 font-bold">
                   ✍️ + Weka Aina Mpya...
                 </option>

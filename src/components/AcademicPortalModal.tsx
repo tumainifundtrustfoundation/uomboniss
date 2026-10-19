@@ -57,6 +57,7 @@ import { GoogleSignInButton } from './GoogleSignInButton';
 import { SchoolLogo } from './SchoolLogo';
 import { AcademicStudentRosterTab } from './academic/AcademicStudentRosterTab';
 import { AcademicDirectivesManagerTab } from './academic/AcademicDirectivesManagerTab';
+import { AcademicExamTypesManagerTab } from './academic/AcademicExamTypesManagerTab';
 import { StudentResult, Teacher, StudentProfile, SubjectResult, ResultsPdfDocument } from '../types';
 import {
   downloadStudentResultSlipPdf,
@@ -208,7 +209,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   const [academicGoogleUser, setAcademicGoogleUser] = useState<any>(null);
   const [academicAuthError, setAcademicAuthError] = useState(false);
   const [academicEmailError, setAcademicEmailError] = useState('');
-  const [academicActiveTab, setAcademicActiveTab] = useState<'teachers_admin' | 'directives' | 'necta_sheet' | 'students_roster' | 'overview' | 'broadsheet' | 'manage' | 'pdfBooks' | 'recompute'>('teachers_admin');
+  const [academicActiveTab, setAcademicActiveTab] = useState<'teachers_admin' | 'directives' | 'exam_types' | 'necta_sheet' | 'students_roster' | 'overview' | 'broadsheet' | 'manage' | 'pdfBooks' | 'recompute'>('teachers_admin');
   const [broadsheetForm, setBroadsheetForm] = useState<string>('Form 4');
   const [broadsheetExam, setBroadsheetExam] = useState<string>('NECTA Mock 2025');
   const [recomputeSuccess, setRecomputeSuccess] = useState(false);
@@ -2366,6 +2367,18 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                     </button>
 
                     <button
+                      onClick={() => setAcademicActiveTab('exam_types')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                        academicActiveTab === 'exam_types'
+                          ? 'bg-red-700 text-[#FFFFF0] font-black shadow-md'
+                          : 'text-stone-700 hover:text-red-900 hover:bg-[#FAF7EE]'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5" />
+                      <span>{language === 'sw' ? '🏷️ Aina za Mitihani (Mtaaluma)' : '🏷️ Exam Types & Sittings'}</span>
+                    </button>
+
+                    <button
                       onClick={() => setAcademicActiveTab('overview')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                         academicActiveTab === 'overview'
@@ -2442,6 +2455,11 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* TAB 0D: DIRECTIVES & PERMISSION CONTROL FOR TEACHERS */}
                   {academicActiveTab === 'directives' && (
                     <AcademicDirectivesManagerTab language={language} />
+                  )}
+
+                  {/* TAB 0E: EXAM TYPES & SITTINGS MANAGER (ACADEMIC MASTER) */}
+                  {academicActiveTab === 'exam_types' && (
+                    <AcademicExamTypesManagerTab language={language} />
                   )}
 
                   {/* TAB 1: ACADEMIC PERFORMANCE OVERVIEW */}
