@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { signInWithGoogle, getUserProfile } from '../lib/firebase';
 import { checkStaffAuthorization, logStaffAuthAttempt } from '../services/staffSecurityService';
 import { GoogleSignInButton } from './GoogleSignInButton';
@@ -180,8 +181,24 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     joiningDocs,
   } = useData();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminLoggedIn || false);
-  const [adminEmail, setAdminEmail] = useState(() => adminGoogleUser?.email || 'admin@uomboni.sc.tz');
+  const { user, userProfile } = useAuth();
+  const isMasterAdmin =
+    isAdminLoggedIn ||
+    userProfile?.role === 'admin' ||
+    (user?.email &&
+      ['tumainifundtrustfoundation@gmail.com', 'yohanabahati665@gmail.com', 'adolphmassawe@gmail.com'].includes(
+        user.email.toLowerCase()
+      ));
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(isMasterAdmin));
+
+  React.useEffect(() => {
+    if (isMasterAdmin && !isAuthenticated) {
+      setIsAuthenticated(true);
+    }
+  }, [isMasterAdmin]);
+
+  const [adminEmail, setAdminEmail] = useState(() => user?.email || adminGoogleUser?.email || 'admin@uomboni.sc.tz');
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'password' | 'google'>('password');

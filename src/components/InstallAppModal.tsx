@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
 import {
   Download,
   Smartphone,
@@ -21,6 +22,8 @@ interface InstallAppModalProps {
 
 export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
   const { language } = useLanguage();
+  const { customLogoUrl } = useData();
+  const officialLogo = customLogoUrl || '/uomboni_official_logo.jpg';
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [activeDeviceTab, setActiveDeviceTab] = useState<'android' | 'ios' | 'pc'>('android');
@@ -114,9 +117,12 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
           <div className="flex items-center gap-4">
             <div className="relative">
               <img
-                src="/pwa-icon.svg"
-                alt="Uomboni Sec App Icon"
-                className="w-16 h-16 rounded-2xl shadow-xl border-2 border-amber-400/80"
+                src={officialLogo}
+                alt="Uomboni Secondary School Official Crest"
+                className="w-16 h-16 rounded-2xl bg-white p-1 object-contain shadow-xl border-2 border-amber-400/80 select-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/uomboni_official_logo.jpg';
+                }}
               />
               <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-[10px] text-slate-950 font-black">
                 ✓

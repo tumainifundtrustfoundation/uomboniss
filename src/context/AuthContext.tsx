@@ -74,7 +74,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (path === '/signup' || hash === '#signup') return 'signup';
       if (hash === '#admission-documents' || hash === '#admissions-documents' || hash === '#admission-docs') return 'admission-documents';
       const savedView = sessionStorage.getItem('uomboni_view');
-      if (!savedView && !hash) return 'welcome';
+      if (savedView === 'portal') return 'portal';
+      return 'website';
     }
     return 'website';
   });

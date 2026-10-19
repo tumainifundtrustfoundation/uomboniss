@@ -64,7 +64,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
 }) => {
   const { language } = useLanguage();
   const { students, teachers, timetable, studentNotices, studentResults } = useData();
-  const { userProfile, logout } = useAuth();
+  const { userProfile, user, logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
@@ -81,6 +81,25 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
 
   // Teacher Identity State & Authentication Isolation
   const [authenticatedTeacher, setAuthenticatedTeacher] = useState<any | null>(null);
+
+  // Auto-connect logged in teacher or admin from AuthContext without forcing duplicate PIN login
+  React.useEffect(() => {
+    if (!authenticatedTeacher && userProfile && ['teacher', 'staff', 'admin', 'academic_master'].includes(userProfile.role)) {
+      const match = (teachers || []).find((t) =>
+        (user?.email && t.email?.toLowerCase() === user.email.toLowerCase()) ||
+        (userProfile.email && t.email?.toLowerCase() === userProfile.email.toLowerCase()) ||
+        (userProfile.fullName && t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()))
+      ) || teachers[0];
+      if (match) {
+        setAuthenticatedTeacher({
+          ...match,
+          subjects: match.subjects || ['Kiswahili'],
+        });
+        setSelectedLoginTeacherId(match.id);
+      }
+    }
+  }, [userProfile, user, teachers, authenticatedTeacher]);
+
   const [selectedLoginTeacherId, setSelectedLoginTeacherId] = useState<string>(() => {
     return teachers && teachers.length > 0 ? teachers[0].id : 'tch-002';
   });

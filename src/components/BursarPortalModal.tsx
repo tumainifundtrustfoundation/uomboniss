@@ -55,6 +55,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { StudentProfile, FeePaymentRecord } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface BursarPortalModalProps {
   isOpen: boolean;
@@ -87,8 +88,11 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
     mobilePaymentMethods,
   } = useData();
 
+  const { userProfile, user } = useAuth();
+  const isAuthorizedBursar = isBursarLoggedIn || (userProfile && ['bursar', 'admin'].includes(userProfile.role));
+
   // Login Email and PIN state
-  const [bursarEmail, setBursarEmail] = useState(() => bursarGoogleUser?.email || 'bursar@uomboni.sc.tz');
+  const [bursarEmail, setBursarEmail] = useState(() => user?.email || bursarGoogleUser?.email || 'bursar@uomboni.sc.tz');
   const [bursarPinInput, setBursarPinInput] = useState('');
   const [bursarLoginMethod, setBursarLoginMethod] = useState<'pin' | 'google'>('pin');
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
@@ -389,7 +393,7 @@ export const BursarPortalModal: React.FC<BursarPortalModalProps> = ({
 
   if (!isOpen) return null;
 
-  if (!isBursarLoggedIn) {
+  if (!isAuthorizedBursar) {
     return (
       <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
         <div className="w-full max-w-lg bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6 text-white relative animate-in zoom-in-95 duration-200">

@@ -142,15 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
-            {onOpenWelcome && (
-              <button
-                onClick={onOpenWelcome}
-                className="liquid-btn liquid-btn-frosted hidden lg:inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 cursor-pointer"
-                title="Welcome Screen (Animated Embossed Login)"
-              >
-                <span className="relative z-10 flex items-center gap-1">✨ Welcome Screen</span>
-              </button>
-            )}
+            {/* Academic Portal Quick Link */}
             {onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
@@ -442,17 +434,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              {onOpenWelcome && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenWelcome();
-                  }}
-                  className="liquid-btn liquid-btn-frosted !text-stone-900 !bg-stone-100 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer border border-slate-300 shadow-xs"
-                >
-                  <span className="relative z-10">✨ Welcome Screen (Embossed Login)</span>
-                </button>
-              )}
+
 
               {onOpenAcademicPortal && (
                 <button

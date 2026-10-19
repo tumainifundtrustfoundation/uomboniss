@@ -26,7 +26,14 @@ import {
   SchoolProfile,
   AcademicDirective,
   ExamTypeConfig,
+  SchoolVideo,
 } from '../types';
+import { INITIAL_SCHOOL_VIDEOS } from '../data/initialSchoolVideos';
+import {
+  saveSchoolVideoToFirestore,
+  deleteSchoolVideoFromFirestore,
+  getSchoolVideosFromFirestore,
+} from '../services/schoolFirestoreService';
 import {
   saveAcademicDirectiveToFirestore,
   getAcademicDirectivesFromFirestore,
@@ -260,6 +267,13 @@ interface DataContextType {
   bulkReplaceGalleryPhotos: (photos: GalleryPhoto[]) => void;
   resetGalleryToDefaults: () => void;
   deleteGalleryPhoto: (id: string) => void;
+
+  // School YouTube Videos
+  schoolVideos: SchoolVideo[];
+  addSchoolVideo: (video: SchoolVideo) => void;
+  updateSchoolVideo: (video: SchoolVideo) => void;
+  deleteSchoolVideo: (id: string) => void;
+  resetSchoolVideosToDefaults: () => void;
 
   // Inquiries
   parentInquiries: ParentInquiry[];
@@ -711,6 +725,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return INITIAL_GALLERY;
   });
 
+  const [schoolVideos, setSchoolVideos] = useState<SchoolVideo[]>(() => {
+    const parsed = safeGetStorage<SchoolVideo[]>('uomboni_videos', INITIAL_SCHOOL_VIDEOS);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return INITIAL_SCHOOL_VIDEOS;
+  });
+
   const [parentInquiries, setParentInquiries] = useState<ParentInquiry[]>(() => {
     return safeGetStorage<ParentInquiry[]>('uomboni_inquiries', []);
   });
@@ -1100,6 +1122,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (Array.isArray(d.galleryPhotos) && !isRecentEdit('galleryPhotos')) {
               setGalleryPhotos(d.galleryPhotos);
               safeSetStorage('uomboni_gallery', d.galleryPhotos);
+            }
+            if (Array.isArray(d.schoolVideos) && !isRecentEdit('schoolVideos')) {
+              setSchoolVideos(d.schoolVideos);
+              safeSetStorage('uomboni_videos', d.schoolVideos);
             }
             if (Array.isArray(d.students) && !isRecentEdit('students')) {
               const cleanStudents = deduplicateStudentProfiles(d.students);

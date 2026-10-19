@@ -252,6 +252,21 @@ export interface GalleryPhoto {
   descriptionEn?: string;
 }
 
+export interface SchoolVideo {
+  id: string;
+  titleSw: string;
+  titleEn: string;
+  youtubeUrl: string;
+  youtubeId: string;
+  category: 'Mahafali & Sherehe' | 'Taaluma & Masomo' | 'Kikanisa & Misa' | 'Michezo & Utamaduni' | 'Ziara & Mazingira' | string;
+  date: string;
+  duration?: string;
+  descriptionSw?: string;
+  descriptionEn?: string;
+  featured?: boolean;
+  order?: number;
+}
+
 export interface ParentInquiry {
   id: string;
   parentName: string;

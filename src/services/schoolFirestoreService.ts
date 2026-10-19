@@ -23,6 +23,7 @@ import {
   FirestorePublishedResult,
   FirestoreAnnouncement,
   FirestoreSchoolSettings,
+  SchoolVideo,
 } from '../types';
 
 // ==========================================
@@ -745,3 +746,40 @@ export async function seedInstitutionSchemaFoundation(): Promise<{
     };
   }
 }
+
+// ==========================================
+// 11. SCHOOL VIDEOS (school_videos/{videoId})
+// ==========================================
+
+export async function getSchoolVideosFromFirestore(): Promise<SchoolVideo[]> {
+  try {
+    const snap = await getDocs(collection(db, 'school_videos'));
+    return snap.docs.map((d) => ({ ...d.data(), id: d.id } as SchoolVideo));
+  } catch (err: any) {
+    console.warn('Error fetching school_videos from firestore:', err);
+    return [];
+  }
+}
+
+export async function saveSchoolVideoToFirestore(video: SchoolVideo): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'school_videos', video.id);
+    await setDoc(docRef, video, { merge: true });
+    return true;
+  } catch (err: any) {
+    handleFirestoreError(err, OperationType.WRITE, `school_videos/${video.id}`);
+    return false;
+  }
+}
+
+export async function deleteSchoolVideoFromFirestore(videoId: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'school_videos', videoId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (err: any) {
+    handleFirestoreError(err, OperationType.DELETE, `school_videos/${videoId}`);
+    return false;
+  }
+}
+

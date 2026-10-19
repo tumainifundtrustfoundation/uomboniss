@@ -52,6 +52,7 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { signInWithGoogle, getUserProfile } from '../lib/firebase';
+import { useAuth } from '../context/AuthContext';
 import { checkStaffAuthorization, logStaffAuthAttempt } from '../services/staffSecurityService';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { SchoolLogo } from './SchoolLogo';
@@ -127,19 +128,30 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
     deleteResultsPdfDoc,
   } = useData();
 
+  const { userProfile, user } = useAuth();
+
   // Active role state
   const [activeRole, setActiveRole] = useState<AcademicRole>(initialRole);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     initialRole === 'parent' ? true : initialAuthenticated
   );
 
-  // Sync role and authentication when modal is opened or reopened with new role
+  // Sync role and authentication when modal is opened or reopened with new role, or if user is logged in
   React.useEffect(() => {
-    setActiveRole(initialRole);
-    if (initialRole === 'parent' || initialAuthenticated) {
+    if (userProfile && ['academic_master', 'admin', 'teacher'].includes(userProfile.role)) {
       setIsAuthenticated(true);
+      if (userProfile.role === 'academic_master' || userProfile.role === 'admin') {
+        setActiveRole('academic_master');
+      } else if (userProfile.role === 'teacher') {
+        setActiveRole('teacher');
+      }
+    } else {
+      setActiveRole(initialRole);
+      if (initialRole === 'parent' || initialAuthenticated) {
+        setIsAuthenticated(true);
+      }
     }
-  }, [initialRole, initialAuthenticated]);
+  }, [initialRole, initialAuthenticated, userProfile]);
 
   // Parent State
   const [parentSearchQuery, setParentSearchQuery] = useState(initialStudentId || '');

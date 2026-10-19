@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
 import { Smartphone, Download, X, Sparkles } from 'lucide-react';
 
 interface PWAInstallBannerProps {
@@ -8,8 +9,11 @@ interface PWAInstallBannerProps {
 
 export function PWAInstallBanner({ onOpenInstallModal }: PWAInstallBannerProps) {
   const { language } = useLanguage();
+  const { customLogoUrl } = useData();
   const [isVisible, setIsVisible] = useState(true);
   const [isStandalone, setIsStandalone] = useState(false);
+
+  const officialLogo = customLogoUrl || '/uomboni_official_logo.jpg';
 
   useEffect(() => {
     // Check if running inside installed standalone PWA
@@ -40,9 +44,12 @@ export function PWAInstallBanner({ onOpenInstallModal }: PWAInstallBannerProps) 
         <div className="flex items-center gap-3">
           <div className="relative shrink-0">
             <img
-              src="/pwa-icon.svg"
-              alt="Uomboni Sec"
-              className="w-11 h-11 rounded-2xl border border-amber-400/80 shadow-md"
+              src={officialLogo}
+              alt="Uomboni Secondary School Official Crest"
+              className="w-11 h-11 rounded-2xl bg-white p-0.5 object-contain border border-amber-400/80 shadow-md select-none"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/uomboni_official_logo.jpg';
+              }}
             />
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

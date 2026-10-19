@@ -20,6 +20,7 @@ import {
   SCHOOL_PROFILE_INFO,
   INITIAL_ENROLLMENT_STATS,
 } from '../src/data/initialData';
+import { INITIAL_SCHOOL_VIDEOS } from '../src/data/initialSchoolVideos';
 
 export interface SchoolDataPayload {
   studentResults: any[];
@@ -43,6 +44,7 @@ export interface SchoolDataPayload {
   studentCouncil: any[];
   schoolProfile: any;
   enrollmentStats: any[];
+  schoolVideos: any[];
 }
 
 export interface SchoolDatabase {
@@ -77,6 +79,7 @@ function getDefaultSchoolData(): SchoolDataPayload {
     studentCouncil: [...INITIAL_STUDENT_COUNCIL],
     schoolProfile: { ...SCHOOL_PROFILE_INFO },
     enrollmentStats: [...INITIAL_ENROLLMENT_STATS],
+    schoolVideos: [...INITIAL_SCHOOL_VIDEOS],
   };
 }
 
