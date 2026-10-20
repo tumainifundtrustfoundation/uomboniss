@@ -555,6 +555,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .catch((err) => console.warn('Could not load exam types from Firestore on mount:', err));
   }, []);
 
+  // Sync school videos from Firestore on mount
+  useEffect(() => {
+    getSchoolVideosFromFirestore()
+      .then((remoteList) => {
+        if (remoteList && remoteList.length > 0) {
+          setSchoolVideos(remoteList);
+          safeSetStorage('uomboni_videos', remoteList);
+        }
+      })
+      .catch((err) => console.warn('Could not load school videos from Firestore on mount:', err));
+  }, []);
+
   const [isOffline, setIsOffline] = useState<boolean>(() => {
     return typeof navigator !== 'undefined' ? !navigator.onLine : false;
   });
@@ -1216,6 +1228,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         paymentRecords,
         joiningDocs,
         galleryPhotos,
+        schoolVideos,
         applications,
         parentInquiries,
         resultsPdfDocuments,
@@ -1387,6 +1400,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     safeSetStorage('uomboni_gallery', galleryPhotos);
   }, [galleryPhotos]);
+
+  useEffect(() => {
+    safeSetStorage('uomboni_videos', schoolVideos);
+  }, [schoolVideos]);
 
   useEffect(() => {
     safeSetStorage('uomboni_inquiries', parentInquiries);
@@ -2564,6 +2581,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const addSchoolVideo = (video: SchoolVideo) => {
+    setSchoolVideos((prev) => {
+      const updated = [video, ...prev];
+      safeSetStorage('uomboni_videos', updated);
+      pushEntityToServer('schoolVideos', updated);
+      return updated;
+    });
+    saveSchoolVideoToFirestore(video).catch((err) => console.warn('Firestore video save failed:', err));
+  };
+
+  const updateSchoolVideo = (video: SchoolVideo) => {
+    setSchoolVideos((prev) => {
+      const updated = prev.map((v) => (v.id === video.id ? video : v));
+      safeSetStorage('uomboni_videos', updated);
+      pushEntityToServer('schoolVideos', updated);
+      return updated;
+    });
+    saveSchoolVideoToFirestore(video).catch((err) => console.warn('Firestore video update failed:', err));
+  };
+
+  const deleteSchoolVideo = (id: string) => {
+    setSchoolVideos((prev) => {
+      const updated = prev.filter((v) => v.id !== id);
+      safeSetStorage('uomboni_videos', updated);
+      pushEntityToServer('schoolVideos', updated);
+      return updated;
+    });
+    deleteSchoolVideoFromFirestore(id).catch((err) => console.warn('Firestore video delete failed:', err));
+  };
+
+  const resetSchoolVideosToDefaults = () => {
+    setSchoolVideos(INITIAL_SCHOOL_VIDEOS);
+    safeSetStorage('uomboni_videos', INITIAL_SCHOOL_VIDEOS);
+    pushEntityToServer('schoolVideos', INITIAL_SCHOOL_VIDEOS);
+  };
+
   const submitInquiry = (inquiry: Omit<ParentInquiry, 'id' | 'createdAt' | 'status'>) => {
     const newInquiry: ParentInquiry = {
       ...inquiry,
@@ -2960,6 +3013,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('uomboni_payments');
     localStorage.removeItem('uomboni_docs');
     localStorage.removeItem('uomboni_gallery');
+    localStorage.removeItem('uomboni_videos');
     localStorage.removeItem('uomboni_inquiries');
     localStorage.removeItem('uomboni_alerts');
     localStorage.removeItem('uomboni_bank_accounts');
@@ -3090,6 +3144,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bulkReplaceGalleryPhotos,
         resetGalleryToDefaults,
         deleteGalleryPhoto,
+        schoolVideos,
+        addSchoolVideo,
+        updateSchoolVideo,
+        deleteSchoolVideo,
+        resetSchoolVideosToDefaults,
         parentInquiries,
         submitInquiry,
         updateInquiryStatus,
