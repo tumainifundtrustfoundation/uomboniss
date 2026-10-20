@@ -230,8 +230,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                   </div>
                 </div>
 
-                <p className="text-[11px] text-amber-200/90 font-medium pt-1">
-                  Misingi ya Shule: <span className="font-black text-white">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
+                <p className="text-[11px] text-amber-200/90 font-medium pt-1 break-words leading-relaxed">
+                  Misingi ya Shule: <span className="font-black text-white break-words">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
                 </p>
               </div>
             </div>
@@ -521,19 +521,19 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#102A43] text-white border-b border-[#102A43]/30">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300">
+            <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 bg-[#102A43] text-white border-b border-[#102A43]/30 gap-2">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300 shrink-0">
                   <FileText className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="font-serif text-sm sm:text-base font-bold text-white leading-tight">
+                <div className="min-w-0">
+                  <h3 className="font-serif text-xs sm:text-base font-bold text-white leading-tight truncate">
                     {language === 'sw'
-                      ? 'Nyaraka Rasmi: Tangazo na Mwongozo wa Shule'
-                      : 'Official Institutional Document & Prospectus'}
+                      ? 'Tangazo na Mwongozo wa Shule'
+                      : 'Official Document & Prospectus'}
                   </h3>
-                  <p className="text-[11px] text-amber-200/90 font-medium">
-                    UOMBONI SECONDARY SCHOOL · NECTA S0486 · MARANGU, MOSHI
+                  <p className="text-[10px] sm:text-[11px] text-amber-200/90 font-medium truncate">
+                    UOMBONI SECONDARY SCHOOL · NECTA S0486
                   </p>
                 </div>
               </div>

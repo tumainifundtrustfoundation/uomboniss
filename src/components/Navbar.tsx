@@ -106,36 +106,36 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full transition-all">
       {/* Top Institutional Header Bar */}
-      <div className="bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/20 text-[12px] py-1.5 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4 sm:gap-6">
-            <span className="hidden sm:inline-flex items-center gap-1.5 font-medium text-[#FFFFF0]/90">
-              <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
+      <div className="bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/20 text-[12px] py-1.5 px-3 sm:px-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <span className="hidden sm:inline-flex items-center gap-1.5 font-medium text-[#FFFFF0]/90 truncate">
+              <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
               Marangu, Moshi, Kilimanjaro
             </span>
-            <span className="inline-flex items-center gap-1.5 text-[#FFFFF0]/90">
-              <Phone className="w-3.5 h-3.5 text-[#C9A227]" />
+            <span className="inline-flex items-center gap-1.5 text-[#FFFFF0]/90 text-[11px] sm:text-[12px] shrink-0 font-medium">
+              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A227] shrink-0" />
               +255 782 558 127
             </span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-[#FFFFF0]/80">
-              <Mail className="w-3.5 h-3.5 text-[#C9A227]" />
+              <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
               uombonisec@gmail.com
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {onOpenNews && (
               <button
                 onClick={onOpenNews}
-                className="fire-news-btn liquid-btn inline-flex items-center gap-1.5 px-3.5 py-1 text-[11px] font-black text-white border border-amber-300/80 transition-all cursor-pointer group"
+                className="fire-news-btn liquid-btn inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 text-[10px] sm:text-[11px] font-black text-white border border-amber-300/80 transition-all cursor-pointer group"
                 title="Habari Mpya & Matangazo ya Shule (School Hot News)"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
+                <span className="relative z-10 flex items-center gap-1 sm:gap-1.5">
                   <span className="relative flex items-center justify-center">
                     <span className="absolute -inset-1 rounded-full bg-yellow-400 blur-xs opacity-75 animate-ping" />
                     <Flame className="w-3.5 h-3.5 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_6px_rgba(255,200,0,1)]" />
                   </span>
-                  <span className="drop-shadow-xs">{language === 'sw' ? 'Habari Mpya' : 'Hot News'}</span>
+                  <span className="drop-shadow-xs hidden xs:inline">{language === 'sw' ? 'Habari' : 'News'}</span>
                   <span className="px-1 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[8px] font-black uppercase">
                     HOT
                   </span>
@@ -159,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAdmissionDocuments}
                 id="topbar-student-admission-btn"
-                className="liquid-btn liquid-btn-red inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black text-white cursor-pointer shadow-md group"
+                className="liquid-btn liquid-btn-red hidden md:inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black text-white cursor-pointer shadow-md group"
                 title="Hati & Fomu Rasmi za Udahili (Student Admission)"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
@@ -168,17 +168,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
-            <PWAInstallButton variant="navbar" />
-            <span className="text-[11px] font-semibold tracking-wider text-[#C9A227]">
+            <PWAInstallButton variant="navbar" className="hidden sm:inline-flex" />
+            <span className="hidden lg:inline text-[11px] font-semibold tracking-wider text-[#C9A227]">
               NECTA CENTRE S0486
             </span>
-            <span className="text-[#FFFFF0]/30">|</span>
+            <span className="hidden lg:inline text-[#FFFFF0]/30">|</span>
             <button
               onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
-              className="liquid-btn liquid-btn-frosted inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 text-[#FFFFF0] cursor-pointer"
+              className="liquid-btn liquid-btn-frosted inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-bold px-2 sm:px-3 py-1 text-[#FFFFF0] cursor-pointer"
               title="Change Language"
             >
-              <span className="relative z-10 flex items-center gap-1.5">
+              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5">
                 <Globe className="w-3 h-3 text-[#C9A227]" />
                 <span>{language === 'sw' ? 'English' : 'Kiswahili'}</span>
               </span>
@@ -195,18 +195,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             : 'border-[#102A43]/10 py-3.5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2">
           {/* Logo & School Branding */}
           <button
             onClick={() => handleNavClick('home')}
-            className="flex items-center gap-3 text-left cursor-pointer group"
+            className="flex items-center gap-2 sm:gap-3 text-left cursor-pointer group min-w-0"
           >
-            <SchoolLogo size="md" />
-            <div>
-              <span className="block text-sm sm:text-base font-bold text-[#102A43] tracking-tight group-hover:text-[#102A43]/85 transition-colors">
+            <SchoolLogo size="md" className="shrink-0" />
+            <div className="min-w-0">
+              <span className="block text-xs xs:text-sm sm:text-base font-bold text-[#102A43] tracking-tight group-hover:text-[#102A43]/85 transition-colors truncate">
                 Uomboni Secondary School
               </span>
-              <span className="block text-[11px] text-[#C9A227] font-bold tracking-wide">
+              <span className="block text-[10px] sm:text-[11px] text-[#C9A227] font-bold tracking-wide truncate">
                 Tujiendeleze sisi wenyewe
               </span>
             </div>

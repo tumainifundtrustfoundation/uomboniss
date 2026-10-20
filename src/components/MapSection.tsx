@@ -73,59 +73,59 @@ export const MapSection: React.FC<MapSectionProps> = ({ onOpenAdmissions }) => {
         </div>
 
         {/* Quick Badges Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
-              <Mountain className="w-5 h-5 text-[#C9A227]" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-8">
+          <div className="p-2.5 sm:p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
+              <Mountain className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A227]" />
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                {language === 'sw' ? 'Mwinuko (Altitude)' : 'Elevation'}
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block truncate">
+                {language === 'sw' ? 'Mwinuko' : 'Elevation'}
               </span>
-              <span className="text-xs sm:text-sm font-extrabold text-[#102A43]">
-                1,450m juu ya usawa
-              </span>
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
-              <MapPin className="w-5 h-5 text-[#C9A227]" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                {language === 'sw' ? 'Mkoa & Wilaya' : 'Region & District'}
-              </span>
-              <span className="text-xs sm:text-sm font-extrabold text-[#102A43]">
-                Marangu, Moshi Vijijini
+              <span className="text-xs sm:text-sm font-extrabold text-[#102A43] truncate block">
+                1,450m ASL
               </span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 text-[#C9A227]" />
+          <div className="p-2.5 sm:p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A227]" />
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                {language === 'sw' ? 'Muda Kutoka Moshi' : 'From Moshi Town'}
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block truncate">
+                {language === 'sw' ? 'Eneo' : 'District'}
               </span>
-              <span className="text-xs sm:text-sm font-extrabold text-[#102A43]">
-                ~Dakika 40 - 50
+              <span className="text-xs sm:text-sm font-extrabold text-[#102A43] truncate block">
+                Marangu, Moshi
               </span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
-              <Building className="w-5 h-5 text-[#C9A227]" />
+          <div className="p-2.5 sm:p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A227]" />
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                {language === 'sw' ? 'Kituo cha NECTA' : 'NECTA Centre'}
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block truncate">
+                {language === 'sw' ? 'Muda' : 'Duration'}
               </span>
-              <span className="text-xs sm:text-sm font-extrabold text-[#102A43]">
-                CENTRE S0486
+              <span className="text-xs sm:text-sm font-extrabold text-[#102A43] truncate block">
+                ~45m Moshi
+              </span>
+            </div>
+          </div>
+
+          <div className="p-2.5 sm:p-3.5 rounded-xl bg-white border border-[#102A43]/15 shadow-xs flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#102A43]/10 text-[#102A43] flex items-center justify-center shrink-0">
+              <Building className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A227]" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block truncate">
+                {language === 'sw' ? 'NECTA' : 'NECTA'}
+              </span>
+              <span className="text-xs sm:text-sm font-extrabold text-[#102A43] truncate block font-mono">
+                S0486
               </span>
             </div>
           </div>
@@ -226,36 +226,36 @@ export const MapSection: React.FC<MapSectionProps> = ({ onOpenAdmissions }) => {
                 S.L.P 361 au S.L.P 293 Marangu, Moshi Vijijini, Mkoani Kilimanjaro.
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <a
                   href={googleMapsDirectionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer min-h-[40px]"
                 >
-                  <Navigation className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>{language === 'sw' ? 'Pata Maelekezo (Directions)' : 'Get Directions'}</span>
+                  <Navigation className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
+                  <span>{language === 'sw' ? 'Maelekezo (Directions)' : 'Get Directions'}</span>
                 </a>
 
                 <a
                   href={googleMapsSearchUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-[#C9A227] hover:bg-[#b08d20] text-[#102A43] text-xs font-black flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 rounded-xl bg-[#C9A227] hover:bg-[#b08d20] text-[#102A43] text-[11px] sm:text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer min-h-[40px]"
                 >
-                  <span>{language === 'sw' ? 'Fungua Google Maps' : 'Open in Google Maps'}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Google Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </a>
 
                 <a
                   href={appleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer min-h-[40px]"
                   title="Fungua kwenye Apple Maps (iOS / Mac)"
                 >
                   <span>Apple Maps</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500 shrink-0" />
                 </a>
               </div>
             </div>

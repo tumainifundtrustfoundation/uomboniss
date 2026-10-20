@@ -79,7 +79,7 @@ export const LeadershipTeachersSection: React.FC = () => {
     return (
       <div
         key={`${teacher.id}${keySuffix}`}
-        className="w-[280px] sm:w-[310px] shrink-0 bg-white rounded-2xl border border-[#102A43]/15 overflow-hidden shadow-xs hover:shadow-xl hover:border-amber-400/80 transition-all duration-300 flex flex-col justify-between group"
+        className="w-[260px] sm:w-[310px] shrink-0 bg-white rounded-2xl border border-[#102A43]/15 overflow-hidden shadow-xs hover:shadow-xl hover:border-amber-400/80 transition-all duration-300 flex flex-col justify-between group"
       >
         {/* 1. Picha ya Mwalimu (Teacher Photograph) */}
         <div className="aspect-4/3 w-full overflow-hidden bg-slate-100 relative">
@@ -284,7 +284,7 @@ export const LeadershipTeachersSection: React.FC = () => {
           </div>
 
           {/* Quick Flow Guide & Indicator */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-3 px-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] text-slate-500 pt-3 px-2">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>

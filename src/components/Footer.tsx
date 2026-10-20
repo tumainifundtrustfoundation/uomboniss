@@ -85,20 +85,20 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
 
             <div className="pt-2 text-xs space-y-2.5 text-[#FFFFF0]/80">
-              <div className="flex items-start gap-2.5">
+              <div className="flex items-start gap-2.5 min-w-0">
                 <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
-                <div className="leading-snug">
+                <div className="leading-snug min-w-0">
                   <span className="block font-semibold text-white">Uomboni Secondary School</span>
-                  <span className="text-[#FFFFF0]/85">P.O. Box 361, Marangu - Moshi, Tanzania</span>
+                  <span className="text-[#FFFFF0]/85 break-words">P.O. Box 361, Marangu - Moshi, Tanzania</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="tel:+255767207688" className="hover:text-[#C9A227] transition-colors font-mono">0767 207 688 / +255 782 558 127</a>
+                <a href="tel:+255767207688" className="hover:text-[#C9A227] transition-colors font-mono break-words">0767 207 688 / +255 782 558 127</a>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="mailto:uombonisecondary@gmail.com" className="hover:text-[#C9A227] transition-colors font-mono">uombonisecondary@gmail.com</a>
+                <a href="mailto:uombonisecondary@gmail.com" className="hover:text-[#C9A227] transition-colors font-mono break-all">uombonisecondary@gmail.com</a>
               </div>
             </div>
 
@@ -363,12 +363,12 @@ export const Footer: React.FC<FooterProps> = ({
 
       {/* Bottom Copyright Bar */}
       <div className="border-t border-white/10 bg-[#0A1C2E] py-6 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FFFFF0]/70">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FFFFF0]/70 text-center sm:text-left">
           <div>
             &copy; 2026 Uomboni Secondary School. All Rights Reserved.
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <span>NECTA Registration: S0486</span>
             <button
               onClick={scrollToTop}
