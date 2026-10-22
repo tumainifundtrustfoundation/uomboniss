@@ -24,6 +24,8 @@ import {
   FirestoreAnnouncement,
   FirestoreSchoolSettings,
   SchoolVideo,
+  StudentResult,
+  OnlineApplication,
 } from '../types';
 
 // ==========================================
@@ -782,4 +784,121 @@ export async function deleteSchoolVideoFromFirestore(videoId: string): Promise<b
     return false;
   }
 }
+
+// ==========================================
+// 12. CENTRALIZED SCHOOL DATA (school_data/live) & RESULTS
+// Direct Google Cloud Firestore synchronization for GitHub / Vercel production hosting
+// ==========================================
+
+export async function saveLiveSchoolDataToFirestore(key: string, data: any): Promise<boolean> {
+  try {
+    const docRef = doc(db, 'school_data', key);
+    await setDoc(docRef, {
+      key,
+      data,
+      updatedAt: new Date().toISOString(),
+      timestamp: Date.now(),
+    }, { merge: true });
+    return true;
+  } catch (err: any) {
+    console.warn(`[Firestore Persistence] Could not save ${key} to school_data:`, err?.message || err);
+    return false;
+  }
+}
+
+export async function getLiveSchoolDataFromFirestore(): Promise<Record<string, any> | null> {
+  try {
+    const snap = await getDocs(collection(db, 'school_data'));
+    if (snap.empty) return null;
+    const result: Record<string, any> = {};
+    snap.docs.forEach((d) => {
+      const docData = d.data();
+      if (docData && docData.data !== undefined) {
+        result[d.id] = docData.data;
+      }
+    });
+    return result;
+  } catch (err: any) {
+    console.warn('[Firestore Persistence] Could not fetch live school_data collection:', err?.message || err);
+    return null;
+  }
+}
+
+export async function saveStudentResultsBatchToFirestore(results: StudentResult[]): Promise<boolean> {
+  if (!Array.isArray(results) || results.length === 0) return true;
+  try {
+    // 1. Save full array snapshot into school_data/studentResults
+    await saveLiveSchoolDataToFirestore('studentResults', results);
+
+    // 2. Also save into results collection for individual query ability
+    const chunk = results.slice(0, 100);
+    const promises = chunk.map((r) => {
+      const cleanNum = (r.examNumber || 'UNKNOWN').replace(/[^a-zA-Z0-9]/g, '_');
+      const cleanExam = (r.examType || 'EXAM').replace(/[^a-zA-Z0-9]/g, '_');
+      const safeId = r.id || `${r.form || 'F'}_${cleanExam}_${cleanNum}`;
+      return setDoc(doc(db, 'results', safeId), {
+        ...r,
+        id: safeId,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true }).catch((e) => {
+        console.warn('Doc write failed for result:', safeId, e?.message);
+      });
+    });
+    await Promise.all(promises);
+    return true;
+  } catch (err: any) {
+    console.warn('[Firestore Persistence] Error saving student results batch:', err?.message || err);
+    return false;
+  }
+}
+
+export async function getStudentResultsFromFirestore(): Promise<StudentResult[] | null> {
+  try {
+    // First try the primary live snapshot document
+    const snapDoc = await getDoc(doc(db, 'school_data', 'studentResults'));
+    if (snapDoc.exists()) {
+      const docData = snapDoc.data();
+      if (docData && Array.isArray(docData.data) && docData.data.length > 0) {
+        return docData.data as StudentResult[];
+      }
+    }
+
+    // Secondary fallback: query results collection
+    const snap = await getDocs(collection(db, 'results'));
+    if (!snap.empty) {
+      return snap.docs.map((d) => ({ ...d.data(), id: d.id } as StudentResult));
+    }
+
+    return null;
+  } catch (err: any) {
+    console.warn('[Firestore Persistence] Could not load results from Firestore:', err?.message || err);
+    return null;
+  }
+}
+
+export async function saveApplicationsToFirestore(apps: OnlineApplication[]): Promise<boolean> {
+  try {
+    await saveLiveSchoolDataToFirestore('applications', apps);
+    return true;
+  } catch (err) {
+    console.warn('Could not save applications to Firestore:', err);
+    return false;
+  }
+}
+
+export async function getApplicationsFromFirestore(): Promise<OnlineApplication[] | null> {
+  try {
+    const snapDoc = await getDoc(doc(db, 'school_data', 'applications'));
+    if (snapDoc.exists()) {
+      const docData = snapDoc.data();
+      if (docData && Array.isArray(docData.data)) {
+        return docData.data as OnlineApplication[];
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+}
+
 

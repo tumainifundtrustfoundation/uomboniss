@@ -294,7 +294,7 @@ export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
     id: 'bank-001',
     bankName: 'CRDB Bank Plc',
     accountName: 'UOMBONI SECONDARY SCHOOL',
-    accountNumber: '01J1079051400',
+    accountNumber: '0150283084300',
     branch: 'Marangu Branch / Moshi Main Branch',
     swiftCode: 'CORUTZTZ',
     type: 'Ada ya Shule (School Fees)',

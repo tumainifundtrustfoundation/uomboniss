@@ -37,6 +37,7 @@ import { InstallAppModal } from './components/InstallAppModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { FAQSection } from './components/FAQSection';
 import { MapSection } from './components/MapSection';
+import { OfficialSchoolAccreditationBanner } from './components/OfficialSchoolAccreditationBanner';
 
 // Auth Views
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -410,6 +411,7 @@ function MainSchoolApp() {
       <div className="min-h-screen bg-[#F8FAFC]">
         <AdmissionDocumentsPage
           onBackToHome={() => {
+            closeAllModals();
             setActiveView('website');
             window.location.hash = '';
           }}
@@ -422,6 +424,24 @@ function MainSchoolApp() {
             isOpen={isInstallModalOpen}
             onClose={() => setIsInstallModalOpen(false)}
           />
+        )}
+        {isAdmissionsModalOpen && (
+          <Suspense fallback={<ModalFallback />}>
+            <ApplyNowModal
+              isOpen={isAdmissionsModalOpen}
+              onClose={() => setIsAdmissionsModalOpen(false)}
+            />
+          </Suspense>
+        )}
+        {isAdminModalOpen && (
+          <Suspense fallback={<ModalFallback />}>
+            <AdminPortalModal
+              isOpen={isAdminModalOpen}
+              onClose={() => setIsAdminModalOpen(false)}
+              onOpenBursar={handleOpenBursarModal}
+              onOpenAcademic={(role) => handleOpenAcademicPortal(role)}
+            />
+          </Suspense>
         )}
       </div>
     );
@@ -479,6 +499,18 @@ function MainSchoolApp() {
             closeAllModals();
             setActiveView('admission-documents');
             window.location.hash = '#admission-documents';
+          }}
+        />
+
+        {/* 1.5 Official School Accreditation & Anti-Fraud Verification Banner */}
+        <OfficialSchoolAccreditationBanner
+          onOpenResults={() => {
+            closeAllModals();
+            setIsNectaResultsOpen(true);
+          }}
+          onOpenAdmissions={() => {
+            closeAllModals();
+            setIsAdmissionsModalOpen(true);
           }}
         />
 

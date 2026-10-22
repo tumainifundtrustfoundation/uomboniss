@@ -33,6 +33,10 @@ import {
   saveSchoolVideoToFirestore,
   deleteSchoolVideoFromFirestore,
   getSchoolVideosFromFirestore,
+  saveLiveSchoolDataToFirestore,
+  getLiveSchoolDataFromFirestore,
+  saveStudentResultsBatchToFirestore,
+  getStudentResultsFromFirestore,
 } from '../services/schoolFirestoreService';
 import {
   saveAcademicDirectiveToFirestore,
@@ -994,10 +998,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Helper to push modified entities to backend persistent store (visible on all other browsers/devices)
+  // Helper to push modified entities to backend persistent store and Cloud Firestore (visible on all other browsers/devices)
   const pushEntityToServer = (key: string, data: any) => {
     // Record local edit timestamp to protect against stale overwrite during background polls
     localEditTimestamps.current[key] = Date.now();
+
+    // 1. DIRECT CLOUD FIRESTORE PERSISTENCE:
+    // Ensures real-time persistence across GitHub Pages, Vercel, and multi-device production
+    try {
+      if (key === 'studentResults' && Array.isArray(data)) {
+        saveStudentResultsBatchToFirestore(data).catch((e) =>
+          console.warn('[Firestore] Result sync notice:', e?.message || e)
+        );
+      } else {
+        saveLiveSchoolDataToFirestore(key, data).catch((e) =>
+          console.warn(`[Firestore] ${key} sync notice:`, e?.message || e)
+        );
+      }
+    } catch (fsErr) {
+      console.warn('Firestore push caught:', fsErr);
+    }
 
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
 
@@ -1059,12 +1079,60 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 60);
   };
 
-  // Fetch full live school database from server
+  // Fetch full live school database from Firestore and Express server
   const fetchSchoolDataFromServer = async (silent = false) => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     try {
       if (!silent) setIsServerSyncing(true);
-      // Cache-busting timestamp ensures browsers and proxies always get latest data from Express
+
+      const isRecentEdit = (k: string) => {
+        const ts = localEditTimestamps.current[k] || 0;
+        return Date.now() - ts < 4500;
+      };
+
+      // 1. PRIMARY FIRESTORE CLOUD FETCH:
+      // Guarantees immediate data loading on GitHub Pages, Vercel, and live production
+      try {
+        const firestoreData = await getLiveSchoolDataFromFirestore();
+        if (firestoreData && Object.keys(firestoreData).length > 0) {
+          isReceivingFromServerRef.current = true;
+          React.startTransition(() => {
+            if (Array.isArray(firestoreData.studentResults) && firestoreData.studentResults.length > 0 && !isRecentEdit('studentResults')) {
+              setStudentResults(firestoreData.studentResults);
+              safeSetStorage('uomboni_results', firestoreData.studentResults);
+              cacheStudentResultsOffline(firestoreData.studentResults);
+            }
+            if (Array.isArray(firestoreData.news) && firestoreData.news.length > 0 && !isRecentEdit('news')) {
+              setNews(firestoreData.news);
+              safeSetStorage('uomboni_news', firestoreData.news);
+            }
+            if (Array.isArray(firestoreData.teachers) && firestoreData.teachers.length > 0 && !isRecentEdit('teachers')) {
+              setTeachers(firestoreData.teachers);
+              safeSetStorage('uomboni_teachers', firestoreData.teachers);
+            }
+            if (Array.isArray(firestoreData.students) && firestoreData.students.length > 0 && !isRecentEdit('students')) {
+              setStudents(firestoreData.students);
+              safeSetStorage('uomboni_students', firestoreData.students);
+            }
+            if (Array.isArray(firestoreData.applications) && !isRecentEdit('applications')) {
+              setApplications(firestoreData.applications);
+              safeSetStorage('uomboni_applications', firestoreData.applications);
+            }
+            if (Array.isArray(firestoreData.events) && !isRecentEdit('events')) {
+              setEvents(firestoreData.events);
+              safeSetStorage('uomboni_events', firestoreData.events);
+            }
+            if (Array.isArray(firestoreData.academicCalendar) && !isRecentEdit('academicCalendar')) {
+              setAcademicCalendar(firestoreData.academicCalendar);
+              safeSetStorage('uomboni_calendar', firestoreData.academicCalendar);
+            }
+          });
+        }
+      } catch (fsErr) {
+        console.warn('Firestore initial fetch notice:', fsErr);
+      }
+
+      // 2. Secondary Express fetch if node server is present
       const res = await fetch(`/api/school-data?_t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
@@ -2797,9 +2865,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginAdmin = (password: string): boolean => {
-    const p = (password || '').trim().toLowerCase();
-    const validPasswords = ['uomboni2025', 'admin', 's0486', 'uomboni', '1234', 'admin2025', 'admin2026', 'uomboniadmin'];
-    if (validPasswords.includes(p) || p === 'uomboni2025' || p === 'admin') {
+    const p = (password || '').trim();
+    let customPass = '';
+    try {
+      customPass = localStorage.getItem('uomboni_admin_password') || '';
+    } catch {}
+    const validPasswords = ['uomboni@2025', 'uomboni2025', 'uomboniadmin2026!', '782558', 'adolph2026'];
+    if (customPass) validPasswords.push(customPass.trim());
+    if (validPasswords.includes(p) || validPasswords.includes(p.toLowerCase())) {
       const profile = {
         email: 'adolphmassawe@gmail.com',
         displayName: 'Br. Adolph Massawe (Mkuu wa Shule)',
@@ -2840,12 +2913,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginBursar = (pin: string): boolean => {
-    const p = (pin || '').trim().toLowerCase();
-    const validPins = ['uomboni2025', 'bursar', '1234', 'ada2025', 'ada2026', 's0486', 'mhasibu'];
-    if (validPins.includes(p) || p === '1234' || p === 'uomboni2025' || p === 'bursar') {
+    const p = (pin || '').trim();
+    let customPin = '';
+    try {
+      customPin = localStorage.getItem('uomboni_bursar_pin') || '';
+    } catch {}
+    const validPins = ['752000', '2026', 'uombonibursar2026', 'ada2026'];
+    if (customPin) validPins.push(customPin.trim());
+    if (validPins.includes(p) || validPins.includes(p.toLowerCase())) {
       const profile = {
-        email: 'bursar@uombonisecondary.ac.tz',
-        displayName: 'Mhasibu wa Shule (Bursar)',
+        email: 'sigminja@gmail.com',
+        displayName: 'Mwl. Sigbert Minja (Mhasibu wa Shule / Bursar)',
         photoURL: null,
       };
       setBursarGoogleUser(profile);

@@ -230,8 +230,8 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#704214]/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200">
-      <div className="bg-[#FFFFF0] rounded-xl shadow-2xl w-full max-w-7xl max-h-[94vh] flex flex-col border border-[#704214]/30 overflow-hidden text-[#704214]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#102A43]/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200">
+      <div className="bg-[#FFFFF0] rounded-xl shadow-2xl w-full max-w-7xl max-h-[94vh] flex flex-col border border-[#102A43]/20 overflow-hidden text-[#102A43]">
 
         {/* ========================================================= */}
         {/* VIEW 1: PARENT LOGIN GATE (Enter Child's Full Name)        */}
@@ -241,7 +241,7 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
             <div className="w-full flex justify-end">
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-[#704214]/70 hover:text-[#704214] hover:bg-[#F5EBD7] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                 aria-label="Funga"
               >
                 <X className="w-5 h-5" />
@@ -249,24 +249,24 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
             </div>
 
             <div className="text-center space-y-2 max-w-md">
-              <div className="w-16 h-16 rounded-2xl bg-[#704214] text-[#C9A227] flex items-center justify-center mx-auto shadow-md p-1 border border-[#C9A227]/40">
+              <div className="w-16 h-16 rounded-2xl bg-[#102A43] text-[#C9A227] flex items-center justify-center mx-auto shadow-md p-1 border border-[#C9A227]/40">
                 <SchoolLogo size="md" />
               </div>
-              <h2 className="font-serif text-xl sm:text-2xl font-black text-[#704214]">
+              <h2 className="font-serif text-xl sm:text-2xl font-black text-[#102A43]">
                 Portal ya Mzazi na Mlezi (Parent Portal)
               </h2>
-              <p className="text-xs text-[#704214]/80">
+              <p className="text-xs text-slate-600">
                 Shule ya Sekondari Uomboni • NECTA Centre S0486
               </p>
             </div>
 
-            <div className="w-full max-w-md bg-white p-6 sm:p-7 rounded-2xl border border-[#704214]/20 shadow-sm space-y-5">
-              <div className="p-3.5 rounded-xl bg-[#F5EBD7] border border-[#704214]/20 text-[#704214] text-xs font-medium space-y-1">
-                <div className="font-bold flex items-center gap-1.5 text-[#704214]">
-                  <ShieldCheck className="w-4 h-4 text-[#C9A227]" />
+            <div className="w-full max-w-md bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+              <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs font-medium space-y-1">
+                <div className="font-bold flex items-center gap-1.5 text-blue-900">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
                   <span>Faragha ya Matokeo (Student Privacy):</span>
                 </div>
-                <p className="text-[11px] text-[#704214]/90 leading-relaxed">
+                <p className="text-[11px] text-blue-800 leading-relaxed">
                   Tafadhali ingiza <strong>Jina Kamili la Mwanao (Full Name)</strong> kama lilivyosajiliwa shuleni.
                   Kulingana na kanuni za usalama wa taarifa, utaona <strong>matokeo na taarifa za mwanao tu na si vinginevyo</strong>.
                 </p>
@@ -281,7 +281,7 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
 
               <form onSubmit={handleParentLogin} className="space-y-4">
                 <div>
-                  <label className="font-bold text-xs text-[#704214] block mb-1.5">
+                  <label className="font-bold text-xs text-slate-800 block mb-1.5">
                     Jina Kamili la Mwanao (Child's Full Name) *
                   </label>
                   <input
@@ -293,17 +293,17 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                       setParentLoginError(null);
                     }}
                     placeholder="Mfano: BARAKA JOHN KIMARO au BRAYAN RUMISHAEL URIO"
-                    className="w-full px-4 py-3 rounded-xl border border-[#704214]/30 text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#704214] focus:border-[#704214] transition-all bg-[#FFFFF0]"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#102A43] focus:border-[#102A43] transition-all bg-[#FFFFF0]/40"
                     autoFocus
                   />
-                  <p className="text-[10px] text-[#704214]/70 mt-1">
+                  <p className="text-[10px] text-slate-500 mt-1">
                     Andika majina matatu (Jina la Kwanza, Jina la Kati, na Jina la Ukoo).
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 rounded-xl bg-[#704214] hover:bg-[#58330F] text-[#FFFFF0] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl bg-[#102A43] hover:bg-[#0A1C2E] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-[#C9A227]" />
                   <span>Ingia Kwenye Portal ya Mzazi</span>
@@ -311,29 +311,15 @@ export const ParentPortalModal: React.FC<ParentPortalModalProps> = ({
                 </button>
               </form>
 
-              {/* Sample Quick Login Chips */}
-              <div className="pt-4 border-t border-[#704214]/10 space-y-2">
-                <span className="text-[11px] font-bold text-[#704214]/70 block uppercase tracking-wider">
-                  Mifano ya Wanafunzi (Bofya Kujaribu Haraka):
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    'Brayan Rumishael Urio',
-                    'Baraka John Kimaro',
-                    'Neema Joseph Mushi',
-                    'Amani Charles Shirima',
-                    'David Maka Kasimoto',
-                  ].map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => quickParentLogin(name)}
-                      className="px-2.5 py-1 rounded-lg bg-[#F5EBD7] hover:bg-[#ebdcc0] text-[#704214] text-[11px] font-semibold transition-colors cursor-pointer border border-[#704214]/20"
-                    >
-                      {name}
-                    </button>
-                  ))}
+              {/* Official Parent Security & Anti-Fraud Guarantee */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Uthibitisho Rasmi wa Usalama kwa Wazazi (Parent Security Guarantee)</span>
                 </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  Mfumo huu unahakikisha kwamba mzazi anaona ripoti za mwanae pekee kwa ulinzi mkali wa faragha. Kwa usaidizi wa akaunti yako ya mzazi au masuala ya ada, wasiliana moja kwa moja na Mhasibu wa Shule: <strong className="text-slate-800">+255 752 000 939</strong> au Mkuu wa Shule: <strong className="text-slate-800">+255 782 558 127</strong>.
+                </p>
               </div>
             </div>
           </div>

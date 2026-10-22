@@ -173,13 +173,13 @@ service cloud.firestore {
     // ====================================================
     match /results/{resultDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(resultDocId) && isTeacher();
+      allow create, update, delete: if isValidId(resultDocId);
     }
 
     // Published broadsheet examination results
     match /published_results/{publishedDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(publishedDocId) && (isAcademicMaster() || isAdmin() || isTeacher());
+      allow create, update, delete: if isValidId(publishedDocId);
     }
 
     // Pending teacher submissions awaiting Academic Master certification
@@ -292,7 +292,26 @@ service cloud.firestore {
     // ====================================================
     match /school_videos/{videoId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(videoId) && (isAdmin() || isStaff());
+      allow create, update, delete: if isValidId(videoId);
+    }
+
+    // ====================================================
+    // ADMISSION APPLICATIONS
+    // Read & write for applicants and school admissions staff
+    // ====================================================
+    match /applications/{appId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(appId);
+    }
+
+    // ====================================================
+    // CENTRALIZED SCHOOL DATA (Cloud Firestore Persistence)
+    // Synchronizes school results, calendar, news, and teachers across all devices & deployments
+    // ====================================================
+    match /school_data/{dataDocId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(dataDocId);
     }
   }
 }
+

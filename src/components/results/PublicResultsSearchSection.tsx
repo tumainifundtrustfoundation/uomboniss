@@ -219,7 +219,7 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-700 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>{language === 'sw' ? 'Watahiniwa wa Mfano (Bofya Kuona Matokeo Papo Hapo):' : 'Quick Select Candidates (Click to View Instantly):'}</span>
+              <span>{language === 'sw' ? 'Watahiniwa Waliofanya Vizuri CSEE & CSSC (Kituo S0486):' : 'Top Performing Candidates (Center S0486):'}</span>
             </span>
             <span className="text-[11px] text-slate-500 font-mono">
               {studentResults.length} {language === 'sw' ? 'Watahiniwa Hewani' : 'Published Candidates'}

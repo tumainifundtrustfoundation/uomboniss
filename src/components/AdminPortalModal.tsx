@@ -1416,7 +1416,7 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
                   </button>
                 </div>
                 <p className="mt-1.5 text-[11px] text-slate-400">
-                  {language === 'sw' ? 'Nenosiri la mfumo wa utawala: "admin" au "uomboni"' : 'Passcode for administration: "admin" or "uomboni"'}
+                  {language === 'sw' ? 'Weka nenosiri rasmi lililotolewa na Mkuu wa Shule au IT Unit ya Shule' : 'Enter authorized security passcode issued by the Headmaster’s Office or IT Unit'}
                 </p>
               </div>
 

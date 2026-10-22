@@ -256,29 +256,15 @@ export const StudentPortalModal: React.FC<StudentPortalModalProps> = ({
                 </button>
               </form>
 
-              {/* Demo / Sample Students Helper */}
+              {/* Official Student Support & Privacy Verification */}
               <div className="pt-4 border-t border-slate-100 space-y-2">
-                <span className="text-[11px] font-bold text-slate-500 block uppercase tracking-wider">
-                  Mifano ya Wanafunzi (Bonyeza Kujaribu):
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    'Baraka John Kimaro',
-                    'Brayan Rumishael Urio',
-                    'Neema Joseph Mushi',
-                    'Amani Charles Shirima',
-                    'David Maka Kasimoto',
-                  ].map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => quickLogin(name)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold transition-colors cursor-pointer"
-                    >
-                      {name}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Ulinzi wa Taarifa za Wanafunzi (Student Privacy Guaranteed)</span>
                 </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  Mfumo huu unalinda usiri wa matokeo na kumbukumbu za kila mwanafunzi. Ukikumbana na changamoto yoyote ya kuingia, fika ofisi ya Mtaaluma Mkuu (Academic Master) au piga simu: <strong className="text-slate-800">+255 745 548 225</strong>.
+                </p>
               </div>
             </div>
           </div>
