@@ -28,7 +28,8 @@ import {
   ExternalLink,
   ChevronRight,
   BookOpen,
-  Send
+  Send,
+  FolderOpen
 } from 'lucide-react';
 
 interface AdmissionDocumentsPageProps {
@@ -398,6 +399,20 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
                           <span>Pakua PDF</span>
                         </button>
                       </div>
+
+                      {doc.googleDriveUrl && (
+                        <a
+                          href={doc.googleDriveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                          title="Fungua hati hii kupitia Google Drive"
+                        >
+                          <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Fungua Kupitia Google Drive</span>
+                          <ExternalLink className="w-3 h-3 text-blue-600" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>

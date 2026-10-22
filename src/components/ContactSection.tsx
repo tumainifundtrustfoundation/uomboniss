@@ -63,15 +63,15 @@ export const ContactSection: React.FC = () => {
                 <div className="w-9 h-9 rounded-md bg-[#FFFFF0] border border-[#C9A227]/40 flex items-center justify-center text-[#102A43] shrink-0 mt-0.5">
                   <Phone className="w-4 h-4 text-[#102A43]" />
                 </div>
-                <div className="min-w-0 flex-1">
+                <div>
                   <span className="text-xs font-bold text-[#102A43] block">Telephone Hotlines</span>
-                  <div className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1 font-mono font-medium break-words">
-                    <span className="block text-[#102A43] font-bold">0767 207 688 (Simu Kuu / Official)</span>
-                    <span className="block">+255 752 000 939 (Admissions)</span>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1 font-mono font-medium">
+                    <span className="block text-[#102A43] font-bold">0767 207 688 (Simu Kuu ya Shule / Official Line)</span>
+                    <span className="block">+255 752 000 939 (Admissions Desk)</span>
                     <span className="block">+255 782 558 127 (Headmaster)</span>
                     <span className="block">+255 754 532 949 (Second Master)</span>
                     <span className="block">+255 745 548 225 (Academic Master)</span>
-                  </div>
+                  </p>
                 </div>
               </div>
 
@@ -80,13 +80,13 @@ export const ContactSection: React.FC = () => {
                 <div className="w-9 h-9 rounded-md bg-[#FFFFF0] border border-[#C9A227]/40 flex items-center justify-center text-[#102A43] shrink-0 mt-0.5">
                   <Mail className="w-4 h-4 text-[#102A43]" />
                 </div>
-                <div className="min-w-0 flex-1">
+                <div>
                   <span className="text-xs font-bold text-[#102A43] block">Official Email &amp; Web</span>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 font-mono break-all">
-                    <strong className="text-[#102A43] block">uombonisecondary@gmail.com</strong>
-                    <span className="block">info@uomboniss.ac.tz</span>
-                    <span className="block">uombonisec@gmail.com</span>
-                    <span className="text-xs text-[#102A43] font-semibold block">www.uomboniss.ac.tz</span>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-0.5 font-mono">
+                    <strong className="text-[#102A43]">uombonisecondary@gmail.com</strong><br />
+                    info@uomboniss.ac.tz<br />
+                    uombonisec@gmail.com<br />
+                    <span className="text-xs text-[#102A43] font-semibold">www.uomboniss.ac.tz</span>
                   </p>
                 </div>
               </div>

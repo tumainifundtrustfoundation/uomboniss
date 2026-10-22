@@ -14,12 +14,17 @@ import {
   KeyRound,
   User,
   ExternalLink,
+  GraduationCap,
+  Users,
+  BookOpen,
+  Phone,
 } from 'lucide-react';
 import { SchoolLogo } from '../SchoolLogo';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { sendResetPassword } from '../../lib/firebase';
 import { checkServerSecurityStatus } from '../../services/authSecurityClient';
+import { detectUserRoleFromIdentifier } from '../../utils/userRoleDetector';
 
 export const LoginPage: React.FC = () => {
   const { login, loginWithGoogleAuth, loginWithDemoRole, loading: authLoading, setActiveView } = useAuth();
@@ -40,6 +45,9 @@ export const LoginPage: React.FC = () => {
 
   // Demo Accounts Drawer
   const [showDemoAccounts, setShowDemoAccounts] = useState(false);
+
+  // Real-time automatic identity and role recognition
+  const detectedRole = detectUserRoleFromIdentifier(identifier);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,19 +212,47 @@ export const LoginPage: React.FC = () => {
       {/* Main Center Area */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10">
         
-        {/* Title Exactly Matching User Screenshot: "Animated Embossed Login" */}
-        <div className="text-center mb-6 sm:mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+        {/* Title & Institutional Subtitle */}
+        <div className="text-center mb-5 sm:mb-7 animate-in fade-in slide-in-from-top-4 duration-500 max-w-xl px-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-bold mb-2 shadow-xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#2563eb]" />
+            <span>Lango Moja Kuu: Wazazi · Wanafunzi · Walimu · Utawala</span>
+          </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#d63031] tracking-wide drop-shadow-xs">
             Animated Embossed Login
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            Shule ya Sekondari Uomboni · Mfumo Salama wa Kuingia
+            Shule ya Sekondari Uomboni · Mfumo unamtambua mtumiaji moja kwa moja
           </p>
         </div>
 
+        {/* Real-time Role Recognition Notification Banner (Visible when typing) */}
+        {identifier.trim().length > 0 && (
+          <div
+            className={`w-full max-w-sm mb-4 p-2.5 sm:p-3 rounded-2xl border text-xs flex items-center justify-between gap-2 shadow-sm animate-in zoom-in-95 duration-150 ${detectedRole.bgLight} ${detectedRole.borderLight} ${detectedRole.textLight}`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base shrink-0 select-none">
+                {detectedRole.role === 'admin' && '👑'}
+                {detectedRole.role === 'teacher' && '👨‍🏫'}
+                {detectedRole.role === 'parent' && '👨‍👩‍👧'}
+                {detectedRole.role === 'student' && '🎓'}
+                {detectedRole.role === 'bursar' && '💳'}
+              </span>
+              <div className="min-w-0 text-left">
+                <div className="font-extrabold truncate text-xs">{detectedRole.labelSw}</div>
+                <div className="text-[10px] opacity-80 truncate">{detectedRole.descriptionSw}</div>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/70 shadow-2xs shrink-0">
+              Inatambuliwa
+            </span>
+          </div>
+        )}
+
         {/* Error Alert Box (if any) */}
         {errorMessage && (
-          <div className="w-full max-w-sm mb-5 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 shadow-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 shadow-sm animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1 font-semibold">{errorMessage}</div>
             <button
@@ -229,18 +265,18 @@ export const LoginPage: React.FC = () => {
         )}
 
         {/* Center Circular Embossed Disc (Matching User Graphic) */}
-        <div className="relative animate-float-gentle">
-          <div className="neumorph-circle w-[320px] h-[320px] sm:w-[390px] sm:h-[390px] md:w-[420px] md:h-[420px] flex flex-col items-center justify-center p-6 sm:p-8 select-none">
+        <div className="relative animate-float-gentle max-w-full flex justify-center">
+          <div className="neumorph-circle w-[280px] h-[280px] xs:w-[320px] xs:h-[320px] sm:w-[390px] sm:h-[390px] md:w-[420px] md:h-[420px] max-w-[92vw] max-h-[92vw] flex flex-col items-center justify-center p-4 sm:p-8 select-none">
             
             {/* Header inside circle: SIGN IN */}
-            <h2 className="text-lg sm:text-2xl font-black text-[#2d3748] tracking-widest uppercase mb-5 sm:mb-6">
+            <h2 className="text-lg sm:text-2xl font-black text-[#2d3748] tracking-widest uppercase mb-4 sm:mb-5">
               SIGN IN
             </h2>
 
             {/* Embossed Form */}
-            <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3.5 sm:gap-4 w-full">
+            <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3 sm:gap-3.5 w-full">
               
-              {/* Field 1: Username (Inset / Debossed Pill) */}
+              {/* Field 1: Identifier (Username / Exam No / Parent Phone / Email) */}
               <div className="w-60 sm:w-72 relative">
                 <input
                   type="text"
@@ -248,11 +284,21 @@ export const LoginPage: React.FC = () => {
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Username"
+                  placeholder="Username, Simu ya Mzazi, au Namba"
                   disabled={isBusy}
                   className="neumorph-input w-full h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-medium pr-10"
                 />
-                <User className="w-4 h-4 text-slate-400 absolute right-4 top-3.5 sm:top-4 pointer-events-none" />
+                <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
+                  {detectedRole.role === 'parent' ? (
+                    <Phone className="w-4 h-4 text-amber-600" />
+                  ) : detectedRole.role === 'teacher' ? (
+                    <BookOpen className="w-4 h-4 text-blue-600" />
+                  ) : detectedRole.role === 'student' ? (
+                    <GraduationCap className="w-4 h-4 text-purple-600" />
+                  ) : (
+                    <User className="w-4 h-4" />
+                  )}
+                </div>
               </div>
 
               {/* Field 2: Password (Inset / Debossed Pill) */}
@@ -263,7 +309,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder="Password / PIN"
                   disabled={isBusy}
                   className="neumorph-input w-full h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-medium pr-10"
                 />
@@ -297,8 +343,7 @@ export const LoginPage: React.FC = () => {
                     </div>
                   ) : (
                     <span className="flex items-center gap-1.5">
-                      <span>Login</span>
-                      {/* Subtle pointer click icon like in graphic */}
+                      <span>Ingia ({detectedRole.role.toUpperCase()})</span>
                       <span className="text-[13px] opacity-80 select-none">👆</span>
                     </span>
                   )}
@@ -308,7 +353,7 @@ export const LoginPage: React.FC = () => {
             </form>
 
             {/* Quick Helper below Login inside or right below disc */}
-            <div className="mt-4 sm:mt-5 flex items-center gap-3 text-[11px]">
+            <div className="mt-3 sm:mt-4 flex items-center gap-3 text-[11px]">
               <button
                 type="button"
                 onClick={() => {

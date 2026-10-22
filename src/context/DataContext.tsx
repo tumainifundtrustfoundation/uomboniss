@@ -555,18 +555,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .catch((err) => console.warn('Could not load exam types from Firestore on mount:', err));
   }, []);
 
-  // Sync school videos from Firestore on mount
-  useEffect(() => {
-    getSchoolVideosFromFirestore()
-      .then((remoteList) => {
-        if (remoteList && remoteList.length > 0) {
-          setSchoolVideos(remoteList);
-          safeSetStorage('uomboni_videos', remoteList);
-        }
-      })
-      .catch((err) => console.warn('Could not load school videos from Firestore on mount:', err));
-  }, []);
-
   const [isOffline, setIsOffline] = useState<boolean>(() => {
     return typeof navigator !== 'undefined' ? !navigator.onLine : false;
   });
@@ -1228,7 +1216,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         paymentRecords,
         joiningDocs,
         galleryPhotos,
-        schoolVideos,
         applications,
         parentInquiries,
         resultsPdfDocuments,
@@ -1400,10 +1387,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     safeSetStorage('uomboni_gallery', galleryPhotos);
   }, [galleryPhotos]);
-
-  useEffect(() => {
-    safeSetStorage('uomboni_videos', schoolVideos);
-  }, [schoolVideos]);
 
   useEffect(() => {
     safeSetStorage('uomboni_inquiries', parentInquiries);
@@ -2586,9 +2569,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = [video, ...prev];
       safeSetStorage('uomboni_videos', updated);
       pushEntityToServer('schoolVideos', updated);
+      saveSchoolVideoToFirestore(video).catch(() => {});
       return updated;
     });
-    saveSchoolVideoToFirestore(video).catch((err) => console.warn('Firestore video save failed:', err));
   };
 
   const updateSchoolVideo = (video: SchoolVideo) => {
@@ -2596,9 +2579,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = prev.map((v) => (v.id === video.id ? video : v));
       safeSetStorage('uomboni_videos', updated);
       pushEntityToServer('schoolVideos', updated);
+      saveSchoolVideoToFirestore(video).catch(() => {});
       return updated;
     });
-    saveSchoolVideoToFirestore(video).catch((err) => console.warn('Firestore video update failed:', err));
   };
 
   const deleteSchoolVideo = (id: string) => {
@@ -2606,9 +2589,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = prev.filter((v) => v.id !== id);
       safeSetStorage('uomboni_videos', updated);
       pushEntityToServer('schoolVideos', updated);
+      deleteSchoolVideoFromFirestore(id).catch(() => {});
       return updated;
     });
-    deleteSchoolVideoFromFirestore(id).catch((err) => console.warn('Firestore video delete failed:', err));
   };
 
   const resetSchoolVideosToDefaults = () => {
@@ -2966,6 +2949,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pushEntityToServer('paymentRecords', SAMPLE_MOCK_PAYMENT_RECORDS);
     pushEntityToServer('joiningDocs', INITIAL_JOINING_DOCUMENTS);
     pushEntityToServer('galleryPhotos', INITIAL_GALLERY);
+    pushEntityToServer('schoolVideos', INITIAL_SCHOOL_VIDEOS);
     pushEntityToServer('alerts', INITIAL_ALERTS);
   };
 
@@ -2984,6 +2968,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPaymentRecords([]);
     setApplications([]);
     setGalleryPhotos([]);
+    setSchoolVideos([]);
 
     pushEntityToServer('studentResults', []);
     pushEntityToServer('resultsPdfDocuments', []);
@@ -2998,6 +2983,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pushEntityToServer('teachers', []);
     pushEntityToServer('paymentRecords', []);
     pushEntityToServer('galleryPhotos', []);
+    pushEntityToServer('schoolVideos', []);
 
     localStorage.removeItem('uomboni_results');
     localStorage.removeItem('uomboni_results_pdfs');

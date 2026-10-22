@@ -279,7 +279,7 @@ export const OfficialJoiningInstructions2027Viewer: React.FC<OfficialJoiningInst
             {/* Recipient Parent / Guardian Line */}
             <div className="pt-4 text-xs sm:text-sm">
               <span className="font-bold">MZAZI/MLEZI WA </span>
-              <strong className="border-b-2 border-dotted border-slate-600 pb-0.5 px-2 inline-block min-w-[280px] sm:min-w-[420px] text-slate-900 font-semibold">
+              <strong className="border-b-2 border-dotted border-slate-600 pb-0.5 px-2 inline-block min-w-[160px] max-w-full break-words sm:min-w-[420px] text-slate-900 font-semibold">
                 {parentName ? `${parentName} (wa ${studentName || 'Mwanafunzi'})` : '..................................................................................................................'}
               </strong>
             </div>

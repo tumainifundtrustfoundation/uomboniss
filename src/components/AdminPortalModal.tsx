@@ -73,15 +73,20 @@ import {
   Database,
   Radio,
   Megaphone,
+  Video,
+  KeyRound,
+  Copy,
 } from 'lucide-react';
 import { parseExcelResultsFile, downloadExcelTemplate, exportResultsToExcel } from '../utils/excelService';
 import { downloadStudentResultSlipPdf, downloadClassBroadsheetPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
 import { processImageFile } from '../utils/imageUploadHelper';
+import { getActiveTeacherPin, setCustomTeacherPin } from '../services/teacherAuthDirectory';
 import { AdminStudentCouncilTab } from './admin/AdminStudentCouncilTab';
 import { AdminSchoolProfileTab } from './admin/AdminSchoolProfileTab';
 import { AdminBankAccountsTab } from './admin/AdminBankAccountsTab';
 import { AdminEventsTab } from './admin/AdminEventsTab';
 import { AdminAdmissionDocsTab } from './admin/AdminAdmissionDocsTab';
+import { AdminSchoolVideosTab } from './admin/AdminSchoolVideosTab';
 import { AdminSystemArchitectureTab } from './admin/AdminSystemArchitectureTab';
 import { SystemArchitectureModal } from './SystemArchitectureModal';
 
@@ -179,6 +184,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     loginAdminWithGoogle,
     logoutAdmin,
     joiningDocs,
+    schoolVideos,
   } = useData();
 
   const { user, userProfile } = useAuth();
@@ -225,6 +231,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     | 'feedback'
     | 'alerts'
     | 'galleryPhotos'
+    | 'schoolVideos'
     | 'logoSettings'
     | 'systemArchitecture'
   >('applications');
@@ -318,6 +325,14 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   const [editTrEmail, setEditTrEmail] = useState('');
   const [editTrImageUrl, setEditTrImageUrl] = useState('');
   const [editTrExperienceYears, setEditTrExperienceYears] = useState(10);
+  const [editTrPin, setEditTrPin] = useState('');
+
+  // Teacher Password Management by Admin State
+  const [passwordModalTeacher, setPasswordModalTeacher] = useState<Teacher | null>(null);
+  const [newTeacherPinInput, setNewTeacherPinInput] = useState('');
+  const [showTeacherPin, setShowTeacherPin] = useState(false);
+  const [teacherPinSuccessMsg, setTeacherPinSuccessMsg] = useState<string | null>(null);
+  const [copiedPinTeacherId, setCopiedPinTeacherId] = useState<string | null>(null);
 
   // Teacher Image Upload State
   const [trUploading, setTrUploading] = useState(false);
@@ -783,12 +798,18 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     setEditTrEmail(tr.email || '');
     setEditTrImageUrl(tr.imageUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400');
     setEditTrExperienceYears(tr.experienceYears || 8);
+    setEditTrPin(tr.portalPin || getActiveTeacherPin(tr.id) || tr.defaultPin || '123456');
   };
 
   // Save Edited Teacher
   const handleSaveEditedTeacher = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTeacher || !editTrName.trim()) return;
+
+    const cleanPin = editTrPin.trim();
+    if (cleanPin) {
+      setCustomTeacherPin(editingTeacher.id, cleanPin);
+    }
 
     const updatedTeacher: Teacher = {
       ...editingTeacher,
@@ -804,15 +825,58 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
       email: editTrEmail.trim() || 'info@uombonisec.sc.tz',
       imageUrl: editTrImageUrl.trim() || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
       experienceYears: Number(editTrExperienceYears) || 0,
+      portalPin: cleanPin || editingTeacher.portalPin || undefined,
     };
 
     updateTeacher(updatedTeacher);
     setEditingTeacher(null);
     alert(
       language === 'sw'
-        ? `Taarifa za mwalimu ${updatedTeacher.name} zimehifadhiwa kikamilifu!`
-        : `Teacher profile for ${updatedTeacher.name} updated successfully!`
+        ? `Taarifa na nenosiri la mwalimu ${updatedTeacher.name} zimehifadhiwa kikamilifu!`
+        : `Teacher profile and password for ${updatedTeacher.name} updated successfully!`
     );
+  };
+
+  // Admin Change Teacher Password / PIN Direct Action
+  const handleSaveTeacherPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordModalTeacher || !newTeacherPinInput.trim()) return;
+
+    const cleanPin = newTeacherPinInput.trim();
+    if (cleanPin.length < 4) {
+      alert(language === 'sw' ? 'Nenosiri / PIN lazima liwe na angalau herufi au namba 4.' : 'Password / PIN must be at least 4 characters.');
+      return;
+    }
+
+    // 1. Update in DataContext & Firestore
+    updateTeacher({
+      ...passwordModalTeacher,
+      portalPin: cleanPin,
+    });
+
+    // 2. Update in teacherAuthDirectory local cache
+    setCustomTeacherPin(passwordModalTeacher.id, cleanPin);
+
+    setTeacherPinSuccessMsg(
+      language === 'sw'
+        ? `Nenosiri / PIN mpya ya Mwalimu "${passwordModalTeacher.name}" imebadilishwa na kuhifadhiwa kikamilifu!`
+        : `Password / PIN for ${passwordModalTeacher.name} updated and saved successfully!`
+    );
+  };
+
+  const handleCopyTeacherCredentials = (tr: Teacher, pin: string) => {
+    const text = `SHULE YA SEKONDARI UOMBONI (NECTA S.0486)
+Taarifa za Kuingia Kwenye Portal ya Walimu:
+Mwalimu: ${tr.name}
+Cheo: ${tr.roleSw || tr.role}
+Barua Pepe / Username: ${tr.email}
+Nenosiri / PIN ya Portal: ${pin}
+Kiungo cha Kuingia: ${typeof window !== 'undefined' ? window.location.origin : 'https://www.uomboniss.sc.tz'}/#login
+
+Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
+    navigator.clipboard.writeText(text);
+    setCopiedPinTeacherId(tr.id);
+    setTimeout(() => setCopiedPinTeacherId(null), 3500);
   };
 
   // Direct Teacher Image Upload Handlers
@@ -1905,6 +1969,26 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                   activeTab === 'galleryPhotos' ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/50' : 'bg-slate-900 text-slate-400 border border-slate-800'
                 }`}>
                   {galleryPhotos.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('schoolVideos')}
+                id="admin-tab-school-videos"
+                className={`w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer text-left border ${
+                  activeTab === 'schoolVideos'
+                    ? 'bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 text-red-300 border-red-500/40 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border-transparent font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Video className={`w-4 h-4 ${activeTab === 'schoolVideos' ? 'text-red-400' : 'text-slate-400'}`} />
+                  <span>{language === 'sw' ? 'Video za YouTube' : 'YouTube Videos'}</span>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold ${
+                  activeTab === 'schoolVideos' ? 'bg-red-900/60 text-red-300 border border-red-700/50' : 'bg-slate-900 text-slate-400 border border-slate-800'
+                }`}>
+                  {schoolVideos.length}
                 </span>
               </button>
 
@@ -4280,15 +4364,31 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                               </div>
                             </div>
 
-                            {/* Action Buttons: Edit and Delete */}
-                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                            {/* Action Buttons: Password, Edit and Delete */}
+                            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
+                              <button
+                                id={`btn-password-teacher-${tr.id}`}
+                                onClick={() => {
+                                  setPasswordModalTeacher(tr);
+                                  const activePin = tr.portalPin || getActiveTeacherPin(tr.id) || tr.defaultPin || '123456';
+                                  setNewTeacherPinInput(activePin);
+                                  setTeacherPinSuccessMsg(null);
+                                  setShowTeacherPin(false);
+                                }}
+                                className="py-2 px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold text-xs flex items-center justify-center gap-1 border border-amber-300 transition-colors cursor-pointer shadow-xs"
+                                title="Badili Nenosiri / PIN ya Mwalimu"
+                              >
+                                <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                                <span>Nenosiri / PIN</span>
+                              </button>
+
                               <button
                                 id={`btn-edit-teacher-${tr.id}`}
                                 onClick={() => handleOpenEditTeacher(tr)}
-                                className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 transition-colors cursor-pointer shadow-xs"
+                                className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center gap-1 border border-emerald-200 transition-colors cursor-pointer shadow-xs"
                               >
                                 <Edit className="w-3.5 h-3.5 text-emerald-700" />
-                                <span>Hariri Taarifa</span>
+                                <span>Hariri</span>
                               </button>
 
                               <button
@@ -4464,6 +4564,36 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-600 focus:outline-hidden text-xs font-bold"
                               />
                             </div>
+
+                            <div className="sm:col-span-2 p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+                              <label className="font-bold text-amber-950 text-xs flex items-center justify-between mb-1.5">
+                                <span className="flex items-center gap-1.5 font-black">
+                                  <KeyRound className="w-4 h-4 text-amber-700" />
+                                  <span>Nenosiri / PIN ya Portal ya Mwalimu (Teacher Login PIN)</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const rand = String(Math.floor(100000 + Math.random() * 900000));
+                                    setEditTrPin(rand);
+                                  }}
+                                  className="text-[11px] font-bold text-amber-800 hover:text-amber-950 underline cursor-pointer"
+                                >
+                                  🎲 Tengeneza PIN Mpya
+                                </button>
+                              </label>
+                              <input
+                                id="input-edit-tr-pin"
+                                type="text"
+                                placeholder="mf. 745225 au nenosiri"
+                                value={editTrPin}
+                                onChange={(e) => setEditTrPin(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 bg-white focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs font-mono font-bold text-amber-950"
+                              />
+                              <p className="text-[10px] text-amber-800/80 mt-1">
+                                Mwalimu atatumia nenosiri/PIN hii kuingia kwenye mfumo na kuingiza alama za masomo yake.
+                              </p>
+                            </div>
                           </div>
 
                           {/* Direct Photo Upload in Edit Modal */}
@@ -4599,6 +4729,167 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                             </button>
                           </div>
                         </form>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DEDICATED TEACHER PASSWORD MANAGEMENT MODAL (ADMIN ONLY) */}
+                  {passwordModalTeacher && (
+                    <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
+                      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
+                        {/* Header */}
+                        <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-950 via-slate-900 to-amber-900 text-white flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-2xl bg-amber-400 text-slate-950 shadow-md">
+                              <KeyRound className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-base font-black text-white leading-tight">
+                                Badili Nenosiri / PIN ya Mwalimu
+                              </h4>
+                              <p className="text-xs text-amber-300 font-semibold">{passwordModalTeacher.name}</p>
+                            </div>
+                          </div>
+
+                          <button
+                            id="btn-close-teacher-password-modal"
+                            onClick={() => {
+                              setPasswordModalTeacher(null);
+                              setTeacherPinSuccessMsg(null);
+                            }}
+                            className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-5 sm:p-6 space-y-4 text-xs">
+                          {/* Teacher Summary Box */}
+                          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                            <img
+                              src={passwordModalTeacher.imageUrl}
+                              alt={passwordModalTeacher.name}
+                              className="w-12 h-12 rounded-xl object-cover border border-slate-300 shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-slate-900 text-xs truncate">{passwordModalTeacher.name}</div>
+                              <div className="text-[11px] text-emerald-800 font-semibold truncate">
+                                {passwordModalTeacher.roleSw || passwordModalTeacher.role}
+                              </div>
+                              <div className="text-[10px] text-slate-500 font-mono truncate">{passwordModalTeacher.email}</div>
+                            </div>
+                          </div>
+
+                          {/* Success Toast */}
+                          {teacherPinSuccessMsg && (
+                            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2 font-bold animate-in fade-in duration-200">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>{teacherPinSuccessMsg}</span>
+                            </div>
+                          )}
+
+                          {/* Form */}
+                          <form onSubmit={handleSaveTeacherPassword} className="space-y-4">
+                            <div>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <label className="font-bold text-slate-800 block">
+                                  Nenosiri Jipya / PIN ya Mwalimu (New PIN):
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const rand = String(Math.floor(100000 + Math.random() * 900000));
+                                    setNewTeacherPinInput(rand);
+                                    setTeacherPinSuccessMsg(null);
+                                  }}
+                                  className="text-[11px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 cursor-pointer"
+                                >
+                                  <span>🎲 Tengeneza PIN Mpya</span>
+                                </button>
+                              </div>
+
+                              <div className="relative">
+                                <input
+                                  id="input-teacher-new-pin"
+                                  type={showTeacherPin ? 'text' : 'password'}
+                                  required
+                                  value={newTeacherPinInput}
+                                  onChange={(e) => {
+                                    setNewTeacherPinInput(e.target.value);
+                                    setTeacherPinSuccessMsg(null);
+                                  }}
+                                  placeholder="Weka tarakimu au nenosiri jipya..."
+                                  className="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-amber-300 bg-amber-50/40 focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-sm font-mono font-bold text-slate-900"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowTeacherPin(!showTeacherPin)}
+                                  className="p-1.5 text-slate-400 hover:text-slate-700 absolute right-2.5 top-2 cursor-pointer"
+                                  title={showTeacherPin ? 'Ficha PIN' : 'Onyesha PIN'}
+                                >
+                                  {showTeacherPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <p className="text-[10px] text-slate-500 mt-1">
+                                PIN hii ndiyo itakayotumika na Mwalimu kuingia kwenye lango la walimu na kuingiza alama.
+                              </p>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2 pt-2">
+                              <button
+                                type="submit"
+                                id="btn-save-teacher-pin"
+                                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-amber-300 font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
+                              >
+                                <Save className="w-4 h-4" />
+                                <span>Hifadhi Nenosiri Jipya</span>
+                              </button>
+                            </div>
+                          </form>
+
+                          {/* Quick Share Credentials Section */}
+                          <div className="pt-3 border-t border-slate-100 space-y-2">
+                            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                              Sambaza Taarifa kwa Mwalimu:
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyTeacherCredentials(passwordModalTeacher, newTeacherPinInput)}
+                                className="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
+                              >
+                                {copiedPinTeacherId === passwordModalTeacher.id ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span className="text-emerald-700 font-bold">Imenakiliwa!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                                    <span>Nakili Taarifa za Kuingia</span>
+                                  </>
+                                )}
+                              </button>
+
+                              {passwordModalTeacher.phone && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const cleanPhone = passwordModalTeacher.phone.replace(/[^0-9]/g, '');
+                                    const msg = `SHULE YA SEKONDARI UOMBONI (NECTA S.0486)\nHabari Mwl. ${passwordModalTeacher.name},\nTaarifa zako za kuingia kwenye mfumo wa shule zimesasishwa:\nUsername/Email: ${passwordModalTeacher.email}\nNenosiri/PIN: ${newTeacherPinInput}\nKiungo cha Kuingia: ${typeof window !== 'undefined' ? window.location.origin : 'https://www.uomboniss.sc.tz'}/#login`;
+                                    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                  }}
+                                  className="py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-300"
+                                >
+                                  <span>WhatsApp</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                        </div>
                       </div>
                     </div>
                   )}
@@ -6666,6 +6957,11 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
                     className="hidden"
                   />
                 </div>
+              )}
+
+              {/* TAB: YOUTUBE SCHOOL VIDEOS */}
+              {activeTab === 'schoolVideos' && (
+                <AdminSchoolVideosTab />
               )}
 
               {/* TAB: CUSTOM LOGO SETTINGS */}

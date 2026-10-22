@@ -19,6 +19,7 @@ import { useDynamicMetaTags } from './hooks/useDynamicMetaTags';
 // Modals statically imported for guaranteed availability and zero dynamic import fetch failures
 import { StaffSecurityGateModal } from './components/StaffSecurityGateModal';
 import { StudentPortalModal } from './components/StudentPortalModal';
+import { ParentPortalModal } from './components/portal/ParentPortalModal';
 import { ApplyNowModal } from './components/ApplyNowModal';
 import { AdminPortalModal } from './components/AdminPortalModal';
 import { BursarPortalModal } from './components/BursarPortalModal';
@@ -72,6 +73,7 @@ function MainSchoolApp() {
   const [isStaffGateOpen, setIsStaffGateOpen] = useState(false);
   const [isTeacherStaffPortalOpen, setIsTeacherStaffPortalOpen] = useState(false);
   const [isParentPortalOpen, setIsParentPortalOpen] = useState(false);
+  const [isStudentPortalOpen, setIsStudentPortalOpen] = useState(false);
   const [isAdmissionsModalOpen, setIsAdmissionsModalOpen] = useState(false);
   const [isNectaResultsOpen, setIsNectaResultsOpen] = useState(false);
   const [isSchoolResultsOpen, setIsSchoolResultsOpen] = useState(false);
@@ -129,6 +131,7 @@ function MainSchoolApp() {
     setIsStaffGateOpen(false);
     setIsTeacherStaffPortalOpen(false);
     setIsParentPortalOpen(false);
+    setIsStudentPortalOpen(false);
     setIsAdmissionsModalOpen(false);
     setIsNectaResultsOpen(false);
     setIsSchoolResultsOpen(false);
@@ -178,7 +181,19 @@ function MainSchoolApp() {
 
   const handleOpenParentPortal = () => {
     closeAllModals();
-    setIsParentPortalOpen(true);
+    if (user && userProfile) {
+      setActiveView('portal');
+    } else {
+      setActiveView('login');
+    }
+  };
+  const handleOpenStudentPortal = () => {
+    closeAllModals();
+    if (user && userProfile) {
+      setActiveView('portal');
+    } else {
+      setActiveView('login');
+    }
   };
 
   const handleOpenAcademicPortal = (
@@ -300,6 +315,8 @@ function MainSchoolApp() {
         handleOpenAcademicPortal('academic_master');
       } else if (hash === '#parent' || hash === '#wazazi') {
         handleOpenParentPortal();
+      } else if (hash === '#student' || hash === '#wanafunzi' || hash === '#mwanafunzi') {
+        handleOpenStudentPortal();
       } else if (hash === '#architecture' || hash === '#tech') {
         closeAllModals();
         setIsArchitectureModalOpen(true);
@@ -422,6 +439,7 @@ function MainSchoolApp() {
         }}
         onOpenAdmin={handleOpenAdminModal}
         onOpenParentPortal={handleOpenParentPortal}
+        onOpenStudentPortal={handleOpenStudentPortal}
         onOpenStaffPortal={handleOpenTeacherStaffPortal}
         onOpenAcademicPortal={() => handleOpenAcademicPortal('academic_master')}
         onOpenAdmissions={() => {
@@ -516,6 +534,7 @@ function MainSchoolApp() {
         onOpenAdmin={handleOpenAdminModal}
         onOpenStaffPortal={handleOpenTeacherStaffPortal}
         onOpenParentPortal={handleOpenParentPortal}
+        onOpenStudentPortal={handleOpenStudentPortal}
         onOpenAcademicPortal={() => handleOpenAcademicPortal('academic_master')}
         onOpenAdmissions={() => {
           closeAllModals();
@@ -574,8 +593,18 @@ function MainSchoolApp() {
       {/* Parent Portal Modal (Sepia Identity) */}
       {isParentPortalOpen && (
         <Suspense fallback={<ModalFallback />}>
-          <StudentPortalModal
+          <ParentPortalModal
             isOpen={isParentPortalOpen}
+            onClose={handleCloseModal}
+          />
+        </Suspense>
+      )}
+
+      {/* Student Portal Modal */}
+      {isStudentPortalOpen && (
+        <Suspense fallback={<ModalFallback />}>
+          <StudentPortalModal
+            isOpen={isStudentPortalOpen}
             onClose={handleCloseModal}
           />
         </Suspense>

@@ -184,7 +184,7 @@ export const OfficialInvitationLetterViewer: React.FC<OfficialInvitationLetterVi
 
           <div>
             <span>Ndugu Mzazi/Mlezi wa, </span>
-            <strong className="border-b border-slate-700 pb-0.5 px-2 inline-block min-w-[240px]">
+            <strong className="border-b border-slate-700 pb-0.5 px-2 inline-block min-w-[150px] max-w-full break-words">
               {parentName || '__________________________________________'}
             </strong>
           </div>
@@ -200,7 +200,7 @@ export const OfficialInvitationLetterViewer: React.FC<OfficialInvitationLetterVi
           <div className="space-y-4 leading-relaxed text-justify">
             <p>
               Kwa heshima kubwa, uongozi wa Uomboni Secondary School unakutaarifu kuwa mtoto wako,{' '}
-              <strong className="border-b border-slate-700 pb-0.5 px-2 inline-block min-w-[200px] text-center text-emerald-950 font-black">
+              <strong className="border-b border-slate-700 pb-0.5 px-2 inline-block min-w-[140px] max-w-full break-words text-center text-emerald-950 font-black">
                 {studentName || '__________________________'}
               </strong>{' '}
               amefaulu usaili (interview) wa kujiunga na shule yetu.

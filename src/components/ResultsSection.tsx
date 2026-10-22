@@ -1,15 +1,19 @@
 import React from 'react';
-import { Award, ExternalLink, FileText, CheckCircle2, Search } from 'lucide-react';
+import { Award, ExternalLink, FileText, CheckCircle2, Search, Users, GraduationCap, ArrowRight } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 
 interface ResultsSectionProps {
   onOpenNectaResults?: () => void;
   onOpenSchoolResults?: () => void;
+  onOpenParentPortal?: () => void;
+  onOpenStudentPortal?: () => void;
 }
 
 export const ResultsSection: React.FC<ResultsSectionProps> = ({
   onOpenNectaResults,
   onOpenSchoolResults,
+  onOpenParentPortal,
+  onOpenStudentPortal,
 }) => {
   return (
     <section id="results" className="py-20 sm:py-24 bg-white border-t border-b border-[#102A43]/10">
@@ -136,6 +140,32 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
                   <span>Official academic stamp &amp; signatures</span>
                 </li>
               </ul>
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                {onOpenParentPortal && (
+                  <button
+                    onClick={onOpenParentPortal}
+                    className="w-full py-2 px-3 rounded-lg bg-[#704214] hover:bg-[#58330F] text-[#FFFFF0] text-xs font-bold flex items-center justify-between transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                      <span>Portal ya Mzazi (Matokeo ya Mwanao Pekee)</span>
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {onOpenStudentPortal && (
+                  <button
+                    onClick={onOpenStudentPortal}
+                    className="w-full py-2 px-3 rounded-lg bg-[#102A43] hover:bg-[#0A1C2E] text-white text-xs font-bold flex items-center justify-between transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <GraduationCap className="w-3.5 h-3.5 text-[#C9A227]" />
+                      <span>Portal ya Mwanafunzi (Majina Matatu)</span>
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400">

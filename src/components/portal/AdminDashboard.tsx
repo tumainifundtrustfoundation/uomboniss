@@ -17,7 +17,13 @@ import {
   UserCheck,
   Building2,
   RefreshCw,
+  Film,
+  FolderOpen,
+  Video,
 } from 'lucide-react';
+import { useData } from '../../context/DataContext';
+import { AdminSchoolVideosTab } from '../admin/AdminSchoolVideosTab';
+import { AdminAdmissionDocsTab } from '../admin/AdminAdmissionDocsTab';
 import { useAuth } from '../../context/AuthContext';
 import { SchoolLogo } from '../SchoolLogo';
 import { UserProfile, UserRole, db, auth, handleFirestoreError, OperationType } from '../../lib/firebase';
@@ -54,8 +60,9 @@ import {
 
 export const AdminDashboard: React.FC = () => {
   const { user, userProfile, updateUserRoleByAdmin } = useAuth();
+  const { schoolVideos, joiningDocs } = useData();
   const [activeAdminTab, setActiveAdminTab] = useState<
-    'users' | 'students' | 'teachers' | 'academics' | 'exams' | 'announcements' | 'settings'
+    'users' | 'students' | 'teachers' | 'academics' | 'exams' | 'announcements' | 'videos' | 'documents' | 'settings'
   >('users');
 
   // Users state
@@ -354,6 +361,8 @@ export const AdminDashboard: React.FC = () => {
           { id: 'academics', label: `Classes & Subjects (${classesList.length}/${subjectsList.length})`, icon: BookOpen },
           { id: 'exams', label: `Exams & Results (${examsList.length})`, icon: FileSpreadsheet },
           { id: 'announcements', label: `Announcements (${announcementsList.length})`, icon: Megaphone },
+          { id: 'videos', label: `Video za YouTube (${schoolVideos.length})`, icon: Film },
+          { id: 'documents', label: `Nyaraka za Drive (${joiningDocs.length})`, icon: FolderOpen },
           { id: 'settings', label: 'School Settings', icon: Settings },
         ].map((item) => {
           const Icon = item.icon;
@@ -850,6 +859,20 @@ export const AdminDashboard: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* TAB 8: YOUTUBE SCHOOL VIDEOS */}
+      {activeAdminTab === 'videos' && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+          <AdminSchoolVideosTab />
+        </div>
+      )}
+
+      {/* TAB 9: GOOGLE DRIVE DOCUMENTS */}
+      {activeAdminTab === 'documents' && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+          <AdminAdmissionDocsTab />
         </div>
       )}
 

@@ -231,6 +231,9 @@ export interface JoiningDocument {
   targetGroup: 'Kidato cha Kwanza (Form One)' | 'Uhamisho (Form Two/Three)' | 'Wanafunzi Wote' | 'Afya na Bima' | string;
   downloadCount: number;
   imageUrl?: string;
+  googleDriveUrl?: string;
+  documentType?: 'pdf_template' | 'google_drive' | 'link';
+  externalUrl?: string;
   pdfContentPreview: {
     header: string;
     requirements: string[];

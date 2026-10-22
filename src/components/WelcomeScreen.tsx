@@ -340,8 +340,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onEnterWebsite }) 
         )}
 
         {/* Center Circular Embossed Disc (100% Matching User Graphic + Biometric Fingerprint Sensor) */}
-        <div className="relative animate-float-gentle my-1">
-          <div className="neumorph-circle w-[330px] h-[330px] sm:w-[400px] sm:h-[400px] md:w-[430px] md:h-[430px] flex flex-col items-center justify-center p-5 sm:p-7 select-none relative">
+        <div className="relative animate-float-gentle my-1 max-w-full flex justify-center">
+          <div className="neumorph-circle w-[290px] h-[290px] xs:w-[330px] xs:h-[330px] sm:w-[400px] sm:h-[400px] md:w-[430px] md:h-[430px] max-w-[92vw] max-h-[92vw] flex flex-col items-center justify-center p-3.5 sm:p-7 select-none relative">
             
             {/* Top Auth Mode Switcher (Password vs Fingerprint) */}
             <div className="flex items-center gap-1.5 p-1 mb-2.5 rounded-full bg-[#cad5e2]/40 shadow-inner">

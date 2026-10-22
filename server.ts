@@ -536,10 +536,7 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
   });
 
   // Vite middleware in dev or static files in production with Prerendered SEO injection
-  const distIndexPath = path.join(process.cwd(), "dist", "index.html");
-  const isProduction = process.env.NODE_ENV === "production" || (process.env.NODE_ENV !== "development" && fs.existsSync(distIndexPath));
-
-  if (!isProduction) {
+  if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "custom",

@@ -230,8 +230,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                   </div>
                 </div>
 
-                <p className="text-[11px] text-amber-200/90 font-medium pt-1 break-words leading-relaxed">
-                  Misingi ya Shule: <span className="font-black text-white break-words">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
+                <p className="text-[11px] text-amber-200/90 font-medium pt-1">
+                  Misingi ya Shule: <span className="font-black text-white">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
                 </p>
               </div>
             </div>
@@ -473,25 +473,25 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
         </div>
 
         {/* Action Link Footer */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-[#102A43] text-white">
-          <div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-[#102A43] text-white">
+          <div className="space-y-1">
             <h4 className="font-serif text-base sm:text-lg font-bold text-white">
               {language === 'sw'
                 ? 'Shule ya Sekondari Uomboni — Marangu, Moshi'
                 : 'Uomboni Secondary School — Marangu, Moshi'}
             </h4>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-300 leading-relaxed">
               {language === 'sw'
                 ? 'Elimu Bora yenye Maadili ya Kikanisa, Nidhamu ya Hali ya Juu na Taaluma Bora.'
                 : 'Quality Catholic Education, High Discipline and Academic Excellence.'}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col xs:flex-row items-center gap-2.5 sm:gap-3 w-full sm:w-auto shrink-0">
             {onNavigate && (
               <button
                 onClick={() => onNavigate('academics')}
-                className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                className="w-full xs:w-auto px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer text-center"
               >
                 {language === 'sw' ? 'Tazama Taaluma' : 'Academic Programs'}
               </button>
@@ -499,7 +499,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             {onNavigate && (
               <button
                 onClick={() => onNavigate('contact')}
-                className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-sm"
+                className="w-full xs:w-auto px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-sm text-center"
               >
                 {language === 'sw' ? 'Wasiliana Nasi' : 'Contact Us'}
               </button>
@@ -521,19 +521,19 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-3.5 sm:px-6 py-3 bg-[#102A43] text-white border-b border-[#102A43]/30 gap-2">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300 shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#102A43] text-white border-b border-[#102A43]/30">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-amber-300">
                   <FileText className="w-4 h-4" />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-serif text-xs sm:text-base font-bold text-white leading-tight truncate">
+                <div>
+                  <h3 className="font-serif text-sm sm:text-base font-bold text-white leading-tight">
                     {language === 'sw'
-                      ? 'Tangazo na Mwongozo wa Shule'
-                      : 'Official Document & Prospectus'}
+                      ? 'Nyaraka Rasmi: Tangazo na Mwongozo wa Shule'
+                      : 'Official Institutional Document & Prospectus'}
                   </h3>
-                  <p className="text-[10px] sm:text-[11px] text-amber-200/90 font-medium truncate">
-                    UOMBONI SECONDARY SCHOOL · NECTA S0486
+                  <p className="text-[11px] text-amber-200/90 font-medium">
+                    UOMBONI SECONDARY SCHOOL · NECTA S0486 · MARANGU, MOSHI
                   </p>
                 </div>
               </div>

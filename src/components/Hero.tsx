@@ -26,14 +26,14 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
       {/* Hero Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center animate-in fade-in duration-700">
         {/* Institutional Kicker */}
-        <div className="inline-flex items-center justify-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-[10px] sm:text-xs font-semibold tracking-normal sm:tracking-wider uppercase mb-5 backdrop-blur-xs max-w-full text-center leading-tight">
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3.5 py-1.5 rounded-2xl sm:rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-[11px] sm:text-xs font-semibold tracking-wider uppercase mb-5 backdrop-blur-xs max-w-full text-center leading-snug">
           <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse shrink-0" />
-          <span className="break-words">NECTA S0486 · Catholic Diocese of Moshi · Marangu</span>
+          <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
         </div>
 
         {/* Headline */}
         <div className="space-y-3 max-w-4xl mx-auto">
-          <span className="text-xs sm:text-sm font-bold uppercase tracking-wider sm:tracking-widest text-[#C9A227] block">
+          <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#C9A227] block">
             Kauli Mbiu: “Tujiendeleze sisi wenyewe.”
           </span>
           <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] break-words">
@@ -45,7 +45,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5 w-full">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5 w-full max-w-xl mx-auto">
           {onOpenAdmissionDocuments && (
             <button
               onClick={onOpenAdmissionDocuments}
@@ -54,46 +54,46 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
               title="Fungua Hati na Fomu za Kujiunga na Shule"
             >
               <span className="relative z-10 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-white drop-shadow-xs" />
+                <FileText className="w-4 h-4 text-white drop-shadow-xs shrink-0" />
                 <span className="tracking-wider">STUDENT ADMISSION</span>
-                <ArrowRight className="w-4 h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-white/90 group-hover:translate-x-1 transition-transform shrink-0" />
               </span>
             </button>
           )}
 
           <button
             onClick={() => onNavigate('about')}
-            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#FFFFF0] text-[#102A43] font-semibold text-xs sm:text-sm hover:bg-white transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto px-5 sm:px-6 py-3 rounded-md bg-[#FFFFF0] text-[#102A43] font-semibold text-xs sm:text-sm hover:bg-white transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2 group"
           >
             <span>Explore Our School</span>
-            <ArrowRight className="w-4 h-4 text-[#C9A227] group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-[#C9A227] group-hover:translate-x-0.5 transition-transform shrink-0" />
           </button>
 
           <button
             onClick={() => onNavigate('contact')}
-            className="w-full sm:w-auto px-6 py-3 rounded-md bg-[#C9A227] text-slate-950 font-bold text-xs sm:text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-5 sm:px-6 py-3 rounded-md bg-[#C9A227] text-slate-950 font-bold text-xs sm:text-sm hover:bg-amber-400 transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-2"
           >
             <span>Mawasiliano &amp; Mahali</span>
           </button>
         </div>
 
         {/* Key Institutional Facts */}
-        <div className="mt-10 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-left max-w-4xl mx-auto w-full">
-          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5 min-w-0">
-            <span className="block text-lg sm:text-xl font-bold text-white font-mono">S0486</span>
-            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words leading-tight block mt-0.5">NECTA Registered Centre</span>
+        <div className="mt-8 sm:mt-10 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-left max-w-4xl mx-auto">
+          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5">
+            <span className="block text-lg sm:text-xl font-bold text-white">S0486</span>
+            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words">NECTA Registered Centre</span>
           </div>
-          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5 min-w-0">
+          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5">
             <span className="block text-lg sm:text-xl font-bold text-white">Forms 1–4</span>
-            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words leading-tight block mt-0.5">Ordinary Level Secondary</span>
+            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words">Ordinary Level Secondary</span>
           </div>
-          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5 min-w-0">
+          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5">
             <span className="block text-lg sm:text-xl font-bold text-white">Day &amp; Boarding</span>
-            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words leading-tight block mt-0.5">Co-Educational Facilities</span>
+            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words">Co-Educational Facilities</span>
           </div>
-          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5 min-w-0">
+          <div className="border-l-2 border-[#C9A227] pl-2.5 sm:pl-3.5">
             <span className="block text-lg sm:text-xl font-bold text-white">Marangu West</span>
-            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words leading-tight block mt-0.5">Mount Kilimanjaro Slopes</span>
+            <span className="text-[11px] sm:text-xs text-[#FFFFF0]/70 break-words">Mount Kilimanjaro Slopes</span>
           </div>
         </div>
       </div>

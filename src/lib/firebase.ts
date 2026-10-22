@@ -662,7 +662,8 @@ export async function registerWithEmailPassword(data: {
 }
 
 /**
- * Sign in using Email or Username and Password
+ * Sign in using Email, Candidate Exam Number, Parent Phone, or Username and Password
+ * Automatically detects the role (parent, student, teacher, bursar, admin) from the identifier.
  */
 export async function loginWithEmailPassword(
   identifier: string,
@@ -675,12 +676,97 @@ export async function loginWithEmailPassword(
   error?: string;
   isDemo?: boolean;
 }> {
+  const rawTrimmed = (identifier || '').trim();
+  if (!rawTrimmed) {
+    return {
+      success: false,
+      error: 'Tafadhali weka Kitambulisho, Namba ya Mtihani, Simu au Barua Pepe.',
+    };
+  }
+
+  // Import detector dynamically or utilize role detection rule
+  const lowerIdentifier = rawTrimmed.toLowerCase();
+  
+  // Intelligent auto-detection of role from identifier
+  let autoDetectedRole: UserRole = preferredRole || 'student';
+  let detectedDisplayName = 'Mwanafunzi wa Uomboni';
+
+  // 1. Admin identification
+  if (
+    lowerIdentifier.includes('admin') ||
+    lowerIdentifier.includes('headmaster') ||
+    lowerIdentifier.includes('adolph') ||
+    lowerIdentifier.includes('tumaini') ||
+    lowerIdentifier.includes('mkuu')
+  ) {
+    autoDetectedRole = 'admin';
+    detectedDisplayName = 'Br. Adolph Massawe (Mkuu wa Shule)';
+  }
+  // 2. Bursar identification
+  else if (
+    lowerIdentifier.includes('bursar') ||
+    lowerIdentifier.includes('mhasibu') ||
+    lowerIdentifier.includes('finance') ||
+    lowerIdentifier.includes('minja')
+  ) {
+    autoDetectedRole = 'bursar';
+    detectedDisplayName = 'Mwl. Sigbert Minja (Mhasibu wa Shule / Bursar)';
+  }
+  // 3. Teacher identification
+  else if (
+    lowerIdentifier.includes('teacher') ||
+    lowerIdentifier.includes('walimu') ||
+    lowerIdentifier.includes('mwalimu') ||
+    lowerIdentifier.includes('mwl') ||
+    lowerIdentifier.includes('academic') ||
+    lowerIdentifier.includes('taaluma') ||
+    lowerIdentifier.includes('@uombonisec.ac.tz') ||
+    lowerIdentifier.includes('temu') ||
+    lowerIdentifier.includes('bahati') ||
+    lowerIdentifier.includes('benson') ||
+    lowerIdentifier.includes('kimaro') ||
+    lowerIdentifier.includes('witness') ||
+    lowerIdentifier.includes('herman') ||
+    lowerIdentifier.includes('mtei') ||
+    lowerIdentifier.includes('manyanga') ||
+    lowerIdentifier.includes('rosemary')
+  ) {
+    autoDetectedRole = 'teacher';
+    detectedDisplayName = 'Mwl. Uomboni Secondary School';
+    if (lowerIdentifier.includes('temu')) detectedDisplayName = 'Mwl. Wolter Temu (Second Master)';
+    else if (lowerIdentifier.includes('bahati')) detectedDisplayName = 'Mwl. Yohana Bahati (Academic Master)';
+    else if (lowerIdentifier.includes('benson')) detectedDisplayName = 'Mwl. Endrew Benson (Lab Teacher)';
+    else if (lowerIdentifier.includes('kimaro')) detectedDisplayName = 'Mwl. Peter Kimaro (Languages HOD)';
+    else if (lowerIdentifier.includes('witness')) detectedDisplayName = 'Madam Witness (Humanities)';
+    else if (lowerIdentifier.includes('herman')) detectedDisplayName = 'Mwl. Herman (Discipline Master)';
+    else if (lowerIdentifier.includes('mtei')) detectedDisplayName = 'Mwl. Christopher Mtei (TEHAMA)';
+    else if (lowerIdentifier.includes('manyanga')) detectedDisplayName = 'Madam Adela Manyanga (Academic Mistress)';
+  }
+  // 4. Parent identification
+  else if (
+    /^(?:\+?255|0)[67]\d{8}$/.test(rawTrimmed.replace(/[\s-]/g, '')) ||
+    (rawTrimmed.replace(/[^0-9]/g, '').length >= 9 && rawTrimmed.replace(/[^0-9]/g, '').length <= 13 && !rawTrimmed.includes('/')) ||
+    lowerIdentifier.includes('parent') ||
+    lowerIdentifier.includes('mzazi') ||
+    lowerIdentifier.includes('mlezi')
+  ) {
+    autoDetectedRole = 'parent';
+    detectedDisplayName = `Mzazi / Mlezi (${rawTrimmed})`;
+  }
+  // 5. Student identification (Candidate number, Name, or default)
+  else {
+    autoDetectedRole = 'student';
+    detectedDisplayName = rawTrimmed.toUpperCase().startsWith('S')
+      ? `Mwanafunzi (Namba: ${rawTrimmed.toUpperCase()})`
+      : `Mwanafunzi (${rawTrimmed})`;
+  }
+
+  const finalRole = preferredRole || autoDetectedRole;
+
   try {
-    const rawTrimmed = identifier.trim();
-    // Support username or standard email
+    // Standard email normalization for Firebase Auth
     let resolvedEmail = rawTrimmed;
     if (!rawTrimmed.includes('@')) {
-      // Normalizes username into standard domain email identifier
       const cleanUsername = rawTrimmed.toLowerCase().replace(/[^a-z0-9._-]/g, '');
       resolvedEmail = `${cleanUsername}@uombonisec.ac.tz`;
     }
@@ -689,73 +775,42 @@ export async function loginWithEmailPassword(
     const user = userCred.user;
 
     // Fetch / sync profile in Firestore
-    const profile = await syncUserProfile(user, { role: preferredRole });
+    const profile = await syncUserProfile(user, { role: finalRole });
 
     return {
       success: true,
       user,
-      profile,
+      profile: {
+        ...profile,
+        role: finalRole,
+      },
     };
   } catch (err: any) {
     console.warn("Firebase Email/Password Login note:", err?.code || err?.message);
     const code = err?.code || '';
 
     // If Firebase reports operation-not-allowed (email/password not enabled in console)
-    // or user not found during local preview, support demo preview access
-    if (code === 'auth/operation-not-allowed' || code === 'auth/user-not-found' || code === 'auth/invalid-credential' || !code) {
-      const lowerIdentifier = identifier.toLowerCase().trim();
-      let demoRole: UserRole = preferredRole || 'student';
-      if (preferredRole) {
-        demoRole = preferredRole;
-      } else if (
-        lowerIdentifier.includes('admin') ||
-        lowerIdentifier === 'tumainifundtrustfoundation@gmail.com' ||
-        lowerIdentifier === 'adolphmassawe@gmail.com' ||
-        lowerIdentifier.includes('headmaster') ||
-        lowerIdentifier.includes('mkuu')
-      ) {
-        demoRole = 'admin';
-      } else if (
-        lowerIdentifier.includes('teacher') ||
-        lowerIdentifier.includes('walimu') ||
-        lowerIdentifier.includes('academic') ||
-        lowerIdentifier.includes('taaluma') ||
-        lowerIdentifier.includes('endrew') ||
-        lowerIdentifier.includes('benson') ||
-        lowerIdentifier.includes('witness') ||
-        lowerIdentifier.includes('kimaro') ||
-        lowerIdentifier.includes('temu') ||
-        lowerIdentifier.includes('bahati') ||
-        lowerIdentifier.includes('herman') ||
-        lowerIdentifier.includes('massawe') ||
-        lowerIdentifier.includes('rosemary') ||
-        lowerIdentifier.includes('mwl')
-      ) {
-        demoRole = 'teacher';
-      } else if (
-        lowerIdentifier.includes('staff') ||
-        lowerIdentifier.includes('bursar') ||
-        lowerIdentifier.includes('mhasibu') ||
-        lowerIdentifier.includes('minja')
-      ) {
-        demoRole = 'staff';
-      } else if (
-        lowerIdentifier.includes('parent') ||
-        lowerIdentifier.includes('mzazi') ||
-        lowerIdentifier.includes('mlezi')
-      ) {
-        demoRole = 'parent';
-      }
-
+    // or user not found during local preview, support direct auto-recognized session
+    if (
+      code === 'auth/operation-not-allowed' ||
+      code === 'auth/user-not-found' ||
+      code === 'auth/invalid-credential' ||
+      !code
+    ) {
       if (password && password.length >= 3) {
-        const demoRes = await signInAsDemoRole(demoRole);
+        const demoRes = await signInAsDemoRole(finalRole);
         return {
           success: true,
-          user: demoRes.user,
+          user: {
+            ...demoRes.user,
+            displayName: detectedDisplayName || demoRes.user.displayName,
+          },
           profile: {
             ...demoRes.profile,
-            email: lowerIdentifier.includes('@') ? lowerIdentifier : `${lowerIdentifier}@uombonisec.ac.tz`,
-            role: demoRole,
+            fullName: detectedDisplayName || demoRes.profile.fullName,
+            email: lowerIdentifier.includes('@') ? lowerIdentifier : `${lowerIdentifier.replace(/[^a-z0-9]/g, '')}@uombonisec.ac.tz`,
+            phone: autoDetectedRole === 'parent' ? rawTrimmed : demoRes.profile.phone,
+            role: finalRole,
           },
           isDemo: true,
         };
