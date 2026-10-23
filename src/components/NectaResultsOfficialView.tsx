@@ -366,7 +366,7 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
       )}
 
       {/* 4. OFFICIAL NECTA / CSSC BRANDED RESULTS SHEET (EXACT SCREENSHOT LAYOUT) */}
-      <div className="p-6 md:p-8 space-y-6 print:p-0 font-sans">
+      <div className="p-3 sm:p-6 md:p-8 space-y-6 print:p-0 font-sans">
         {/* Exact NECTA Header Layout from Screenshot */}
         <div className="text-center font-serif text-[#002244] py-2 space-y-1 border-b border-slate-200 pb-5">
           <h2 className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-700">
@@ -388,8 +388,8 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
           <h4 className="text-xs font-mono font-black uppercase text-[#002244] tracking-wider text-center">
             DIVISION PERFORMANCE SUMMARY
           </h4>
-          <div className="max-w-2xl mx-auto overflow-x-auto">
-            <table className="w-full border-collapse border border-slate-400 text-center text-xs font-mono">
+          <div className="max-w-2xl mx-auto overflow-x-auto scrollbar-thin">
+            <table className="w-full min-w-[480px] sm:min-w-0 border-collapse border border-slate-400 text-center text-xs font-mono">
               <thead>
                 <tr className="bg-[#eef2f7] text-[#002244] font-bold border-b border-slate-400">
                   <th className="py-2 px-3 border-r border-slate-400 text-left font-black">SEX</th>
@@ -452,15 +452,21 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
             </span>
           </div>
 
-          <div className="overflow-x-auto border border-slate-400 rounded-lg">
-            <table className="w-full border-collapse text-left text-xs font-mono">
+          {/* Mobile horizontal scroll swipe indicator */}
+          <div className="flex sm:hidden items-center gap-1.5 text-[11px] text-slate-600 font-medium bg-amber-50/80 px-2.5 py-1.5 rounded-md border border-amber-200/80">
+            <span>👉</span>
+            <span>{language === 'sw' ? 'Sogeza jedwali kushoto/kulia kutazama masomo yote' : 'Swipe table left/right to view all subjects'}</span>
+          </div>
+
+          <div className="overflow-x-auto border border-slate-400 rounded-lg scrollbar-thin">
+            <table className="w-full min-w-[620px] sm:min-w-0 border-collapse text-left text-xs font-mono">
               <thead>
                 <tr className="bg-[#eef2f7] text-[#002244] uppercase font-bold border-b border-slate-400">
                   <th className="py-2.5 px-3 border-r border-slate-300 w-48 sm:w-64">CNO / JINA LA MWANAFUNZI</th>
                   <th className="py-2.5 px-2 border-r border-slate-300 text-center w-12">SEX</th>
                   <th className="py-2.5 px-2 border-r border-slate-300 text-center w-14">AGGT</th>
                   <th className="py-2.5 px-2 border-r border-slate-300 text-center w-16">DIV</th>
-                  <th className="py-2.5 px-3">DETAILED SUBJECTS</th>
+                  <th className="py-2.5 px-3 min-w-[280px]">DETAILED SUBJECTS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-300 text-[11px] sm:text-xs">

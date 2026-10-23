@@ -312,6 +312,15 @@ service cloud.firestore {
       allow get, list: if true;
       allow create, update, delete: if isValidId(dataDocId);
     }
+
+    // ====================================================
+    // SCHOOL DOCUMENTS (Google Drive & PDF Files)
+    // Read: all; Write: admin & staff
+    // ====================================================
+    match /school_documents/{docId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(docId) && (isAdmin() || isStaff());
+    }
   }
 }
 

@@ -250,7 +250,7 @@ export const StudentReportCardQrModal: React.FC<StudentReportCardQrModalProps> =
 
           {/* Live Open Action */}
           {onOpenReportCard && (
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <div className="pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <span className="text-xs text-slate-500">
                 {language === 'sw'
                   ? 'Unataka kuona ripoti kamili ya karatasi au PDF?'
@@ -261,7 +261,7 @@ export const StudentReportCardQrModal: React.FC<StudentReportCardQrModalProps> =
                   onClose();
                   onOpenReportCard(student);
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               >
                 <FileText className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{language === 'sw' ? 'Fungua Ripoti Kamili' : 'Open Full Report'}</span>

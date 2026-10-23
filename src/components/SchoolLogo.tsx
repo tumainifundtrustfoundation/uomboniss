@@ -36,7 +36,7 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
   const isFullSized = size === 'full' || className.includes('w-full') || className.includes('h-full');
 
   return (
-    <div className={`inline-flex items-center gap-3 shrink-0 ${className}`}>
+    <div className={`inline-flex items-center gap-2 sm:gap-3 min-w-0 ${className}`}>
       {/* Official Uomboni Secondary School Crest - Unmodified Original Identity */}
       <div
         className={`relative shrink-0 aspect-square flex items-center justify-center ${
@@ -59,7 +59,7 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
       </div>
 
       {showText && (
-        <div className="shrink-0">
+        <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <h1
               className={`font-serif font-bold tracking-tight leading-none ${

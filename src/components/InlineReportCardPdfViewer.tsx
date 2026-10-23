@@ -334,7 +334,7 @@ export const InlineReportCardPdfViewer: React.FC<InlineReportCardPdfViewerProps>
               transition: 'transform 0.15s ease-out',
             }}
             id="printable-official-report-card"
-            className="w-full max-w-[800px] bg-white text-slate-900 p-6 sm:p-10 shadow-2xl rounded-2xl border-4 border-emerald-900 relative my-2 select-text"
+            className="w-full max-w-[800px] bg-white text-slate-900 p-3 sm:p-8 md:p-10 shadow-2xl rounded-2xl border-2 sm:border-4 border-emerald-900 relative my-2 select-text"
           >
             {/* Watermark Crest */}
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
@@ -342,7 +342,7 @@ export const InlineReportCardPdfViewer: React.FC<InlineReportCardPdfViewerProps>
             </div>
 
             {/* Inner Border Accent */}
-            <div className="border border-amber-600/30 rounded-xl p-4 sm:p-6 space-y-5 relative z-10 bg-white">
+            <div className="border border-amber-600/30 rounded-xl p-2.5 sm:p-6 space-y-5 relative z-10 bg-white">
               {/* TOP HEADER: Diocese, School Name & Emblem */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pb-4 border-b-2 border-emerald-900 text-center sm:text-left">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 p-1 rounded-xl bg-white border border-slate-200 shadow-xs shrink-0 flex items-center justify-center">
@@ -464,8 +464,8 @@ export const InlineReportCardPdfViewer: React.FC<InlineReportCardPdfViewerProps>
               </div>
 
               {/* SUBJECT BREAKDOWN TABLE */}
-              <div className="overflow-hidden rounded-xl border border-slate-300">
-                <table className="w-full text-left text-xs border-collapse">
+              <div className="overflow-x-auto rounded-xl border border-slate-300 scrollbar-thin">
+                <table className="w-full min-w-[480px] sm:min-w-0 text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-emerald-900 text-white font-bold text-[11px]">
                       <th className="py-2.5 px-3 font-mono">CODE</th>

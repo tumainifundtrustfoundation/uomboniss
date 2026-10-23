@@ -188,6 +188,10 @@ export function formatAuthError(err: any, language: 'sw' | 'en' = 'en'): string 
         return 'Kikoa hiki cha wavuti hakijaidhinishwa kwenye Firebase Auth Console. Unaweza kuingia kwa usalama kupitia vitufe vya majaribio au Kichupo Kipya.';
       case 'auth/operation-not-allowed':
         return 'Njia hii ya kuingia bado haijawezeshwa kwenye Firebase Console. Tafadhali tumia akaunti za majaribio au wasiliana na utawala.';
+      case 'auth/invalid-email':
+        return 'Muundo wa barua pepe si sahihi. Tafadhali hakikisha anwani imekamilika (mfano: jina@gmail.com).';
+      case 'auth/missing-email':
+        return 'Tafadhali weka anwani ya barua pepe.';
       case 'auth/user-disabled':
         return 'Akaunti hii imesitishwa na uongozi wa shule. Tafadhali wasiliana na ofisi ya Mkuu wa Shule.';
       case 'auth/requires-recent-login':
@@ -213,7 +217,11 @@ export function formatAuthError(err: any, language: 'sw' | 'en' = 'en'): string 
     case 'auth/network-request-failed':
       return 'Network connection failed. Please check your internet connection and try again.';
     case 'auth/too-many-requests':
-      return 'Too many failed login attempts. Please wait a few moments before trying again.';
+      return 'Too many attempts. Please wait a few moments before trying again.';
+    case 'auth/invalid-email':
+      return 'Invalid email format. Please check and provide a valid email (e.g. name@gmail.com).';
+    case 'auth/missing-email':
+      return 'Please enter your email address.';
     case 'auth/popup-closed-by-user':
       return 'Google sign-in popup was closed before completing.';
     case 'auth/cancelled-popup-request':
@@ -978,23 +986,76 @@ export async function loginWithEmailPassword(
 }
 
 /**
- * Send password reset email
+ * Send password reset email using Firebase Auth sendPasswordResetEmail
  */
-export async function sendResetPassword(email: string): Promise<{ success: boolean; error?: string }> {
+export async function sendResetPassword(
+  email: string,
+  language: 'sw' | 'en' = 'en'
+): Promise<{ success: boolean; error?: string }> {
   try {
-    await sendPasswordResetEmail(auth, email.trim());
+    const cleanEmail = (email || '').trim();
+    if (!cleanEmail) {
+      return {
+        success: false,
+        error: language === 'sw' ? 'Tafadhali ingiza barua pepe yako.' : 'Please enter your email address.',
+      };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return {
+        success: false,
+        error:
+          language === 'sw'
+            ? 'Muundo wa barua pepe si sahihi (mfano: jina@gmail.com).'
+            : 'Invalid email address format (e.g. name@gmail.com).',
+      };
+    }
+
+    await sendPasswordResetEmail(auth, cleanEmail);
     return { success: true };
   } catch (err: any) {
-    // Section 8: Never reveal whether an email address exists in the system
-    if (
-      err?.code === 'auth/user-not-found' ||
-      err?.code === 'auth/invalid-email' ||
-      err?.code === 'auth/invalid-credential'
-    ) {
+    const code = err?.code || '';
+    // OWASP & Firebase Auth Security Best Practice:
+    // Never reveal whether an email exists or not to prevent account enumeration
+    if (code === 'auth/user-not-found' || code === 'auth/invalid-credential') {
       return { success: true };
     }
+
+    if (code === 'auth/invalid-email') {
+      return {
+        success: false,
+        error:
+          language === 'sw'
+            ? 'Muundo wa barua pepe si sahihi. Tafadhali thibitisha anwani yako.'
+            : 'The email address is badly formatted. Please check your email.',
+      };
+    }
+
+    if (code === 'auth/too-many-requests') {
+      return {
+        success: false,
+        error:
+          language === 'sw'
+            ? 'Majaribio mengi ya kuomba nenosiri yamefanyika. Tafadhali subiri kidogo kisha ujaribu tena.'
+            : 'Too many reset requests. Please wait a few moments before trying again.',
+      };
+    }
+
+    if (code === 'auth/network-request-failed') {
+      return {
+        success: false,
+        error:
+          language === 'sw'
+            ? 'Hitilafu ya mtandao. Tafadhali hakikisha kifaa chako kimeunganishwa kwenye intaneti.'
+            : 'Network error. Please check your internet connection and try again.',
+      };
+    }
+
+    console.warn("sendPasswordResetEmail error:", err);
     return {
-      success: true, // Always return success for user privacy
+      success: false,
+      error: formatAuthError(err, language),
     };
   }
 }

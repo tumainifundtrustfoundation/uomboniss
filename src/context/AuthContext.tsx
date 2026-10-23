@@ -131,8 +131,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           try {
             localStorage.setItem('uomboni_active_session', JSON.stringify({ user: firebaseUser, profile }));
           } catch (e) {}
-          // If in an auth screen, transition to portal
-          setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'portal' : prev));
+          // If in an auth screen, transition to website
+          setActiveView((prev) => (prev === 'login' || prev === 'signup' ? 'website' : prev));
         } catch (err) {
           console.error("Error setting up user profile:", err);
         }
@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(res.user);
         setUserProfile(res.profile);
         setActiveRoleDashboard(res.profile.role);
-        setActiveView('portal');
+        setActiveView('website');
         try {
           localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
         } catch (e) {}
@@ -255,13 +255,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(res.user);
         setUserProfile(res.profile);
         setActiveRoleDashboard(res.profile.role);
-        setActiveView('portal');
+        setActiveView('website');
         try {
           localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
         } catch (e) {}
         setAuthMessage({
           type: 'success',
-          text: `Karibu kwenye Uomboni Digital Portal, ${res.profile.fullName}!`,
+          text: `Karibu kwenye tovuti ya Uomboni Secondary School, ${res.profile.fullName}!`,
         });
         return { success: true };
       }
@@ -286,13 +286,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(res.user);
         setUserProfile(res.profile);
         setActiveRoleDashboard(res.profile.role);
-        setActiveView('portal');
+        setActiveView('website');
         try {
           localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
         } catch (e) {}
         setAuthMessage({
           type: 'success',
-          text: `Umeingia kama ${res.profile.fullName} (${role.toUpperCase()}) - Uomboni Portal.`,
+          text: `Umeingia kama ${res.profile.fullName} (${role.toUpperCase()}) - Uomboni Secondary School.`,
         });
         return { success: true };
       }
@@ -315,7 +315,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await logOutFromFirebase();
       setUser(null);
       setUserProfile(null);
-      handleSetActiveView('login');
+      handleSetActiveView('website');
       setAuthMessage({
         type: 'info',
         text: 'You have been successfully logged out. Umefanikiwa kutoka kwenye mfumo wa Uomboni.',
@@ -335,7 +335,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (res.success) {
         setAuthMessage({
           type: 'success',
-          text: 'Maelekezo ya kurejesha nenosiri yametumwa ikiwa akaunti hiyo ipo.',
+          text: 'Ikiwa barua pepe hii imesajiliwa katika mfumo, maelekezo ya kurejesha nenosiri yametumwa. Tafadhali kagua Inbox au Spam folder yako.',
         });
         return { success: true };
       }

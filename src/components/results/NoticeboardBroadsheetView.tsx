@@ -461,7 +461,7 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border-2 border-slate-300 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border-2 border-slate-300 shadow-sm scrollbar-thin">
             <table className="w-full text-left text-[11px] border-collapse font-sans whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-900 text-white font-bold text-[10px] uppercase">
