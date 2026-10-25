@@ -51,6 +51,7 @@ export function detectUserRoleFromIdentifier(identifier: string): DetectedRoleIn
     'adolphmassawe',
     'tumaini',
     'tumainifundtrustfoundation',
+    'lupanulla',
     'uongozi',
   ];
   if (adminKeywords.some((k) => lower === k || lower.startsWith(k) || lower.includes(`@${k}`) || lower.includes(k))) {

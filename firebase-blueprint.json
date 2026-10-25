@@ -2,20 +2,27 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "User account with role, contact info, and status.",
+      "description": "User account with role, RBAC approval status, assigned departments, and assigned subjects.",
       "type": "object",
       "properties": {
         "uid": { "type": "string", "description": "Unique Firebase Authentication UID." },
         "fullName": { "type": "string", "description": "Full legal name." },
         "email": { "type": "string", "format": "email", "description": "Email address." },
         "phone": { "type": "string", "description": "Mobile phone number." },
-        "role": { "type": "string", "enum": ["admin", "teacher", "student"], "description": "User role." },
+        "role": { "type": "string", "enum": ["admin", "academic_master", "teacher", "student", "parent", "bursar", "staff", "guest"], "description": "User role." },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "disabled"], "description": "Administrative approval status." },
+        "assignedDepartments": { "type": "array", "description": "List of school departments assigned by admin." },
+        "assignedSubjects": { "type": "array", "description": "List of academic subjects teacher is authorized to grade." },
+        "assignedClasses": { "type": "array", "description": "List of classes teacher is authorized to teach." },
         "photoURL": { "type": "string", "description": "Profile picture URL." },
         "active": { "type": "boolean", "description": "Whether user account is active." },
+        "approvedBy": { "type": "string", "description": "UID or name of administrator who approved." },
+        "approvedAt": { "type": "string", "description": "Approval timestamp." },
+        "rejectionReason": { "type": "string", "description": "Reason if rejected." },
         "createdAt": { "type": "string", "description": "Creation timestamp." },
         "updatedAt": { "type": "string", "description": "Last update timestamp." }
       },
-      "required": ["uid", "fullName", "email", "role", "active", "createdAt", "updatedAt"]
+      "required": ["uid", "fullName", "email", "role", "status", "active", "createdAt", "updatedAt"]
     },
     "Student": {
       "title": "Student",

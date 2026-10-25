@@ -1,0 +1,24 @@
+[
+  {
+    "eventType": "UNAUTHORIZED_RBAC_ATTEMPT",
+    "identifier": "unauthorized.hacker@evil.com",
+    "role": "unknown",
+    "ip": "127.0.0.1",
+    "userAgent": "curl/7.88.1",
+    "success": false,
+    "details": "Mtumiaji asiyeidhinishwa amejaribu kubadilisha RBAC ya mtumiaji test-uid-123. Ombi limekataliwa.",
+    "id": "sec-log-1792927654858-6d3873a6",
+    "timestamp": "2026-10-25T11:27:34.859Z"
+  },
+  {
+    "eventType": "USER_RBAC_UPDATED",
+    "identifier": "tumainifundtrustfoundation@gmail.com",
+    "role": "admin",
+    "ip": "127.0.0.1",
+    "userAgent": "curl/7.88.1",
+    "success": true,
+    "details": "Msimamizi amesasisha RBAC ya mtumiaji test-uid-123 (teacher, Hali: approved, Masomo: Kiswahili).",
+    "id": "sec-log-1792927647821-c8241321",
+    "timestamp": "2026-10-25T11:27:27.822Z"
+  }
+]

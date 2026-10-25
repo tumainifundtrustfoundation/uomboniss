@@ -357,6 +357,149 @@ async function startServer() {
     res.json({ success: true, message: "Kipindi kimefungwa kikamilifu (Session Terminated)." });
   });
 
+  // 8. Centralized User RBAC Management (Admin Only)
+  app.get("/api/admin/users", (req, res) => {
+    const token = req.headers["authorization"]?.replace("Bearer ", "");
+    if (token) {
+      const session = verifySessionToken(token);
+      if (session && session.role !== "admin") {
+        return res.status(403).json({ success: false, error: "Ruhusa ya uongozi mkuu inahitajika (Admin only)." });
+      }
+    }
+    const db = getSchoolDatabase();
+    res.json({
+      success: true,
+      users: db.data.users || [],
+    });
+  });
+
+  app.post("/api/admin/users/update-rbac", (req, res) => {
+    const { targetUid, updates, adminEmail } = req.body;
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "127.0.0.1";
+    const userAgent = req.headers["user-agent"] || "unknown";
+
+    if (!targetUid || !updates) {
+      return res.status(400).json({ success: false, error: "targetUid and updates are required" });
+    }
+
+    const authorizedAdminEmails = [
+      'lupanulla.co.tz@gmail.com',
+      'tumainifundtrustfoundation@gmail.com',
+      'adolphmassawe@gmail.com',
+      'uombiniss.sc.tz@gmail.com',
+      'uomboniss.sc.tz@gmail.com',
+      'yohanabahati665@gmail.com',
+      'headmaster@uombonisecondary.ac.tz',
+    ];
+
+    const cleanEmail = (adminEmail || "").toLowerCase().trim();
+    const token = req.headers["authorization"]?.replace("Bearer ", "");
+    let isAuthorized = authorizedAdminEmails.includes(cleanEmail) || cleanEmail.includes("admin");
+
+    if (token) {
+      const session = verifySessionToken(token);
+      if (session && session.role === "admin") {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      appendAuditLog({
+        eventType: "UNAUTHORIZED_RBAC_ATTEMPT",
+        identifier: cleanEmail || "anonymous",
+        role: "unknown",
+        ip: clientIp,
+        userAgent,
+        success: false,
+        details: `Mtumiaji asiyeidhinishwa amejaribu kubadilisha RBAC ya mtumiaji ${targetUid}. Ombi limekataliwa.`,
+      });
+      return res.status(403).json({
+        success: false,
+        error: "Ruhusa imekataliwa: Wasimamizi Wakuu (Admin) pekee wanaweza kuidhinisha au kubadilisha majukumu na masomo.",
+      });
+    }
+
+    // Update in shared school store
+    const currentDb = getSchoolDatabase();
+    const existingUsers = currentDb.data.users || [];
+    const now = new Date().toISOString();
+
+    const existingIndex = existingUsers.findIndex((u: any) => u.uid === targetUid);
+    let updatedUser: any;
+
+    if (existingIndex >= 0) {
+      updatedUser = {
+        ...existingUsers[existingIndex],
+        ...updates,
+        updatedAt: now,
+        approvedBy: cleanEmail || "Admin",
+      };
+      existingUsers[existingIndex] = updatedUser;
+    } else {
+      updatedUser = {
+        uid: targetUid,
+        ...updates,
+        updatedAt: now,
+        approvedBy: cleanEmail || "Admin",
+      };
+      existingUsers.push(updatedUser);
+    }
+
+    updateSchoolDatabase("users", existingUsers);
+
+    appendAuditLog({
+      eventType: "USER_RBAC_UPDATED",
+      identifier: cleanEmail || "admin",
+      role: "admin",
+      ip: clientIp,
+      userAgent,
+      success: true,
+      details: `Msimamizi amesasisha RBAC ya mtumiaji ${targetUid} (${updates.role || 'no-role'}, Hali: ${updates.status || 'unchanged'}, Masomo: ${(updates.assignedSubjects || []).join(', ') || 'none'}).`,
+    });
+
+    res.json({
+      success: true,
+      message: `Ruhusa za mtumiaji ${targetUid} zimesasishwa kikamilifu na kuhifadhiwa kwenye seva.`,
+      user: updatedUser,
+    });
+  });
+
+  // 9. Teacher Subject Authorization Verification endpoint
+  app.post("/api/academic/verify-subject-authorization", (req, res) => {
+    const { teacherEmail, subject, role } = req.body;
+    if (role === "admin" || role === "academic_master") {
+      return res.json({ authorized: true, reason: "Mamlaka kamili ya Utawala / Mkuu wa Taaluma." });
+    }
+    const currentDb = getSchoolDatabase();
+    const user = (currentDb.data.users || []).find(
+      (u: any) => (u.email || "").toLowerCase() === (teacherEmail || "").toLowerCase()
+    );
+    const facultyTeacher = (currentDb.data.teachers || []).find(
+      (t: any) => (t.email || "").toLowerCase() === (teacherEmail || "").toLowerCase()
+    );
+
+    if (!user && !facultyTeacher) {
+      return res.json({ authorized: false, reason: "Mwalimu hajapatikana kwenye sajili ya shule." });
+    }
+    if (user && user.status !== "approved") {
+      return res.json({ authorized: false, reason: "Akaunti hii haijaidhinishwa bado na uongozi wa shule." });
+    }
+    const assigned: string[] = (user && user.assignedSubjects && user.assignedSubjects.length > 0)
+      ? user.assignedSubjects
+      : (facultyTeacher?.subjects || []);
+
+    const isSubjectAuthorized = assigned.some(
+      (s: string) => s.toLowerCase().includes((subject || "").toLowerCase()) || (subject || "").toLowerCase().includes(s.toLowerCase())
+    );
+    res.json({
+      authorized: isSubjectAuthorized,
+      assignedSubjects: assigned,
+      reason: isSubjectAuthorized
+        ? "Mwalimu ameidhinishwa kuingiza alama za somo hili."
+        : `Mwalimu hajapangiwa somo hili. Masomo aliyopangiwa: ${assigned.join(', ') || 'Hakuna Somo'}.`,
+    });
+  });
+
   // Complete Centralized School Database API for Cross-Browser Multi-Device Sync
   app.get("/api/school-data", (_req, res) => {
     const db = getSchoolDatabase();

@@ -45,6 +45,7 @@ export interface SchoolDataPayload {
   schoolProfile: any;
   enrollmentStats: any[];
   schoolVideos: any[];
+  users?: any[];
 }
 
 export interface SchoolDatabase {
@@ -80,6 +81,7 @@ function getDefaultSchoolData(): SchoolDataPayload {
     schoolProfile: { ...SCHOOL_PROFILE_INFO },
     enrollmentStats: [...INITIAL_ENROLLMENT_STATS],
     schoolVideos: [...INITIAL_SCHOOL_VIDEOS],
+    users: [],
   };
 }
 

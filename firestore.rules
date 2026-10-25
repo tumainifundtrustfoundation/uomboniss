@@ -17,6 +17,16 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    // Helper: Check if account has been verified and approved by school administration
+    function isApproved() {
+      return isAuthenticated() && (
+        isAdmin() || (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          getUserData().status == 'approved'
+        )
+      );
+    }
+
     // Helper: Check user role
     function hasRole(roleName) {
       return isAuthenticated() && 
@@ -27,6 +37,7 @@ service cloud.firestore {
     function isAdmin() {
       return (isAuthenticated() && (
         (request.auth.token.email != null && (
+          request.auth.token.email == 'lupanulla.co.tz@gmail.com' ||
           request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
           request.auth.token.email == 'adolphmassawe@gmail.com' ||
           request.auth.token.email == 'uombiniss.sc.tz@gmail.com' ||
@@ -35,11 +46,11 @@ service cloud.firestore {
           request.auth.token.email == 'headmaster@uombonisecondary.ac.tz' ||
           request.auth.token.email.matches('.*admin.*@uomboni.*')
         ))
-      )) || hasRole('admin');
+      )) || (hasRole('admin') && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().status == 'approved');
     }
 
     function isAcademicMaster() {
-      return isAdmin() || hasRole('academic_master') || (
+      return isAdmin() || (hasRole('academic_master') && isApproved()) || (
         isAuthenticated() && request.auth.token.email != null && (
           request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
           request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
@@ -50,7 +61,7 @@ service cloud.firestore {
     }
 
     function isBursar() {
-      return isAdmin() || hasRole('bursar') || (
+      return isAdmin() || (hasRole('bursar') && isApproved()) || (
         isAuthenticated() && request.auth.token.email != null && (
           request.auth.token.email == 'sigminja@gmail.com' ||
           request.auth.token.email.matches('.*bursar.*@uomboni.*')
@@ -59,14 +70,14 @@ service cloud.firestore {
     }
 
     function isTeacher() {
-      return isAdmin() || isAcademicMaster() || hasRole('teacher') || (
+      return isAdmin() || isAcademicMaster() || (hasRole('teacher') && isApproved()) || (
         isAuthenticated() && request.auth.token.email != null && 
         request.auth.token.email.matches('.*(teacher|walimu|academic).*@uomboni.*')
       );
     }
 
     function isStaff() {
-      return isAdmin() || isTeacher() || isBursar() || hasRole('staff');
+      return isAdmin() || isTeacher() || isBursar() || (hasRole('staff') && isApproved());
     }
 
     // ====================================================
@@ -83,29 +94,47 @@ service cloud.firestore {
     }
 
     // ====================================================
-    // USERS COLLECTION
-    // Users can read/write their own profile
-    // Only Admin can assign/modify roles or delete profiles
-    // Normal users CANNOT assign themselves 'admin'
+    // USERS COLLECTION (users/{userId})
+    // Enforces UID matching, zero self-privilege escalation,
+    // mandatory pending status on new self-registration,
+    // and immutable role/status/subjects for non-admins.
     // ====================================================
     match /users/{userId} {
-      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin() || isAcademicMaster());
       allow list: if isAdmin();
       
-      // On create, user must be creating their own profile, role cannot be 'admin' unless already admin
+      // On create:
+      // Admins can create approved accounts.
+      // Normal self-registering users:
+      // - Must set uid matching auth.uid
+      // - Must have status == 'pending'
+      // - CANNOT assign themselves 'admin', 'academic_master', 'teacher', or 'bursar'
+      // - CANNOT assign themselves departments or subjects
       allow create: if isAuthenticated() && 
         isValidId(userId) && 
+        request.resource.data.uid == userId &&
         (request.auth.uid == userId || isAdmin()) &&
-        (request.resource.data.role != 'admin' || isAdmin()) &&
-        request.resource.data.uid == userId;
+        (
+          isAdmin() ||
+          (
+            request.resource.data.status == 'pending' &&
+            !(request.resource.data.role in ['admin', 'academic_master', 'teacher', 'bursar'])
+          )
+        );
 
-      // On update, users can update profile details, but CANNOT escalate their role
+      // On update:
+      // Admins can update any user field.
+      // Normal users can ONLY update their personal non-RBAC fields.
+      // Normal users CANNOT change role, status, assignedDepartments, or assignedSubjects.
       allow update: if isAuthenticated() && (
         isAdmin() || 
         (
           request.auth.uid == userId && 
+          request.resource.data.uid == resource.data.uid &&
           request.resource.data.role == resource.data.role &&
-          request.resource.data.uid == resource.data.uid
+          request.resource.data.status == resource.data.status &&
+          (!('assignedDepartments' in resource.data) || request.resource.data.assignedDepartments == resource.data.assignedDepartments) &&
+          (!('assignedSubjects' in resource.data) || request.resource.data.assignedSubjects == resource.data.assignedSubjects)
         )
       );
 
@@ -113,13 +142,19 @@ service cloud.firestore {
     }
 
     // ====================================================
-    // STUDENTS COLLECTION
-    // Authenticated users and portal lookup can view student records
-    // Only staff / admin can add or modify
+    // STUDENTS COLLECTION (Personal Data Protection)
+    // Only authenticated and approved staff/students/parents can view biodata
+    // Only Admin & Academic Master can modify
     // ====================================================
     match /students/{studentDocId} {
-      allow get, list: if true;
-      allow create, update, delete: if isValidId(studentDocId) && isStaff();
+      allow get, list: if isAuthenticated() && (
+        isAdmin() || 
+        isAcademicMaster() || 
+        isTeacher() || 
+        (hasRole('parent') && isApproved()) ||
+        (hasRole('student') && isApproved())
+      );
+      allow create, update, delete: if isValidId(studentDocId) && (isAdmin() || isAcademicMaster());
     }
 
     // ====================================================
@@ -134,18 +169,18 @@ service cloud.firestore {
 
     // ====================================================
     // TEACHERS COLLECTION
+    // Public directory of teachers; only admin can create/modify
     // ====================================================
     match /teachers/{teacherDocId} {
       allow get, list: if true;
-      allow create, update: if isValidId(teacherDocId) && (request.auth.uid == teacherDocId || isAdmin());
-      allow delete: if isAdmin();
+      allow create, update, delete: if isValidId(teacherDocId) && isAdmin();
     }
 
     // ====================================================
     // STAFF COLLECTION
     // ====================================================
     match /staff/{staffDocId} {
-      allow get, list: if isAuthenticated();
+      allow get, list: if isAuthenticated() && isApproved();
       allow create, update, delete: if isValidId(staffDocId) && isAdmin();
     }
 
@@ -154,12 +189,12 @@ service cloud.firestore {
     // ====================================================
     match /classes/{classDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(classDocId) && (isStaff() || isTeacher() || isAdmin());
+      allow create, update, delete: if isValidId(classDocId) && (isAdmin() || isAcademicMaster());
     }
 
     match /subjects/{subjectDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(subjectDocId) && (isStaff() || isTeacher() || isAdmin());
+      allow create, update, delete: if isValidId(subjectDocId) && (isAdmin() || isAcademicMaster());
     }
 
     // ====================================================
@@ -167,37 +202,38 @@ service cloud.firestore {
     // ====================================================
     match /exams/{examDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(examDocId) && (isTeacher() || isAdmin());
+      allow create, update, delete: if isValidId(examDocId) && (isAdmin() || isAcademicMaster());
     }
 
     // ====================================================
     // ACADEMIC RESULTS
-    // Public can only view published results
-    // Only Admin & Academic Master can record or publish official results
+    // Published results can be read by public/students.
+    // Unpublished/draft marks are strictly restricted to staff.
+    // Only Admin & Academic Master can record or publish official results.
     // ====================================================
     match /results/{resultDocId} {
-      allow get, list: if true;
+      allow get, list: if (resource.data.status == 'published') || isAdmin() || isAcademicMaster() || (isTeacher() && isApproved());
       allow create, update, delete: if isValidId(resultDocId) && (isAdmin() || isAcademicMaster());
     }
 
-    // Published broadsheet examination results (Only certified by Academic Master or Admin)
+    // Certified published examination results
     match /published_results/{publishedDocId} {
       allow get, list: if true;
       allow create, update, delete: if isValidId(publishedDocId) && (isAdmin() || isAcademicMaster());
     }
 
     // Pending teacher submissions awaiting Academic Master certification
-    // Teachers can save drafts & submit, but CANNOT self-approve or overwrite approved results
+    // Only approved teachers can submit marks for their assigned subjects; they cannot self-approve
     match /pendingResults/{pendingDocId} {
-      allow get, list: if isStaff();
-      allow create: if isValidId(pendingDocId) && isStaff() && 
+      allow get, list: if isAdmin() || isAcademicMaster() || (isTeacher() && isApproved());
+      allow create: if isValidId(pendingDocId) && isTeacher() && isApproved() && 
         (request.resource.data.status in ['draft', 'pending']) && 
         (request.resource.data.status != 'approved');
-      allow update: if isValidId(pendingDocId) && isStaff() && (
+      allow update: if isValidId(pendingDocId) && (
         isAdmin() ||
         isAcademicMaster() ||
         (
-          isTeacher() &&
+          isTeacher() && isApproved() &&
           resource.data.status in ['draft', 'returned'] &&
           request.resource.data.status in ['draft', 'pending'] &&
           request.resource.data.status != 'approved'
@@ -205,20 +241,20 @@ service cloud.firestore {
       );
       allow delete: if isValidId(pendingDocId) && (
         isAdmin() ||
-        (isTeacher() && resource.data.status == 'draft')
+        (isTeacher() && isApproved() && resource.data.status == 'draft')
       );
     }
 
     match /subjectSubmissions/{subDocId} {
-      allow get, list: if isStaff();
-      allow create: if isValidId(subDocId) && isStaff() && 
+      allow get, list: if isAdmin() || isAcademicMaster() || (isTeacher() && isApproved());
+      allow create: if isValidId(subDocId) && isTeacher() && isApproved() && 
         (request.resource.data.status in ['draft', 'pending']) && 
         (request.resource.data.status != 'approved');
-      allow update: if isValidId(subDocId) && isStaff() && (
+      allow update: if isValidId(subDocId) && (
         isAdmin() ||
         isAcademicMaster() ||
         (
-          isTeacher() &&
+          isTeacher() && isApproved() &&
           resource.data.status in ['draft', 'returned'] &&
           request.resource.data.status in ['draft', 'pending'] &&
           request.resource.data.status != 'approved'
@@ -226,7 +262,7 @@ service cloud.firestore {
       );
       allow delete: if isValidId(subDocId) && (
         isAdmin() ||
-        (isTeacher() && resource.data.status == 'draft')
+        (isTeacher() && isApproved() && resource.data.status == 'draft')
       );
     }
 

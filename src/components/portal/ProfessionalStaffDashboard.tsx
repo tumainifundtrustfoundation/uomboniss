@@ -84,6 +84,7 @@ import {
 import { Database, FileCheck, Lock, ShieldAlert, UploadCloud, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { OfficialExamReportPrintView } from '../results/OfficialExamReportPrintView';
+import { ExcelResultsEntryGrid } from './ExcelResultsEntryGrid';
 
 export interface ProfessionalStaffDashboardProps {
   onClose?: () => void;
@@ -147,10 +148,16 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
   }, [teachers, user, userProfile]);
 
   // Assigned subjects for the teacher (Admins/Academic Master have access to all)
+  // Assigned subjects for the teacher (Admins/Academic Master have access to all)
   const teacherSubjects: string[] = useMemo(() => {
     if (isAdminOrAcademic) {
       return OFFICIAL_NECTA_SUBJECTS.map((s) => s.name);
     }
+    // 1. Prioritize assignedSubjects from secure userProfile (RBAC)
+    if (userProfile?.assignedSubjects && userProfile.assignedSubjects.length > 0) {
+      return userProfile.assignedSubjects;
+    }
+    // 2. Fall back to activeTeacher database registry
     if (activeTeacher.subjects && activeTeacher.subjects.length > 0) {
       // Split combinations like "Chemistry and mathematics" into individual subjects
       const parsed: string[] = [];
@@ -174,7 +181,7 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
       return Array.from(new Set(parsed));
     }
     return ['Chemistry', 'Basic Mathematics'];
-  }, [isAdminOrAcademic, activeTeacher]);
+  }, [isAdminOrAcademic, activeTeacher, userProfile]);
 
   // ----------------------------------------------------
   // ACTIVE NAVIGATION TABS
@@ -307,6 +314,7 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [reportsSubView, setReportsSubView] = useState<'official_sheet' | 'individual_cards'>('official_sheet');
+  const [spreadsheetMode, setSpreadsheetMode] = useState<'excel_grid' | 'classic_single'>('excel_grid');
 
   // Keyboard navigation & Excel import refs
   const inputRefs = useRef<Record<number, HTMLInputElement | null>>({});
@@ -523,9 +531,9 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
               const cno = valOf('exam') || valOf('namba') || valOf('index') || valOf('cno');
               const name = valOf('name') || valOf('jina') || valOf('mwanafunzi');
 
-              const matchCno = cno && (row.examNumber.toLowerCase().includes(cno.toLowerCase()) || cno.toLowerCase().includes(row.examNumber.toLowerCase()));
-              const matchName = name && (row.fullName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(row.fullName.toLowerCase()));
-              return matchCno || matchName;
+              const matchCno = cno && (String(row.examNumber || '').toLowerCase().includes(cno.toLowerCase()) || cno.toLowerCase().includes(String(row.examNumber || '').toLowerCase()));
+              const matchName = name && (String(row.fullName || '').toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(String(row.fullName || '').toLowerCase()));
+              return Boolean(matchCno || matchName);
             });
 
             if (!matched) return row;
@@ -620,6 +628,15 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
   const handleSaveDraft = async () => {
     setSaveErrorMsg(null);
     setSaveSuccessMsg(null);
+
+    // Subject authorization guard
+    if (!isAdminOrAcademic && !teacherSubjects.includes(selectedSubject)) {
+      setSaveErrorMsg(
+        `Huna mamlaka ya kuingiza au kurekebisha matokeo ya somo la "${selectedSubject}". Umeruhusiwa masomo: ${teacherSubjects.join(', ')}.`
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     const validScores = marksRows
@@ -682,6 +699,14 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
   const handleSubmitResults = async () => {
     setSaveErrorMsg(null);
     setSaveSuccessMsg(null);
+
+    // Subject authorization guard
+    if (!isAdminOrAcademic && !teacherSubjects.includes(selectedSubject)) {
+      setSaveErrorMsg(
+        `Huna mamlaka ya kuwasilisha matokeo ya somo la "${selectedSubject}". Umeruhusiwa masomo: ${teacherSubjects.join(', ')}.`
+      );
+      return;
+    }
 
     const entered = marksRows.filter((r) => typeof r.score === 'number');
     if (entered.length === 0) {
@@ -1565,12 +1590,73 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
           {/* ==================================================== */}
           {activeTab === 'enter_marks' && (
             <div className="space-y-6">
-              {/* Header & Unsaved Changes Alert */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-xl text-[#102A43]">Kuingiza Alama za Mitihani (Marks Entry)</h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
+              {/* Top View Mode Switcher */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-700">Mfumo wa Kuingiza Alama:</span>
+                  <div className="inline-flex rounded-xl bg-slate-100 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setSpreadsheetMode('excel_grid')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        spreadsheetMode === 'excel_grid'
+                          ? 'bg-[#102A43] text-white shadow-xs'
+                          : 'text-slate-600 hover:text-[#102A43]'
+                      }`}
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Jedwali Kuu la Excel (Copy-Paste &amp; Broadsheet)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSpreadsheetMode('classic_single')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        spreadsheetMode === 'classic_single'
+                          ? 'bg-[#102A43] text-white shadow-xs'
+                          : 'text-slate-600 hover:text-[#102A43]'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Mwonekano Fupi wa Somo Moja</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-slate-500 font-semibold">
+                  {spreadsheetMode === 'excel_grid'
+                    ? '✨ Inaruhusu kunakili na kubandika moja kwa moja kutoka Excel bila kukatika!'
+                    : 'Uingizaji wa kawaida wa somo moja'}
+                </div>
+              </div>
+
+              {spreadsheetMode === 'excel_grid' ? (
+                <ExcelResultsEntryGrid
+                  userProfile={userProfile}
+                  currentUserEmail={user?.email}
+                  isAdminOrAcademic={isAdminOrAcademic}
+                  studentsList={students || []}
+                  assignedSubjects={teacherSubjects}
+                  assignedClasses={userProfile?.assignedClasses || ['Form 1', 'Form 2', 'Form 3', 'Form 4']}
+                  initialForm={selectedForm}
+                  initialExamType={selectedExamType}
+                  initialAcademicYear={academicYear}
+                  initialTerm={selectedTerm}
+                  onOpenReportPrint={(form, exam) => {
+                    setSelectedForm(form as any);
+                    setSelectedExamType(exam);
+                    setActiveTab('reports');
+                  }}
+                />
+              ) : (
+                <div className="space-y-6">
+                  {/* Header & Unsaved Changes Alert */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-xl text-[#102A43]">Kuingiza Alama za Mitihani (Marks Entry)</h3>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
+                          🔒 Somo Lako Pekee
+                        </span>
                       🔒 Somo Lako Pekee
                     </span>
                   </div>

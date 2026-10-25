@@ -12,7 +12,9 @@ export type SecurityEventType =
   | 'PASSWORD_RESET_REQUESTED'
   | 'LOGOUT'
   | 'ADMIN_UNLOCKED'
-  | 'SECURITY_CHECK';
+  | 'SECURITY_CHECK'
+  | 'UNAUTHORIZED_RBAC_ATTEMPT'
+  | 'USER_RBAC_UPDATED';
 
 export interface SecurityAuditLog {
   id: string;

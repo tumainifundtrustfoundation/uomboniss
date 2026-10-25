@@ -6,12 +6,16 @@ import {
   User,
   UserProfile,
   UserRole,
+  UserStatus,
   getUserProfile,
   syncUserProfile,
   loginWithEmailPassword,
   registerWithEmailPassword,
   signInWithGoogle,
   signInAsDemoRole,
+  signInAsTestPendingUser,
+  signInAsTestDisabledUser,
+  updateUserRbacInFirestore,
   logOutFromFirebase,
   sendResetPassword,
   resendVerificationEmail,
@@ -56,6 +60,19 @@ interface AuthContextType {
   checkVerification: () => Promise<boolean>;
   refreshProfile: () => Promise<UserProfile | null>;
   updateUserRoleByAdmin: (targetUid: string, newRole: UserRole) => Promise<{ success: boolean; error?: string }>;
+  updateUserRbacByAdmin: (
+    targetUid: string,
+    updates: {
+      role?: UserRole;
+      status?: import('../lib/firebase').UserStatus;
+      assignedDepartments?: string[];
+      assignedSubjects?: string[];
+      assignedClasses?: string[];
+      rejectionReason?: string;
+    }
+  ) => Promise<{ success: boolean; error?: string }>;
+  loginWithTestPendingUser: () => Promise<{ success: boolean; error?: string }>;
+  loginWithTestDisabledUser: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -393,27 +410,86 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateUserRoleByAdmin = async (targetUid: string, newRole: UserRole) => {
+    return updateUserRbacByAdmin(targetUid, { role: newRole });
+  };
+
+  const updateUserRbacByAdmin = async (
+    targetUid: string,
+    updates: {
+      role?: UserRole;
+      status?: UserStatus;
+      assignedDepartments?: string[];
+      assignedSubjects?: string[];
+      assignedClasses?: string[];
+      rejectionReason?: string;
+    }
+  ) => {
     // Check if current user is admin
     if (userProfile?.role !== 'admin') {
-      return { success: false, error: 'Idhini haitoshi: Wasimamizi pekee (Admin) wanaweza kubadilisha majukumu.' };
+      return { success: false, error: 'Idhini haitoshi: Wasimamizi pekee (Admin) wanaweza kuidhinisha au kubadilisha majukumu na masomo.' };
     }
-    try {
-      const userRef = doc(db, 'users', targetUid);
-      await updateDoc(userRef, {
-        role: newRole,
-        updatedAt: new Date().toISOString(),
-      });
+    const adminName = userProfile?.fullName || 'Administrator';
+    const res = await updateUserRbacInFirestore(targetUid, updates, adminName);
+    if (res.success) {
+      // Also notify backend API to keep audit logs and server memory synchronized
+      try {
+        await fetch('/api/admin/users/update-rbac', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetUid,
+            updates,
+            adminEmail: user?.email || userProfile?.email || 'admin@uombonisecondary.ac.tz',
+          }),
+        });
+      } catch (e) {}
+
       // If updating self
       if (targetUid === user?.uid && userProfile) {
-        setUserProfile({ ...userProfile, role: newRole });
-        setActiveRoleDashboard(newRole);
+        setUserProfile({
+          ...userProfile,
+          ...updates,
+          status: updates.status || userProfile.status,
+          role: updates.role || userProfile.role,
+        });
+        if (updates.role) setActiveRoleDashboard(updates.role);
       }
       return { success: true };
-    } catch (err: any) {
-      if (err?.code === 'permission-denied') {
-        handleFirestoreError(err, OperationType.UPDATE, `users/${targetUid}`);
-      }
-      return { success: false, error: err?.message || 'Imeshindwa kusasisha jukumu.' };
+    }
+    return res;
+  };
+
+  const loginWithTestPendingUser = async () => {
+    setLoading(true);
+    setAuthMessage(null);
+    try {
+      const res = await signInAsTestPendingUser();
+      setUser(res.user);
+      setUserProfile(res.profile);
+      setActiveRoleDashboard(res.profile.role);
+      setActiveView('portal');
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Error signing in as test pending user' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithTestDisabledUser = async () => {
+    setLoading(true);
+    setAuthMessage(null);
+    try {
+      const res = await signInAsTestDisabledUser();
+      setUser(res.user);
+      setUserProfile(res.profile);
+      setActiveRoleDashboard(res.profile.role);
+      setActiveView('portal');
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Error signing in as test disabled user' };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -439,6 +515,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         checkVerification,
         refreshProfile,
         updateUserRoleByAdmin,
+        updateUserRbacByAdmin,
+        loginWithTestPendingUser,
+        loginWithTestDisabledUser,
       }}
     >
       {children}

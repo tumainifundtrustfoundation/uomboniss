@@ -22,10 +22,18 @@ import {
   Lock,
 } from 'lucide-react';
 
+import { UnauthorizedAccountView } from '../auth/UnauthorizedAccountView';
+
 export const PortalContainer: React.FC = () => {
   const { user, userProfile, activeRoleDashboard, setActiveView } = useAuth();
   const { language } = useLanguage();
   const [currentTab, setCurrentTab] = useState('dashboard');
+
+  // Enforce zero-trust RBAC: Accounts with pending, rejected, or disabled status
+  // are strictly prohibited from viewing internal dashboards, student records, or marks.
+  if (user && userProfile && userProfile.status !== 'approved') {
+    return <UnauthorizedAccountView />;
+  }
 
   const notifications = [
     {

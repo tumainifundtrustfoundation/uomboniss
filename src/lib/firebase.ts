@@ -118,12 +118,21 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 // Role & Profile Definitions
 export type UserRole = 'student' | 'parent' | 'teacher' | 'staff' | 'admin' | 'bursar' | 'academic_master' | 'guest';
 
+export type UserStatus = 'pending' | 'approved' | 'rejected' | 'disabled';
+
 export interface UserProfile {
   uid: string;
   fullName: string;
   email: string;
   phone?: string;
   role: UserRole;
+  status: UserStatus;
+  assignedDepartments: string[];
+  assignedSubjects: string[];
+  assignedClasses?: string[];
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectionReason?: string;
   photoURL?: string | null;
   school: string;
   createdAt: string;
@@ -266,6 +275,14 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
       email: 'tumainifundtrustfoundation@gmail.com',
       phone: '+255 782 558 127',
       role: 'admin',
+      status: 'approved',
+      assignedDepartments: ['Utawala Mkuu', 'Taaluma'],
+      assignedSubjects: [
+        'Civics', 'History', 'Geography', 'Kiswahili', 'English Language',
+        'Physics', 'Chemistry', 'Biology', 'Basic Mathematics', 'Commerce',
+        'Bookkeeping', 'Religious Education'
+      ],
+      assignedClasses: ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'],
       school: 'UOMBONI SECONDARY SCHOOL',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -307,6 +324,7 @@ export async function syncUserProfile(
 
   const cleanEmail = (user.email || '').toLowerCase().trim();
   const isMasterAdminEmail =
+    cleanEmail === 'lupanulla.co.tz@gmail.com' ||
     cleanEmail === 'uombiniss.sc.tz@gmail.com' ||
     cleanEmail === 'uomboniss.sc.tz@gmail.com' ||
     cleanEmail === 'yohanabahati665@gmail.com' ||
@@ -315,13 +333,34 @@ export async function syncUserProfile(
     cleanEmail === 'headmaster@uombonisecondary.ac.tz' ||
     cleanEmail.includes('admin@uomboni');
 
+  const teacherDirEntry = Object.values(TEACHER_AUTH_DIRECTORY).find(
+    (t) => t.email.toLowerCase().trim() === cleanEmail
+  );
+
   let existing = await getUserProfile(user.uid);
 
   if (existing) {
-    // Determine updated role: authorized admin emails are always guaranteed admin
-    let safeRole = customData.role && customData.role !== 'admin' ? customData.role : existing.role;
+    // Preserve existing role and status unless master admin
+    let safeRole: UserRole = existing.role;
+    let safeStatus: UserStatus = existing.status || 'pending';
+    let safeDepartments: string[] = existing.assignedDepartments || [];
+    let safeSubjects: string[] = existing.assignedSubjects || [];
+    let safeClasses: string[] = existing.assignedClasses || [];
+
     if (isMasterAdminEmail) {
       safeRole = 'admin';
+      safeStatus = 'approved';
+      safeDepartments = ['Utawala Mkuu', 'Taaluma', 'Sayansi', 'Lugha', 'Sanaa', 'Biashara', 'Uhasibu', 'Nidhamu'];
+      safeSubjects = [
+        'Civics', 'History', 'Geography', 'Kiswahili', 'English Language',
+        'Physics', 'Chemistry', 'Biology', 'Basic Mathematics', 'Commerce',
+        'Bookkeeping', 'Religious Education'
+      ];
+      safeClasses = ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'];
+    } else if (teacherDirEntry && (!existing.assignedSubjects || existing.assignedSubjects.length === 0)) {
+      safeStatus = existing.status || 'approved';
+      safeDepartments = [teacherDirEntry.department];
+      safeSubjects = teacherDirEntry.assignedSubjects;
     }
 
     const updatedData: Partial<UserProfile> = {
@@ -329,7 +368,11 @@ export async function syncUserProfile(
       email: user.email || existing.email,
       phone: customData.phone !== undefined ? customData.phone : (existing.phone || ''),
       photoURL: user.photoURL || existing.photoURL || null,
-      role: isMasterAdminEmail ? 'admin' : (existing.role === 'admin' ? 'admin' : safeRole),
+      role: safeRole,
+      status: safeStatus,
+      assignedDepartments: safeDepartments,
+      assignedSubjects: safeSubjects,
+      assignedClasses: safeClasses,
       updatedAt: now,
       lastLogin: now,
       emailVerified: user.emailVerified,
@@ -355,10 +398,41 @@ export async function syncUserProfile(
     return { ...existing, ...updatedData };
   }
 
-  // Create new profile
-  const assignedRole: UserRole = isMasterAdminEmail
-    ? 'admin'
-    : ((customData.role === 'admin' ? 'student' : customData.role) || 'student');
+  // Create new profile:
+  // - Master admin: auto approved admin with all subjects
+  // - Verified faculty from directory: auto approved teacher with assigned subjects
+  // - All new registrations: strictly pending status, role 'student', cannot self-assign teacher or admin
+  let assignedRole: UserRole = 'student';
+  let assignedStatus: UserStatus = 'pending';
+  let assignedDepartments: string[] = [];
+  let assignedSubjects: string[] = [];
+  let assignedClasses: string[] = [];
+
+  if (isMasterAdminEmail) {
+    assignedRole = 'admin';
+    assignedStatus = 'approved';
+    assignedDepartments = ['Utawala Mkuu', 'Taaluma', 'Sayansi', 'Lugha', 'Sanaa', 'Biashara', 'Uhasibu', 'Nidhamu'];
+    assignedSubjects = [
+      'Civics', 'History', 'Geography', 'Kiswahili', 'English Language',
+      'Physics', 'Chemistry', 'Biology', 'Basic Mathematics', 'Commerce',
+      'Bookkeeping', 'Religious Education'
+    ];
+    assignedClasses = ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'];
+  } else if (teacherDirEntry) {
+    const isAcademic = teacherDirEntry.role.toLowerCase().includes('taaluma') || teacherDirEntry.role.toLowerCase().includes('academic');
+    assignedRole = isAcademic ? 'academic_master' : 'teacher';
+    assignedStatus = 'approved';
+    assignedDepartments = [teacherDirEntry.department];
+    assignedSubjects = teacherDirEntry.assignedSubjects;
+    assignedClasses = ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'];
+  } else {
+    // New user registration - starts with status 'pending' and unprivileged role
+    assignedRole = 'student';
+    assignedStatus = 'pending';
+    assignedDepartments = [];
+    assignedSubjects = [];
+    assignedClasses = [];
+  }
 
   const newProfile: UserProfile = {
     uid: user.uid,
@@ -366,6 +440,10 @@ export async function syncUserProfile(
     email: user.email || '',
     phone: customData.phone || '',
     role: assignedRole,
+    status: assignedStatus,
+    assignedDepartments,
+    assignedSubjects,
+    assignedClasses,
     photoURL: user.photoURL || null,
     school: 'UOMBONI SECONDARY SCHOOL',
     createdAt: now,
@@ -435,12 +513,17 @@ async function authenticateIframeGoogleUser(
   } as unknown as User;
 
   const now = new Date().toISOString();
+  const matchedStaff = Object.values(TEACHER_AUTH_DIRECTORY).find((t) => t.email.toLowerCase() === chosenEmail.toLowerCase());
   const fallbackProfile: UserProfile = {
     uid,
     fullName: displayName,
     email: chosenEmail,
-    phone: '+255 782 558 127',
+    phone: matchedStaff?.phone || '+255 782 558 127',
     role: targetRole,
+    status: 'approved',
+    assignedDepartments: matchedStaff ? [matchedStaff.department] : (targetRole === 'admin' ? ['Utawala Mkuu (Executive Administration)', 'Taaluma (Academic Affairs)'] : ['Sayansi (Science Department)']),
+    assignedSubjects: matchedStaff?.assignedSubjects || (targetRole === 'admin' ? ['Chemistry', 'Biology', 'Physics', 'Basic Mathematics'] : ['Chemistry', 'Biology']),
+    assignedClasses: ['Kidato cha 3 (Form 3)', 'Kidato cha 4 (Form 4)'],
     photoURL: syntheticUser.photoURL,
     school: 'UOMBONI SECONDARY SCHOOL',
     createdAt: now,
@@ -599,12 +682,38 @@ export async function signInAsDemoRole(role: UserRole): Promise<{
     providerId: 'custom',
   } as unknown as User;
 
+  const roleDepartments: Record<UserRole, string[]> = {
+    admin: ['Utawala Mkuu', 'Taaluma'],
+    academic_master: ['Taaluma', 'Sayansi'],
+    bursar: ['Biashara (Commercial)', 'Uhasibu'],
+    teacher: ['Lugha & Utawala'],
+    staff: ['Sayansi (Science)'],
+    student: [],
+    parent: [],
+    guest: [],
+  };
+
+  const roleSubjects: Record<UserRole, string[]> = {
+    admin: ['Civics', 'History', 'Geography', 'Kiswahili', 'English Language', 'Physics', 'Chemistry', 'Biology', 'Basic Mathematics', 'Commerce', 'Bookkeeping', 'Religious Education'],
+    academic_master: ['Physics', 'Basic Mathematics'],
+    bursar: ['Commerce', 'Bookkeeping'],
+    teacher: ['Kiswahili'],
+    staff: ['Biology', 'Chemistry'],
+    student: [],
+    parent: [],
+    guest: [],
+  };
+
   const profile: UserProfile = {
     uid,
     fullName: config.name,
     email: config.email,
     phone: config.phone,
     role,
+    status: role === 'guest' ? 'pending' : 'approved',
+    assignedDepartments: roleDepartments[role] || [],
+    assignedSubjects: roleSubjects[role] || [],
+    assignedClasses: ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'],
     photoURL: null,
     school: 'UOMBONI SECONDARY SCHOOL',
     createdAt: now,
@@ -620,6 +729,151 @@ export async function signInAsDemoRole(role: UserRole): Promise<{
   }
 
   return { success: true, user, profile };
+}
+
+/**
+ * Sign in as a test Pending account to verify unauthorized security view
+ */
+export async function signInAsTestPendingUser(): Promise<{
+  success: boolean;
+  user: User;
+  profile: UserProfile;
+}> {
+  const uid = 'test-pending-user-uomboni';
+  const now = new Date().toISOString();
+  const user: User = {
+    uid,
+    email: 'tarajiwa.mwalimu@uombonisec.ac.tz',
+    displayName: 'Mwalimu Mtarajiwa (Inasubiri Idhini)',
+    photoURL: null,
+    emailVerified: true,
+    isAnonymous: false,
+    metadata: {},
+    providerData: [],
+    refreshToken: '',
+    tenantId: null,
+    delete: async () => {},
+    getIdToken: async () => 'test-token',
+    getIdTokenResult: async () => ({} as any),
+    reload: async () => {},
+    toJSON: () => ({}),
+    phoneNumber: '+255 711 000 111',
+    providerId: 'custom',
+  } as unknown as User;
+
+  const profile: UserProfile = {
+    uid,
+    fullName: 'Mwalimu Mtarajiwa (Inasubiri Idhini)',
+    email: 'tarajiwa.mwalimu@uombonisec.ac.tz',
+    phone: '+255 711 000 111',
+    role: 'teacher',
+    status: 'pending',
+    assignedDepartments: [],
+    assignedSubjects: [],
+    photoURL: null,
+    school: 'UOMBONI SECONDARY SCHOOL',
+    createdAt: now,
+    updatedAt: now,
+    lastLogin: now,
+    emailVerified: true,
+  };
+
+  try {
+    await setDoc(doc(db, 'users', uid), profile, { merge: true });
+  } catch (e) {}
+
+  return { success: true, user, profile };
+}
+
+/**
+ * Sign in as a test Disabled account to verify security block
+ */
+export async function signInAsTestDisabledUser(): Promise<{
+  success: boolean;
+  user: User;
+  profile: UserProfile;
+}> {
+  const uid = 'test-disabled-user-uomboni';
+  const now = new Date().toISOString();
+  const user: User = {
+    uid,
+    email: 'akaunti.iliyositishwa@uombonisec.ac.tz',
+    displayName: 'Mtumishi Aliyesitishwa (Disabled Account)',
+    photoURL: null,
+    emailVerified: true,
+    isAnonymous: false,
+    metadata: {},
+    providerData: [],
+    refreshToken: '',
+    tenantId: null,
+    delete: async () => {},
+    getIdToken: async () => 'test-token',
+    getIdTokenResult: async () => ({} as any),
+    reload: async () => {},
+    toJSON: () => ({}),
+    phoneNumber: '+255 722 000 222',
+    providerId: 'custom',
+  } as unknown as User;
+
+  const profile: UserProfile = {
+    uid,
+    fullName: 'Mtumishi Aliyesitishwa (Disabled Account)',
+    email: 'akaunti.iliyositishwa@uombonisec.ac.tz',
+    phone: '+255 722 000 222',
+    role: 'teacher',
+    status: 'disabled',
+    assignedDepartments: ['Sayansi'],
+    assignedSubjects: ['Chemistry'],
+    rejectionReason: 'Akaunti imesitishwa kwa usalama kufuatia uhamisho wa kituo cha kazi.',
+    photoURL: null,
+    school: 'UOMBONI SECONDARY SCHOOL',
+    createdAt: now,
+    updatedAt: now,
+    lastLogin: now,
+    emailVerified: true,
+  };
+
+  try {
+    await setDoc(doc(db, 'users', uid), profile, { merge: true });
+  } catch (e) {}
+
+  return { success: true, user, profile };
+}
+
+/**
+ * Trusted administrator update for user RBAC permissions in Firestore
+ */
+export async function updateUserRbacInFirestore(
+  targetUid: string,
+  updates: {
+    role?: UserRole;
+    status?: UserStatus;
+    assignedDepartments?: string[];
+    assignedSubjects?: string[];
+    assignedClasses?: string[];
+    rejectionReason?: string;
+  },
+  adminName: string = 'Administrator'
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userRef = doc(db, 'users', targetUid);
+    const now = new Date().toISOString();
+    const payload: any = {
+      ...updates,
+      updatedAt: now,
+      approvedBy: adminName,
+    };
+    if (updates.status === 'approved') {
+      payload.approvedAt = now;
+    }
+    await updateDoc(userRef, payload);
+    return { success: true };
+  } catch (err: any) {
+    if (err?.code === 'permission-denied') {
+      handleFirestoreError(err, OperationType.UPDATE, `users/${targetUid}`);
+    }
+    return { success: false, error: err?.message || 'Failed to update user RBAC' };
+  }
 }
 
 /**

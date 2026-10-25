@@ -23,7 +23,13 @@ export const AUTHORIZED_STAFF_DIRECTORY: Record<
     additionalRoles?: StaffRole[];
   }
 > = {
-  // Super Admin & Headmaster (Official School Administration)
+  'lupanulla.co.tz@gmail.com': {
+    role: 'admin',
+    name: 'Administrator (Project Owner)',
+    titleSw: 'Msimamizi Mkuu wa Mfumo (Administrator)',
+    titleEn: 'Project Owner & Super Administrator',
+    additionalRoles: ['academic_master', 'bursar', 'teacher'],
+  },
   'uombiniss.sc.tz@gmail.com': {
     role: 'admin',
     name: 'Ofisi ya Mkuu wa Shule (Uomboni Secondary)',
