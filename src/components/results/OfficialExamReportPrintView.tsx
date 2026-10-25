@@ -26,6 +26,12 @@ import {
   calculateNectaDivision,
 } from '../../utils/nectaResultsEngine';
 import { exportResultsToExcel } from '../../utils/excelService';
+import { FORM_ONE_STUDENT_RESULTS } from '../../data/formOneStudents';
+import {
+  CSSC_FORM_FOUR_JOINT_RESULTS_2026,
+  CSSC_FORM_TWO_JOINT_RESULTS_2026,
+} from '../../data/csscJointExamResults2026';
+import { AUTHENTIC_UOMBONI_NOTICEBOARD_STUDENTS } from '../../data/uomboniNoticeboardResults';
 
 export interface OfficialExamReportPrintViewProps {
   initialResults?: StudentResult[];
@@ -55,10 +61,24 @@ export const OfficialExamReportPrintView: React.FC<OfficialExamReportPrintViewPr
 
   // Filter available results based on selected Form and optional exam type
   const baseStudents = useMemo(() => {
-    if (!initialResults || initialResults.length === 0) return [];
+    let sourcePool = initialResults && initialResults.length > 0 ? initialResults : [];
+    
+    // If initialResults is empty or lacks the selected form, pool the school's authentic datasets
+    if (sourcePool.length === 0) {
+      const selNorm = selectedForm.toLowerCase();
+      if (selNorm.includes('1') || selNorm.includes('one')) {
+        return FORM_ONE_STUDENT_RESULTS;
+      } else if (selNorm.includes('2') || selNorm.includes('two')) {
+        return CSSC_FORM_TWO_JOINT_RESULTS_2026;
+      } else if (selNorm.includes('3') || selNorm.includes('three')) {
+        return AUTHENTIC_UOMBONI_NOTICEBOARD_STUDENTS.filter(s => (s.form || '').includes('3'));
+      } else {
+        return CSSC_FORM_FOUR_JOINT_RESULTS_2026;
+      }
+    }
 
     // Filter by form
-    const formMatches = initialResults.filter((st) => {
+    const formMatches = sourcePool.filter((st) => {
       const fNorm = (st.form || '').toLowerCase();
       const selNorm = selectedForm.toLowerCase();
       if (selNorm.includes('1') || selNorm.includes('one')) return fNorm.includes('1') || fNorm.includes('one');
@@ -68,7 +88,17 @@ export const OfficialExamReportPrintView: React.FC<OfficialExamReportPrintViewPr
       return true;
     });
 
-    return formMatches.length > 0 ? formMatches : initialResults;
+    if (formMatches.length > 0) return formMatches;
+
+    // Fall back to school authentic datasets if filter yielded empty
+    const selNorm = selectedForm.toLowerCase();
+    if (selNorm.includes('1') || selNorm.includes('one')) {
+      return FORM_ONE_STUDENT_RESULTS;
+    } else if (selNorm.includes('2') || selNorm.includes('two')) {
+      return CSSC_FORM_TWO_JOINT_RESULTS_2026;
+    } else {
+      return CSSC_FORM_FOUR_JOINT_RESULTS_2026;
+    }
   }, [initialResults, selectedForm]);
 
   // Recalculate positions, averages, divisions strictly according to NECTA rules

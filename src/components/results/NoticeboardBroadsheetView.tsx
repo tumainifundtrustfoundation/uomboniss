@@ -137,8 +137,53 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
 
   return (
     <div className="space-y-6">
-      {/* Exam Switcher Tabs */}
-      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300 print:hidden">
+      {/* Top Mode Switcher (Print: hidden) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs print:hidden">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Mwonekano wa Matokeo:</span>
+          <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+            <button
+              type="button"
+              id="btn-view-official-sheet"
+              onClick={() => setViewMode('official_sheet')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === 'official_sheet'
+                  ? 'bg-amber-400 text-slate-950 shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5 text-amber-900" />
+              <span>Kielelezo Rasmi (Photo Layout Sheet)</span>
+            </button>
+            <button
+              type="button"
+              id="btn-view-interactive-noticeboard"
+              onClick={() => setViewMode('noticeboard')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === 'noticeboard'
+                  ? 'bg-blue-900 text-white shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-blue-300" />
+              <span>Bodi ya Matangazo (Interactive)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {viewMode === 'official_sheet' ? (
+        <OfficialExamReportPrintView
+          initialResults={candidates}
+          defaultForm={selectedExamType === 'cssc_f2_2026' ? 'Form 2' : 'Form 4'}
+          defaultExamType={selectedExamType === 'annual_f4_2025' ? 'Annual Examination' : 'CSSC Northern Zone Joint Exam'}
+          defaultMonthYear={selectedExamType === 'annual_f4_2025' ? 'NOVEMBER 2025' : 'AUGUST 2026'}
+          onSelectStudent={onSelectStudent}
+        />
+      ) : (
+        <>
+          {/* Exam Switcher Tabs */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300 print:hidden">
         <button
           type="button"
           onClick={() => setSelectedExamType('cssc_f4_2026')}
@@ -618,7 +663,9 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
             </div>
           </div>
         </div>
-      </div>
+        </div>
+        </>
+      )}
     </div>
   );
 };
