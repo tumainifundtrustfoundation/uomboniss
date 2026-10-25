@@ -290,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {user && userProfile?.role === 'admin' && onOpenAdmin && (
+            {onOpenAdmin && (
               <button
                 id="nav-admin-portal-btn"
                 onClick={onOpenAdmin}
@@ -450,7 +450,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <PWAInstallButton variant="mobile" />
 
-              {user && userProfile?.role === 'admin' && onOpenAdmin && (
+              {onOpenAdmin && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

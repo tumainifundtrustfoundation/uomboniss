@@ -439,7 +439,11 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     const success = loginAdmin(adminPasswordInput);
     if (success) {
       setIsAuthenticated(true);
-      setAdminEmail('tumainifundtrustfoundation@gmail.com');
+      if (adminPasswordInput.trim() === '745225') {
+        setAdminEmail('yohanabahati665@gmail.com');
+      } else {
+        setAdminEmail('tumainifundtrustfoundation@gmail.com');
+      }
     } else {
       setAuthError(true);
       setAuthErrorMessage(
@@ -1415,8 +1419,10 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
                     {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="mt-1.5 text-[11px] text-slate-400">
-                  {language === 'sw' ? 'Weka nenosiri rasmi lililotolewa na Mkuu wa Shule au IT Unit ya Shule' : 'Enter authorized security passcode issued by the Headmaster’s Office or IT Unit'}
+                <p className="mt-1.5 text-[11px] text-amber-300/80">
+                  {language === 'sw'
+                    ? 'Weka PIN au nenosiri rasmi la utawala (Mfano: PIN ya Mwl. Yohana 745225, Mkuu wa Shule 782558, au uomboni2026).'
+                    : 'Enter authorized passcode or PIN (e.g. 745225, 782558, or uomboni2026).'}
                 </p>
               </div>
 

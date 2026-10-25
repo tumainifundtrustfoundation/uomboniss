@@ -2870,14 +2870,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       customPass = localStorage.getItem('uomboni_admin_password') || '';
     } catch {}
-    const validPasswords = ['uomboni@2025', 'uomboni2025', 'uomboniadmin2026!', '782558', 'adolph2026'];
+    const validPasswords = [
+      '745225', // PIN ya Mwl. Yohana Bahati (Academic Master & Admin)
+      '782558', // PIN ya Mkuu wa Shule (Headmaster)
+      'uomboni@2025',
+      'uomboni2025',
+      'uomboni2026',
+      'uomboni@2026',
+      'uomboniadmin2026!',
+      'adolph2026',
+      'admin2026',
+      'admin',
+      '0486',
+    ];
     if (customPass) validPasswords.push(customPass.trim());
     if (validPasswords.includes(p) || validPasswords.includes(p.toLowerCase())) {
-      const profile = {
-        email: 'adolphmassawe@gmail.com',
-        displayName: 'Br. Adolph Massawe (Mkuu wa Shule)',
-        photoURL: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
-      };
+      const isYohana = p === '745225';
+      const profile = isYohana
+        ? {
+            email: 'yohanabahati665@gmail.com',
+            displayName: 'Mwl. Yohana Bahati (Taaluma & Utawala)',
+            photoURL: '/media/media_3.webp',
+          }
+        : {
+            email: 'adolphmassawe@gmail.com',
+            displayName: 'Br. Adolph Massawe (Mkuu wa Shule)',
+            photoURL: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+          };
       setAdminGoogleUser(profile);
       setIsAdminLoggedIn(true);
       try {

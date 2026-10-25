@@ -37,7 +37,6 @@ import { InstallAppModal } from './components/InstallAppModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { FAQSection } from './components/FAQSection';
 import { MapSection } from './components/MapSection';
-import { OfficialSchoolAccreditationBanner } from './components/OfficialSchoolAccreditationBanner';
 
 // Auth Views
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -502,17 +501,6 @@ function MainSchoolApp() {
           }}
         />
 
-        {/* 1.5 Official School Accreditation & Anti-Fraud Verification Banner */}
-        <OfficialSchoolAccreditationBanner
-          onOpenResults={() => {
-            closeAllModals();
-            setIsNectaResultsOpen(true);
-          }}
-          onOpenAdmissions={() => {
-            closeAllModals();
-            setIsAdmissionsModalOpen(true);
-          }}
-        />
 
         {/* 2. About */}
         <AboutSection

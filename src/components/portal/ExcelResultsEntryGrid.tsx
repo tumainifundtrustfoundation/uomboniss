@@ -131,6 +131,16 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
   const [workflowReturnNotes, setWorkflowReturnNotes] = useState<string | null>(null);
   const [isSubmittingWorkflow, setIsSubmittingWorkflow] = useState(false);
 
+  // Authorized post-approval correction state
+  const [isCorrectionUnlocked, setIsCorrectionUnlocked] = useState(false);
+  const [correctionReason, setCorrectionReason] = useState('');
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
+  const [correctionReasonInput, setCorrectionReasonInput] = useState('');
+
+  // Return to teacher modal state
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReasonInput, setReturnReasonInput] = useState('');
+
   // Excel Import Preview Modal State
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importPreviewData, setImportPreviewData] = useState<{
@@ -381,11 +391,11 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
       return;
     }
 
-    // Workflow Check: Cannot edit submitted, approved, or published results
-    if (workflowState === 'APPROVED' || workflowState === 'PUBLISHED') {
+    // Workflow Check: Cannot edit submitted, approved, or published results without authorized correction
+    if ((workflowState === 'APPROVED' || workflowState === 'PUBLISHED') && !isCorrectionUnlocked) {
       setStatusMessage({
         type: 'error',
-        text: 'Matokeo haya yameshaidhinishwa au kuchapishwa. Huwezi kuyahariri moja kwa moja bila idhini ya Mkuu wa Taaluma.',
+        text: 'Matokeo haya yameshaidhinishwa au kuchapishwa. Bofya kitufe cha "Idhinisha Marekebisho" (Authorize Correction) kuweka sababu rasmi kabla ya kubadilisha alama.',
       });
       return;
     }
@@ -713,6 +723,24 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
         }
       }
 
+      // Log workflow submission to server
+      try {
+        await fetch('/api/academic/workflow/transition', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            form: selectedForm,
+            examType: selectedExamType,
+            academicYear,
+            targetState: 'SUBMITTED',
+            userEmail: currentUserEmail || userProfile?.email,
+            userRole: userProfile?.role || 'teacher',
+          }),
+        });
+      } catch {
+        // Non-blocking fallback
+      }
+
       setWorkflowState('SUBMITTED');
       setSaveStatus('saved');
       setStatusMessage({
@@ -740,6 +768,20 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
 
     setIsSubmittingWorkflow(true);
     try {
+      // Transition state on server
+      await fetch('/api/academic/workflow/transition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          form: selectedForm,
+          examType: selectedExamType,
+          academicYear,
+          targetState: 'APPROVED',
+          userEmail: currentUserEmail || userProfile?.email,
+          userRole: userProfile?.role || 'academic_master',
+        }),
+      });
+
       setWorkflowState('APPROVED');
       setStatusMessage({
         type: 'success',
@@ -747,6 +789,82 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
       });
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err?.message || 'Hitilafu ya kuidhinisha' });
+    } finally {
+      setIsSubmittingWorkflow(false);
+    }
+  };
+
+  // Academic Master Returns Results with Notes for Corrections
+  const handleAcademicMasterReturn = async (notes: string) => {
+    if (!isAdminOrAcademic) return;
+    if (!notes.trim()) {
+      alert('Tafadhali weka maelezo ya kurejesha matokeo kwa mwalimu.');
+      return;
+    }
+
+    setIsSubmittingWorkflow(true);
+    try {
+      await fetch('/api/academic/workflow/transition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          form: selectedForm,
+          examType: selectedExamType,
+          academicYear,
+          targetState: 'DRAFT',
+          userEmail: currentUserEmail || userProfile?.email,
+          userRole: userProfile?.role || 'academic_master',
+          reason: notes.trim(),
+        }),
+      });
+
+      setWorkflowState('DRAFT');
+      setWorkflowReturnNotes(notes.trim());
+      setShowReturnModal(false);
+      setReturnReasonInput('');
+      setStatusMessage({
+        type: 'info',
+        text: 'Matokeo yamerejeshwa kwa mwalimu kwa ajili ya marekebisho pamoja na maelezo yako rasmi.',
+      });
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err?.message || 'Hitilafu ya kurejesha' });
+    } finally {
+      setIsSubmittingWorkflow(false);
+    }
+  };
+
+  // Authorize Correction for Approved / Published Marks
+  const handleAuthorizeCorrection = async (reason: string) => {
+    if (!isAdminOrAcademic) return;
+    if (!reason.trim()) {
+      alert('Tafadhali weka sababu ya kufanya marekebisho ya alama zilizoidhinishwa.');
+      return;
+    }
+
+    setIsSubmittingWorkflow(true);
+    try {
+      await fetch('/api/auth/log-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'EXAM_MARKS_CORRECTED',
+          identifier: currentUserEmail || userProfile?.email || 'admin',
+          role: userProfile?.role || 'admin',
+          success: true,
+          details: `Msimamizi ameidhinisha marekebisho ya matokeo ya ${selectedForm} (${selectedExamType} - ${academicYear}). Sababu: ${reason.trim()}`,
+        }),
+      });
+
+      setIsCorrectionUnlocked(true);
+      setCorrectionReason(reason.trim());
+      setShowCorrectionModal(false);
+      setCorrectionReasonInput('');
+      setStatusMessage({
+        type: 'info',
+        text: '✅ Mtiririko wa marekebisho umefunguliwa rasmi (Correction Mode Active). Sasa unaweza kubadilisha alama na kuhifadhi.',
+      });
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err?.message || 'Hitilafu' });
     } finally {
       setIsSubmittingWorkflow(false);
     }
@@ -794,6 +912,19 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
           publishedAt: new Date().toISOString(),
         });
       }
+
+      await fetch('/api/academic/workflow/transition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          form: selectedForm,
+          examType: selectedExamType,
+          academicYear,
+          targetState: 'PUBLISHED',
+          userEmail: currentUserEmail || userProfile?.email,
+          userRole: userProfile?.role || 'admin',
+        }),
+      });
 
       setWorkflowState('PUBLISHED');
       setStatusMessage({
@@ -952,6 +1083,75 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
     XLSX.writeFile(wb, fileName);
   };
 
+  // 5. Download Subject Performance Reports (.xlsx)
+  const handleDownloadSubjectPerformanceReport = () => {
+    const subjectStatsRows = activeSubjectColumns.map((sub) => {
+      let satCount = 0;
+      let countA = 0;
+      let countB = 0;
+      let countC = 0;
+      let countD = 0;
+      let countF = 0;
+      let countAbs = 0;
+      let totalScore = 0;
+      let highestScore = 0;
+      let lowestScore = maxMarks;
+
+      gridRows.forEach((r) => {
+        const val = r.marks[sub.name];
+        if (typeof val === 'number') {
+          satCount++;
+          totalScore += val;
+          if (val > highestScore) highestScore = val;
+          if (val < lowestScore) lowestScore = val;
+
+          const pct = (val / maxMarks) * 100;
+          const { grade } = scoreToNectaGrade(pct);
+          if (grade === 'A') countA++;
+          else if (grade === 'B') countB++;
+          else if (grade === 'C') countC++;
+          else if (grade === 'D') countD++;
+          else countF++;
+        } else if (val === 'ABS') {
+          countAbs++;
+        }
+      });
+
+      const avgScore = satCount > 0 ? parseFloat((totalScore / satCount).toFixed(1)) : 0;
+      const passCount = countA + countB + countC + countD;
+      const passRate = satCount > 0 ? parseFloat(((passCount / satCount) * 100).toFixed(1)) : 0;
+      const gpaPoints = countA * 1 + countB * 2 + countC * 3 + countD * 4 + countF * 5;
+      const gpa = satCount > 0 ? parseFloat((gpaPoints / satCount).toFixed(2)) : 0;
+      const subGrade = scoreToNectaGrade((avgScore / maxMarks) * 100).grade;
+
+      return {
+        SUBJECT_CODE: sub.code,
+        SUBJECT_NAME: sub.name.toUpperCase(),
+        TOTAL_STUDENTS_SAT: satCount,
+        GRADE_A: countA,
+        GRADE_B: countB,
+        GRADE_C: countC,
+        GRADE_D: countD,
+        GRADE_F: countF,
+        ABSENT_ABS: countAbs,
+        TOTAL_PASSED: passCount,
+        PASS_PERCENT: `${passRate}%`,
+        AVERAGE_SCORE: avgScore,
+        SUBJECT_GPA: gpa,
+        OVERALL_GRADE: subGrade,
+        HIGHEST_MARK: satCount > 0 ? highestScore : 0,
+        LOWEST_MARK: satCount > 0 ? lowestScore : 0,
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(subjectStatsRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Subject_Performance');
+
+    const fileName = `SUBJECT_PERFORMANCE_${selectedForm.replace(/\s+/g, '_')}_${selectedExamType.replace(/\s+/g, '_')}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   // ----------------------------------------------------
   // 8. EXCEL FILE IMPORT WITH PRE-VALIDATION PREVIEW
   // ----------------------------------------------------
@@ -973,6 +1173,12 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
           return;
         }
 
+        // Check if results are locked (Approved or Published) without authorized correction
+        if ((workflowState === 'APPROVED' || workflowState === 'PUBLISHED') && !isCorrectionUnlocked) {
+          alert('Matokeo ya mtihani huu yameshaidhinishwa au kuchapishwa. Huwezi kupakia faili jipya la Excel bila kufungua mtiririko rasmi wa marekebisho (Authorize Correction).');
+          return;
+        }
+
         const validList: Array<{
           rollNo?: number;
           admissionNumber: string;
@@ -986,6 +1192,8 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
           rawName: string;
           errors: string[];
         }> = [];
+
+        const seenStudentKeys = new Set<string>();
 
         rawJson.forEach((row, rowIdx) => {
           const keys = Object.keys(row);
@@ -1006,6 +1214,13 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
           });
 
           const rowErrors: string[] = [];
+
+          const cleanIdent = (rawId || rawName || '').toLowerCase().trim();
+          if (cleanIdent && seenStudentKeys.has(cleanIdent)) {
+            rowErrors.push(`Mwanafunzi huyu (${rawName || rawId}) amerudiwa zaidi ya mara moja kwenye faili la Excel (Duplicate entry in spreadsheet).`);
+          } else if (cleanIdent) {
+            seenStudentKeys.add(cleanIdent);
+          }
 
           if (!matchedStudent) {
             rowErrors.push(`Mwanafunzi "${rawName || rawId || 'Hajulikani'}" hakupatikana kwenye darasa la ${selectedForm}`);
@@ -1185,6 +1400,38 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
     };
   }, [gridRows, activeSubjectColumns]);
 
+  // Subject performance statistics for each active column (Subject Averages & Pass Rates)
+  const subjectAverages = useMemo(() => {
+    const stats: Record<string, { avg: number; count: number; passRate: number; highest: number; lowest: number }> = {};
+    activeSubjectColumns.forEach((sub) => {
+      let sum = 0;
+      let count = 0;
+      let passes = 0;
+      let highest = 0;
+      let lowest = maxMarks;
+
+      gridRows.forEach((r) => {
+        const val = r.marks[sub.name];
+        if (typeof val === 'number') {
+          sum += val;
+          count++;
+          if (val >= 30) passes++;
+          if (val > highest) highest = val;
+          if (val < lowest) lowest = val;
+        }
+      });
+
+      stats[sub.name] = {
+        avg: count > 0 ? parseFloat((sum / count).toFixed(1)) : 0,
+        count,
+        passRate: count > 0 ? parseFloat(((passes / count) * 100).toFixed(1)) : 0,
+        highest: count > 0 ? highest : 0,
+        lowest: count > 0 ? lowest : 0,
+      };
+    });
+    return stats;
+  }, [gridRows, activeSubjectColumns, maxMarks]);
+
   // ----------------------------------------------------
   // 10. RENDER
   // ----------------------------------------------------
@@ -1318,6 +1565,13 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
                     <Award className="w-3.5 h-3.5 text-amber-600" />
                     <span>Best 10 na Last 10 (.xlsx)</span>
                   </button>
+                  <button
+                    onClick={handleDownloadSubjectPerformanceReport}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-xl text-slate-700 font-bold flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Ripoti ya Masomo (Subjects .xlsx)</span>
+                  </button>
                   {onOpenReportPrint && (
                     <button
                       onClick={() => onOpenReportPrint(selectedForm, selectedExamType)}
@@ -1354,24 +1608,53 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
             )}
 
             {workflowState === 'SUBMITTED' && isAdminOrAcademic && (
-              <button
-                onClick={handleAcademicMasterApprove}
-                disabled={isSubmittingWorkflow}
-                className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4 text-purple-300" />
-                <span>Idhinisha Matokeo (Approve)</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleAcademicMasterApprove}
+                  disabled={isSubmittingWorkflow}
+                  className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-purple-300" />
+                  <span>Idhinisha (Approve)</span>
+                </button>
+                <button
+                  onClick={() => setShowReturnModal(true)}
+                  disabled={isSubmittingWorkflow}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Rejesha kwa Mwalimu</span>
+                </button>
+              </div>
             )}
 
             {workflowState === 'APPROVED' && isAdminOrAcademic && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePublishResults}
+                  disabled={isSubmittingWorkflow}
+                  className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer"
+                >
+                  <Award className="w-4 h-4 text-emerald-300" />
+                  <span>Chapisha (Publish)</span>
+                </button>
+                <button
+                  onClick={() => setShowCorrectionModal(true)}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold border border-slate-300 cursor-pointer"
+                  title="Weka sababu rasmi ya kurekebisha matokeo yaliyoidhinishwa"
+                >
+                  {isCorrectionUnlocked ? '🔓 Marekebisho Yapo Wazi' : 'Rekebisha Alama'}
+                </button>
+              </div>
+            )}
+
+            {workflowState === 'PUBLISHED' && isAdminOrAcademic && (
               <button
-                onClick={handlePublishResults}
-                disabled={isSubmittingWorkflow}
-                className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer"
+                onClick={() => setShowCorrectionModal(true)}
+                className="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold border border-amber-300 cursor-pointer flex items-center gap-1.5"
+                title="Weka sababu rasmi ya kurekebisha matokeo yaliyochapishwa"
               >
-                <Award className="w-4 h-4 text-emerald-300" />
-                <span>Chapisha kwenye Portal (Publish)</span>
+                <span>{isCorrectionUnlocked ? '🔓 Mode ya Marekebisho (Unlocked)' : 'Idhinisha Marekebisho ya Alama'}</span>
               </button>
             )}
           </div>
@@ -1780,7 +2063,7 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
                         const cellError = student.errors[sub.name];
                         const cellId = `cell-${sIdx}-${sub.name}`;
                         const isAssigned = isAdminOrAcademic || assignedSubjects.includes(sub.name);
-                        const isReadOnly = !isAssigned || workflowState === 'APPROVED' || workflowState === 'PUBLISHED';
+                        const isReadOnly = !isAssigned || ((workflowState === 'APPROVED' || workflowState === 'PUBLISHED') && !isCorrectionUnlocked);
 
                         return (
                           <td
@@ -1869,6 +2152,63 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
                 })
               )}
             </tbody>
+
+            {/* STICKY TABLE FOOTER: Subject Averages, Pass Rates & Statistics */}
+            <tfoot className="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md border-t-2 border-slate-300">
+              {/* Row 1: Wastani wa Somo (Subject Average %) */}
+              <tr className="bg-slate-100 text-slate-800 text-[11px]">
+                <td
+                  colSpan={4}
+                  className="px-3 py-2 text-right font-black border-r border-slate-300 uppercase tracking-wider sticky left-0 z-30 bg-slate-100 text-[#102A43]"
+                >
+                  Wastani wa Somo (Avg %):
+                </td>
+                {activeSubjectColumns.map((sub) => {
+                  const sStat = subjectAverages[sub.name];
+                  return (
+                    <td
+                      key={sub.name}
+                      className="px-2 py-2 text-center font-mono font-black text-blue-900 border-r border-slate-300 bg-blue-50/70"
+                      title={`${sub.name}: Wastani ${sStat?.avg || 0}%, Waliofanya: ${sStat?.count || 0}`}
+                    >
+                      {sStat && sStat.count > 0 ? `${sStat.avg}%` : '—'}
+                    </td>
+                  );
+                })}
+                <td className="px-3 py-2 text-center font-mono font-black bg-slate-200 border-r border-slate-300">—</td>
+                <td className="px-3 py-2 text-center font-mono font-black text-blue-900 bg-slate-200 border-r border-slate-300">
+                  {classSummaryStats.classAverage}%
+                </td>
+                <td colSpan={3} className="px-3 py-2 bg-slate-200 text-slate-500 font-mono text-center text-[10px]">
+                  Wastani wa Darasa
+                </td>
+              </tr>
+
+              {/* Row 2: Kiwango cha Ufaulu (Pass Rate %) */}
+              <tr className="bg-slate-50 text-slate-700 text-[10px]">
+                <td
+                  colSpan={4}
+                  className="px-3 py-1.5 text-right font-bold border-r border-slate-300 uppercase tracking-wider sticky left-0 z-30 bg-slate-50 text-emerald-900"
+                >
+                  Kiwango cha Ufaulu (Pass %):
+                </td>
+                {activeSubjectColumns.map((sub) => {
+                  const sStat = subjectAverages[sub.name];
+                  return (
+                    <td
+                      key={sub.name}
+                      className="px-2 py-1.5 text-center font-mono font-bold text-emerald-800 border-r border-slate-300 bg-emerald-50/70"
+                      title={`${sub.name}: Ufaulu ${sStat?.passRate || 0}%`}
+                    >
+                      {sStat && sStat.count > 0 ? `${sStat.passRate}%` : '—'}
+                    </td>
+                  );
+                })}
+                <td colSpan={5} className="px-3 py-1.5 bg-slate-100 text-slate-600 font-bold text-center">
+                  Wanafunzi {classSummaryStats.completed} kati ya {classSummaryStats.total} wamekamilika
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -1984,6 +2324,120 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
               >
                 <Check className="w-4 h-4" />
                 <span>Thibitisha na Ingiza Wanafunzi ({importPreviewData.validRows.length})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RETURN FOR CORRECTIONS MODAL (Academic Master) */}
+      {showReturnModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-100 text-amber-900">
+                  <AlertTriangle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-[#102A43]">Rejesha Matokeo kwa Mwalimu</h3>
+                  <p className="text-xs text-slate-500">Mpe mwalimu maelezo mahususi ya kile anachotakiwa kusahihisha</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowReturnModal(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">
+                Maoni na Maelekezo ya Marekebisho (Return Notes):
+              </label>
+              <textarea
+                value={returnReasonInput}
+                onChange={(e) => setReturnReasonInput(e.target.value)}
+                placeholder="Mfano: Tafadhali sahihisha alama za wanafunzi 3 ambao hawakuwekewa alama za somo la Civics..."
+                rows={4}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#102A43]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 text-xs">
+              <button
+                onClick={() => setShowReturnModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+              >
+                Ghairi
+              </button>
+              <button
+                onClick={() => handleAcademicMasterReturn(returnReasonInput)}
+                disabled={isSubmittingWorkflow || !returnReasonInput.trim()}
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                <span>Wasilisha na Rejesha Matokeo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AUTHORIZED CORRECTION MODAL (Post-Approval Marks Correction) */}
+      {showCorrectionModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-purple-100 text-purple-900">
+                  <Award className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-[#102A43]">Idhinisha Marekebisho ya Matokeo</h3>
+                  <p className="text-xs text-slate-500">Marekebisho baada ya kuidhinisha au kuchapisha yanahitaji sababu rasmi</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCorrectionModal(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900">
+              <strong>Tahadhari ya Kiutawala:</strong> Kila mabadiliko ya alama yaliyoidhinishwa hurekodiwa kwenye Daftari Rasmi la Usalama (Audit Log) pamoja na tarehe, jina la mtumiaji, na IP anwani.
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 block">
+                Sababu ya Kufanya Marekebisho (Reason for Correction):
+              </label>
+              <textarea
+                value={correctionReasonInput}
+                onChange={(e) => setCorrectionReasonInput(e.target.value)}
+                placeholder="Mfano: Kusahihisha alama ya mtihani wa Physics kwa mwanafunzi Juma baada ya rufaa na ukaguzi wa script..."
+                rows={4}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#102A43]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 text-xs">
+              <button
+                onClick={() => setShowCorrectionModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+              >
+                Ghairi
+              </button>
+              <button
+                onClick={() => handleAuthorizeCorrection(correctionReasonInput)}
+                disabled={isSubmittingWorkflow || !correctionReasonInput.trim()}
+                className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <Check className="w-4 h-4" />
+                <span>Idhinisha na Fungua Marekebisho</span>
               </button>
             </div>
           </div>

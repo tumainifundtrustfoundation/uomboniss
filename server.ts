@@ -500,6 +500,89 @@ async function startServer() {
     });
   });
 
+  // 10. Examination Results Workflow State Transition & Audit Enforcement
+  app.post("/api/academic/workflow/transition", (req, res) => {
+    const { form, examType, academicYear, targetState, userEmail, userRole, reason } = req.body;
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "127.0.0.1";
+    const userAgent = req.headers["user-agent"] || "unknown";
+
+    const cleanEmail = (userEmail || "").toLowerCase().trim();
+    const authorizedAdmins = [
+      'lupanulla.co.tz@gmail.com',
+      'tumainifundtrustfoundation@gmail.com',
+      'adolphmassawe@gmail.com',
+      'uombiniss.sc.tz@gmail.com',
+      'uomboniss.sc.tz@gmail.com',
+      'yohanabahati665@gmail.com',
+      'headmaster@uombonisecondary.ac.tz',
+    ];
+    const isAdminOrAcademic = authorizedAdmins.includes(cleanEmail) ||
+      cleanEmail.includes('admin') ||
+      cleanEmail.includes('academic') ||
+      userRole === 'admin' ||
+      userRole === 'academic_master';
+
+    // State transition permission checks
+    if (targetState === 'APPROVED' && !isAdminOrAcademic) {
+      appendAuditLog({
+        eventType: "UNAUTHORIZED_RBAC_ATTEMPT",
+        identifier: cleanEmail || "anonymous",
+        role: userRole || "teacher",
+        ip: clientIp,
+        userAgent,
+        success: false,
+        details: `Mwalimu amejaribu kujipitishia / kuidhinisha matokeo ya ${form} (${examType}) bila mamlaka ya Mkuu wa Taaluma. Ombi limezuiliwa.`,
+      });
+      return res.status(403).json({
+        success: false,
+        error: "Ruhusa imekataliwa: Mkuu wa Taaluma au Msimamizi Mkuu pekee anaweza kuidhinisha (Approve) matokeo rasmi.",
+      });
+    }
+
+    if (targetState === 'PUBLISHED' && !isAdminOrAcademic) {
+      appendAuditLog({
+        eventType: "UNAUTHORIZED_RBAC_ATTEMPT",
+        identifier: cleanEmail || "anonymous",
+        role: userRole || "teacher",
+        ip: clientIp,
+        userAgent,
+        success: false,
+        details: `Mtumiaji asiye na mamlaka amejaribu kuchapisha matokeo ya ${form} (${examType}) kwenye Portal ya Wanafunzi/Wazazi.`,
+      });
+      return res.status(403).json({
+        success: false,
+        error: "Ruhusa imekataliwa: Utawala mkuu pekee ndio wenye mamlaka ya kuchapisha (Publish) matokeo kwa umma.",
+      });
+    }
+
+    let eventType: any = "SECURITY_CHECK";
+    if (targetState === 'SUBMITTED') eventType = 'EXAM_WORKFLOW_SUBMITTED';
+    else if (targetState === 'APPROVED') eventType = 'EXAM_WORKFLOW_APPROVED';
+    else if (targetState === 'PUBLISHED') eventType = 'EXAM_WORKFLOW_PUBLISHED';
+    else if (targetState === 'DRAFT' && reason) eventType = 'EXAM_WORKFLOW_RETURNED';
+
+    appendAuditLog({
+      eventType,
+      identifier: cleanEmail || "system-staff",
+      role: userRole || "staff",
+      ip: clientIp,
+      userAgent,
+      success: true,
+      details: `Mtiririko wa matokeo (${form} - ${examType} - ${academicYear}) umebadilishwa kuwa ${targetState}${reason ? ` | Sababu/Maelezo: ${reason}` : ''}.`,
+    });
+
+    res.json({
+      success: true,
+      form,
+      examType,
+      academicYear,
+      targetState,
+      timestamp: new Date().toISOString(),
+      authorizedBy: cleanEmail,
+      message: `Hatua ya mtihani imebadilishwa kuwa ${targetState} na kurekodiwa kwenye daftari la usalama la shule.`,
+    });
+  });
+
   // Complete Centralized School Database API for Cross-Browser Multi-Device Sync
   app.get("/api/school-data", (_req, res) => {
     const db = getSchoolDatabase();
