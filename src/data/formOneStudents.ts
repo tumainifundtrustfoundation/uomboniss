@@ -106,6 +106,8 @@ export const FORM_ONE_STUDENT_PROFILES: StudentProfile[] = OFFICIAL_FORM_ONE_REG
   };
 });
 
+export const FORM_ONE_STUDENTS = FORM_ONE_STUDENT_PROFILES;
+
 // Authentic Form One Mid-Term / Terminal Results
 export const FORM_ONE_STUDENT_RESULTS: StudentResult[] = OFFICIAL_FORM_ONE_REGISTER_DATA.map((rec, index) => {
   const scoresPreset = [

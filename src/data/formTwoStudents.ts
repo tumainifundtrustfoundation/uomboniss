@@ -99,3 +99,5 @@ export const FORM_TWO_STUDENT_PROFILES: StudentProfile[] = OFFICIAL_FORM_TWO_REG
     feePaid: isBoarding ? (index % 3 === 0 ? 1200000 : 900000) : (index % 2 === 0 ? 750000 : 600000),
   };
 });
+
+export const FORM_TWO_STUDENTS = FORM_TWO_STUDENT_PROFILES;

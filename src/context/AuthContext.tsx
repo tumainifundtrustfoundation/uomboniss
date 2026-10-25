@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(res.user);
         setUserProfile(res.profile);
         setActiveRoleDashboard(res.profile.role);
-        setActiveView('website');
+        setActiveView('portal');
         try {
           localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
         } catch (e) {}
@@ -255,7 +255,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(res.user);
         setUserProfile(res.profile);
         setActiveRoleDashboard(res.profile.role);
-        setActiveView('website');
+        setActiveView('portal');
         try {
           localStorage.setItem('uomboni_active_session', JSON.stringify({ user: res.user, profile: res.profile }));
         } catch (e) {}

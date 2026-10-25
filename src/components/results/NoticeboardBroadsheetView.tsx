@@ -27,6 +27,7 @@ import {
 } from '../../data/csscJointExamResults2026';
 import { downloadClassBroadsheetPdf } from '../../utils/pdfService';
 import { exportResultsToExcel } from '../../utils/excelService';
+import { OfficialExamReportPrintView } from './OfficialExamReportPrintView';
 
 interface NoticeboardBroadsheetViewProps {
   onSelectStudent?: (student: StudentResult) => void;
@@ -36,6 +37,7 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
   onSelectStudent,
 }) => {
   const { language } = useLanguage();
+  const [viewMode, setViewMode] = useState<'official_sheet' | 'noticeboard'>('official_sheet');
   const [selectedExamType, setSelectedExamType] = useState<'cssc_f4_2026' | 'cssc_f2_2026' | 'annual_f4_2025'>('cssc_f4_2026');
   const [filterQuery, setFilterQuery] = useState('');
 

@@ -68,6 +68,7 @@ import {
   printStudentResultSlipDirectly,
 } from '../../utils/pdfService';
 import { fetchAuditLogs, AuditLogEntry, recordAuditLog } from '../../services/auditLoggingService';
+import { auth } from '../../lib/firebase';
 import {
   createSchoolDatabaseBackup,
   downloadBackupPackageAsJson,
@@ -80,7 +81,9 @@ import {
   SecurityAuditReport,
   SecurityTestCaseResult,
 } from '../../services/securityTestSuite';
-import { Database, FileCheck, Lock, ShieldAlert, UploadCloud } from 'lucide-react';
+import { Database, FileCheck, Lock, ShieldAlert, UploadCloud, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { OfficialExamReportPrintView } from '../results/OfficialExamReportPrintView';
 
 export interface ProfessionalStaffDashboardProps {
   onClose?: () => void;
@@ -291,6 +294,7 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
     gender: 'M' | 'F';
     stream: string;
     score: number | '';
+    isAbsent?: boolean;
     grade: 'A' | 'B' | 'C' | 'D' | 'F' | '—';
     points: number;
     remarks: string;
@@ -302,9 +306,11 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [reportsSubView, setReportsSubView] = useState<'official_sheet' | 'individual_cards'>('official_sheet');
 
-  // Keyboard navigation refs
+  // Keyboard navigation & Excel import refs
   const inputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const excelMarksInputRef = useRef<HTMLInputElement | null>(null);
 
   // Fetch / populate students when Form or Stream changes
   useEffect(() => {
@@ -446,10 +452,150 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
     }
   };
 
+  // Toggle student absent status (ABS)
+  const handleToggleAbsent = (index: number) => {
+    setHasUnsavedChanges(true);
+    setMarksRows((prev) => {
+      const copy = [...prev];
+      const row = { ...copy[index] };
+      if (row.isAbsent) {
+        row.isAbsent = false;
+        row.remarks = '';
+      } else {
+        row.isAbsent = true;
+        row.score = '';
+        row.grade = '—';
+        row.points = 0;
+        row.remarks = 'Mwanafunzi Hakufanya (ABS)';
+      }
+      row.isSaved = false;
+      copy[index] = row;
+      return copy;
+    });
+  };
+
+  // Download pre-filled Excel template for the selected class and subject
+  const handleDownloadMarksTemplate = () => {
+    const templateRows = marksRows.map((r) => ({
+      ROLL_NO: r.rollNo,
+      EXAM_NUMBER: r.examNumber,
+      FULL_NAME: r.fullName,
+      SEX: r.gender,
+      SUBJECT: selectedSubject,
+      MAX_MARKS: maxMarks,
+      MARKS_OBTAINED: r.score !== '' ? r.score : '',
+      ABSENT_OR_REMARKS: r.isAbsent ? 'ABS' : r.remarks,
+    }));
+    const ws = XLSX.utils.json_to_sheet(templateRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Marks_Entry');
+    XLSX.writeFile(wb, `MARKS_ENTRY_${selectedForm.replace(/\s+/g, '_')}_${selectedSubject.replace(/\s+/g, '_')}.xlsx`);
+  };
+
+  // Import marks from Excel or CSV file
+  const handleImportMarksFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const rawRows: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+        if (!rawRows || rawRows.length === 0) {
+          alert('Faili halina rekodi zozote (Empty spreadsheet).');
+          return;
+        }
+
+        let matchedCount = 0;
+        setMarksRows((prev) => {
+          return prev.map((row) => {
+            const matched = rawRows.find((r) => {
+              const keys = Object.keys(r);
+              const valOf = (k: string) => {
+                const fk = keys.find((key) => key.toLowerCase().includes(k.toLowerCase()));
+                return fk ? String(r[fk]).trim() : '';
+              };
+              const cno = valOf('exam') || valOf('namba') || valOf('index') || valOf('cno');
+              const name = valOf('name') || valOf('jina') || valOf('mwanafunzi');
+
+              const matchCno = cno && (row.examNumber.toLowerCase().includes(cno.toLowerCase()) || cno.toLowerCase().includes(row.examNumber.toLowerCase()));
+              const matchName = name && (row.fullName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(row.fullName.toLowerCase()));
+              return matchCno || matchName;
+            });
+
+            if (!matched) return row;
+
+            const keys = Object.keys(matched);
+            const scoreKey = keys.find((k) => {
+              const kl = k.toLowerCase();
+              return (
+                kl.includes(selectedSubject.toLowerCase()) ||
+                kl.includes('score') ||
+                kl.includes('marks') ||
+                kl.includes('alama') ||
+                kl.includes('obtained')
+              );
+            });
+
+            const rawScoreVal = scoreKey ? String(matched[scoreKey]).trim() : '';
+            const absKey = keys.find((k) => k.toLowerCase().includes('abs') || k.toLowerCase().includes('hali'));
+            const absVal = absKey ? String(matched[absKey]).trim().toUpperCase() : '';
+
+            if (rawScoreVal.toUpperCase() === 'ABS' || absVal.includes('ABS')) {
+              matchedCount++;
+              return {
+                ...row,
+                score: '',
+                isAbsent: true,
+                grade: '—',
+                points: 0,
+                remarks: 'Mwanafunzi Hakufanya (ABS)',
+                isSaved: false,
+              };
+            }
+
+            const parsedScore = parseFloat(rawScoreVal);
+            if (!isNaN(parsedScore)) {
+              matchedCount++;
+              const clamped = Math.max(0, Math.min(maxMarks, parsedScore));
+              const pct = (clamped / maxMarks) * 100;
+              const { grade, points, remarks } = scoreToNectaGrade(pct);
+              return {
+                ...row,
+                score: clamped,
+                isAbsent: false,
+                grade,
+                points,
+                remarks: remarks,
+                isSaved: false,
+              };
+            }
+
+            return row;
+          });
+        });
+
+        setHasUnsavedChanges(true);
+        setSaveSuccessMsg(`Alama za wanafunzi ${matchedCount} zimepakiwa kikamilifu kutoka kwenye faili la Excel!`);
+        setTimeout(() => setSaveSuccessMsg(null), 5000);
+      } catch (err: any) {
+        alert(`Hitilafu ya kupakia faili la Excel: ${err?.message}`);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = '';
+  };
+
   // Live summary stats for current marks entry
   const entryStats = useMemo(() => {
     const entered = marksRows.filter((r) => typeof r.score === 'number');
-    const missing = marksRows.length - entered.length;
+    const absents = marksRows.filter((r) => r.isAbsent);
+    const missing = marksRows.length - entered.length - absents.length;
     const totalScore = entered.reduce((acc, r) => acc + (r.score as number), 0);
     const avg = entered.length > 0 ? (totalScore / entered.length).toFixed(1) : '0.0';
     const highest = entered.length > 0 ? Math.max(...entered.map((r) => r.score as number)) : 0;
@@ -460,6 +606,7 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
     return {
       total: marksRows.length,
       enteredCount: entered.length,
+      absentCount: absents.length,
       missingCount: missing,
       average: avg,
       highest,
@@ -1432,7 +1579,35 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="file"
+                    ref={excelMarksInputRef}
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleImportMarksFile}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadMarksTemplate}
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-300 shadow-2xs"
+                    title="Pakua kielelezo cha Excel chenye majina ya wanafunzi"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-600" />
+                    <span>Kielelezo (Template)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => excelMarksInputRef.current?.click()}
+                    className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-emerald-300 shadow-2xs"
+                    title="Pakia alama kutoka faili la Excel au CSV"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Pakia Excel / CSV</span>
+                  </button>
+
                   <button
                     onClick={handleSaveDraft}
                     disabled={isSaving}
@@ -1686,26 +1861,47 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
                             </td>
                             <td className="px-3 py-2.5 text-center font-mono text-slate-400">{maxMarks}</td>
 
-                            {/* Score Input with Keyboard Navigation */}
-                            <td className="px-4 py-2.5 text-center bg-slate-50/60">
-                              <input
-                                ref={(el) => {
-                                  inputRefs.current[idx] = el;
-                                }}
-                                type="number"
-                                min="0"
-                                max={maxMarks}
-                                step="1"
-                                value={row.score}
-                                placeholder="—"
-                                onChange={(e) => handleScoreChange(idx, e.target.value)}
-                                onKeyDown={(e) => handleScoreKeyDown(idx, e)}
-                                className={`w-20 px-2 py-1 text-center font-mono font-bold text-sm rounded-lg border focus:outline-none transition ${
-                                  isScoreEmpty
-                                    ? 'border-amber-400 bg-amber-50/60 text-slate-700'
-                                    : 'border-emerald-500 bg-emerald-50/40 text-emerald-950 ring-1 ring-emerald-400/30'
-                                }`}
-                              />
+                            {/* Score Input with Keyboard Navigation & Absent Toggle */}
+                            <td className="px-3 py-2.5 text-center bg-slate-50/60">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {row.isAbsent ? (
+                                  <span className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-900 border border-rose-300 font-bold font-mono text-xs">
+                                    ABSENT
+                                  </span>
+                                ) : (
+                                  <input
+                                    ref={(el) => {
+                                      inputRefs.current[idx] = el;
+                                    }}
+                                    type="number"
+                                    min="0"
+                                    max={maxMarks}
+                                    step="1"
+                                    value={row.score}
+                                    placeholder="—"
+                                    onChange={(e) => handleScoreChange(idx, e.target.value)}
+                                    onKeyDown={(e) => handleScoreKeyDown(idx, e)}
+                                    className={`w-16 px-2 py-1 text-center font-mono font-bold text-sm rounded-lg border focus:outline-none transition ${
+                                      isScoreEmpty
+                                        ? 'border-amber-400 bg-amber-50/60 text-slate-700'
+                                        : 'border-emerald-500 bg-emerald-50/40 text-emerald-950 ring-1 ring-emerald-400/30'
+                                    }`}
+                                  />
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleAbsent(idx)}
+                                  className={`px-1.5 py-1 text-[10px] font-bold rounded cursor-pointer transition ${
+                                    row.isAbsent
+                                      ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-2xs'
+                                      : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                                  }`}
+                                  title={row.isAbsent ? 'Ondoa ABS (Mwanafunzi Yupo)' : 'Weka ABS (Mwanafunzi Hayupo)'}
+                                >
+                                  ABS
+                                </button>
+                              </div>
                             </td>
 
                             <td className="px-3 py-2.5 text-center">
@@ -2272,79 +2468,120 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
                 <div>
                   <h3 className="font-bold text-xl text-[#102A43]">Ripoti za Taaluma &amp; Report Cards</h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Pakua ripoti ya darasa (Broadsheet) au chapisha kadi ya matokeo ya mwanafunzi binafsi.
+                    Tazama au chapisha kielelezo rasmi cha matokeo ya shule (Broadsheet ya NECTA/Diocese) au pakua kadi za wanafunzi binafsi.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <select
-                    value={reportForm}
-                    onChange={(e) => setReportForm(e.target.value)}
-                    className="px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-[#102A43]"
-                  >
-                    <option value="Form 1">Kidato cha 1 (Form I)</option>
-                    <option value="Form 2">Kidato cha 2 (Form II)</option>
-                    <option value="Form 3">Kidato cha 3 (Form III)</option>
-                    <option value="Form 4">Kidato cha 4 (Form IV)</option>
-                  </select>
-
-                  <button
-                    onClick={() => downloadClassBroadsheetPdf(filteredResultsForReports, `BROADSHEET YA ${reportForm.toUpperCase()}`)}
-                    className="px-4 py-2 bg-[#102A43] hover:bg-[#0A1C2E] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                  >
-                    <Download className="w-4 h-4 text-[#C9A227]" />
-                    <span>Pakua Broadsheet (PDF)</span>
-                  </button>
+                  <div className="p-1 bg-slate-100 rounded-xl flex items-center border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setReportsSubView('official_sheet')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                        reportsSubView === 'official_sheet'
+                          ? 'bg-[#102A43] text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Kielelezo Rasmi (Print Sheet)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReportsSubView('individual_cards')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                        reportsSubView === 'individual_cards'
+                          ? 'bg-[#102A43] text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Kadi Binafsi (Report Cards)
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Student Results Table */}
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                    Orodha ya Matokeo: {reportForm} ({filteredResultsForReports.length} Wanafunzi)
-                  </h4>
-                </div>
+              {reportsSubView === 'official_sheet' ? (
+                <OfficialExamReportPrintView
+                  initialResults={studentResults}
+                  defaultForm={reportForm}
+                  defaultExamType="Monthly Examination"
+                  defaultMonthYear="AUGUST 2026"
+                />
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-500">Chagua Darasa:</span>
+                      <select
+                        value={reportForm}
+                        onChange={(e) => setReportForm(e.target.value)}
+                        className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-[#102A43]"
+                      >
+                        <option value="Form 1">Kidato cha 1 (Form I)</option>
+                        <option value="Form 2">Kidato cha 2 (Form II)</option>
+                        <option value="Form 3">Kidato cha 3 (Form III)</option>
+                        <option value="Form 4">Kidato cha 4 (Form IV)</option>
+                      </select>
+                    </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#102A43] text-white font-bold uppercase text-[10px] tracking-wider">
-                      <tr>
-                        <th className="px-4 py-3">Namba ya Mtihani</th>
-                        <th className="px-4 py-3">Jina la Mwanafunzi</th>
-                        <th className="px-3 py-3 text-center">Division</th>
-                        <th className="px-3 py-3 text-center">Points</th>
-                        <th className="px-3 py-3 text-center">Average</th>
-                        <th className="px-4 py-3 text-right">Vitendo</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredResultsForReports.map((st) => (
-                        <tr key={st.id} className="hover:bg-slate-50 transition">
-                          <td className="px-4 py-3 font-mono font-bold text-slate-700">{st.examNumber}</td>
-                          <td className="px-4 py-3 font-bold text-[#102A43]">{st.studentName}</td>
-                          <td className="px-3 py-3 text-center">
-                            <span className="px-2.5 py-0.5 rounded font-black text-xs bg-emerald-100 text-emerald-900 border border-emerald-300">
-                              {st.division}
-                            </span>
-                          </td>
-                          <td className="px-3 py-3 text-center font-bold font-mono text-slate-700">{st.points} Pts</td>
-                          <td className="px-3 py-3 text-center font-bold font-mono text-blue-700">{st.averageMarks}%</td>
-                          <td className="px-4 py-3 text-right">
-                            <button
-                              onClick={() => downloadStudentResultSlipPdf(st)}
-                              className="px-3 py-1 bg-slate-100 hover:bg-[#102A43] hover:text-white rounded-lg text-xs font-bold transition cursor-pointer inline-flex items-center gap-1"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              <span>Pakua Report Card</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    <button
+                      onClick={() => downloadClassBroadsheetPdf(filteredResultsForReports, `BROADSHEET YA ${reportForm.toUpperCase()}`)}
+                      className="px-4 py-2 bg-[#102A43] hover:bg-[#0A1C2E] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    >
+                      <Download className="w-4 h-4 text-[#C9A227]" />
+                      <span>Pakua Broadsheet Yote (PDF)</span>
+                    </button>
+                  </div>
+
+                  {/* Student Results Table */}
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                    <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">
+                        Orodha ya Matokeo: {reportForm} ({filteredResultsForReports.length} Wanafunzi)
+                      </h4>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#102A43] text-white font-bold uppercase text-[10px] tracking-wider">
+                          <tr>
+                            <th className="px-4 py-3">Namba ya Mtihani</th>
+                            <th className="px-4 py-3">Jina la Mwanafunzi</th>
+                            <th className="px-3 py-3 text-center">Division</th>
+                            <th className="px-3 py-3 text-center">Points</th>
+                            <th className="px-3 py-3 text-center">Average</th>
+                            <th className="px-4 py-3 text-right">Vitendo</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {filteredResultsForReports.map((st) => (
+                            <tr key={st.id} className="hover:bg-slate-50 transition">
+                              <td className="px-4 py-3 font-mono font-bold text-slate-700">{st.examNumber}</td>
+                              <td className="px-4 py-3 font-bold text-[#102A43]">{st.studentName}</td>
+                              <td className="px-3 py-3 text-center">
+                                <span className="px-2.5 py-0.5 rounded font-black text-xs bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                  {st.division}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-center font-bold font-mono text-slate-700">{st.points} Pts</td>
+                              <td className="px-3 py-3 text-center font-bold font-mono text-blue-700">{st.averageMarks}%</td>
+                              <td className="px-4 py-3 text-right">
+                                <button
+                                  onClick={() => downloadStudentResultSlipPdf(st)}
+                                  className="px-3 py-1 bg-slate-100 hover:bg-[#102A43] hover:text-white rounded-lg text-xs font-bold transition cursor-pointer inline-flex items-center gap-1"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>Pakua Report Card</span>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

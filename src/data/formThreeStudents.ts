@@ -88,6 +88,8 @@ export const FORM_THREE_STUDENT_PROFILES: StudentProfile[] = OFFICIAL_FORM_THREE
   };
 });
 
+export const FORM_THREE_STUDENTS = FORM_THREE_STUDENT_PROFILES;
+
 export const FORM_THREE_STUDENT_RESULTS: StudentResult[] = OFFICIAL_FORM_THREE_REGISTER_DATA.map((rec, index) => {
   const scoresPreset = [
     { civ: 84, hist: 82, geo: 85, kisw: 90, eng: 88, phys: 78, chem: 84, bio: 88, math: 86, rel: 92 }, // 1. Beatrice John Mremi

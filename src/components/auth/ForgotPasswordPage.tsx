@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, ChevronLeft, KeyRound } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, ChevronLeft, KeyRound, ShieldCheck } from 'lucide-react';
 import { SchoolLogo } from '../SchoolLogo';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -27,7 +26,7 @@ export const ForgotPasswordPage: React.FC = () => {
     }
     setEmailError('');
     setIsSubmitting(true);
-    const res = await forgotPassword(email);
+    const res = await forgotPassword(email.trim());
     setIsSubmitting(false);
     if (res.success) {
       setSentSuccess(true);
@@ -35,81 +34,88 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 flex flex-col justify-between relative overflow-hidden font-sans select-none">
-      {/* Background Glows */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-700/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 right-10 w-96 h-96 bg-emerald-600/25 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen w-full bg-[#FFFFF0] flex flex-col justify-between selection:bg-[#102A43] selection:text-white font-sans">
       {/* Top Header */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <header className="w-full bg-[#102A43] text-white px-4 sm:px-8 py-3.5 flex items-center justify-between border-b-2 border-[#C9A227] shadow-md">
         <button
+          type="button"
           onClick={() => {
             setAuthMessage(null);
             setActiveView('login');
           }}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 px-3.5 py-2 rounded-xl border border-slate-700/50 backdrop-blur-md transition-all group cursor-pointer"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-[#FFFFF0] transition-colors cursor-pointer border border-white/15 focus:outline-none focus:ring-2 focus:ring-[#C9A227]"
         >
-          <ChevronLeft className="w-4 h-4 text-amber-400 group-hover:-translate-x-1 transition-transform" />
-          <span>{language === 'sw' ? 'Rudi Kuingia (Login)' : 'Back to Sign In'}</span>
+          <ChevronLeft className="w-4 h-4 text-[#C9A227]" />
+          <span>{language === 'sw' ? 'Rudi Kuingia (Login)' : 'Back to Login'}</span>
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <SchoolLogo size="sm" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider hidden sm:inline">
-            Uomboni Secondary School
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <div className="text-xs font-black text-white tracking-wider leading-none">
+              SHULE YA SEKONDARI UOMBONI
+            </div>
+            <div className="text-[10px] text-[#C9A227] font-semibold mt-0.5">
+              NECTA Centre S0486 · Marangu, Moshi
+            </div>
+          </div>
+          <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center p-0.5 bg-white shadow-sm border border-[#C9A227]/40">
+            <SchoolLogo size="sm" />
+          </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-slate-900/90 border border-slate-800/80 rounded-3xl shadow-2xl backdrop-blur-xl p-6 sm:p-8 text-center relative"
-        >
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
-              <KeyRound className="w-8 h-8 text-amber-400" />
-            </div>
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
+        <div className="w-full max-w-md bg-white border-2 border-[#102A43]/15 rounded-2xl shadow-xl overflow-hidden p-6 sm:p-8 text-center relative">
+          
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#064e3b] shadow-xs">
+            <KeyRound className="w-7 h-7 text-[#064e3b]" />
           </div>
 
-          <h1 className="text-2xl font-bold font-serif text-white tracking-normal">
-            Forgot Your Password?
+          <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#102A43] tracking-tight">
+            {language === 'sw' ? 'Kurejesha Nenosiri' : 'Recover Password'}
           </h1>
 
-          <p className="text-xs sm:text-sm text-slate-300 mt-2 mb-6 leading-relaxed">
-            Enter your email address and we&apos;ll send you instructions to reset your password.
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 mb-6 leading-relaxed">
+            {language === 'sw'
+              ? 'Weka barua pepe yako iliyosajiliwa kwenye mfumo wa shule ili kupokea kiungo cha kurejesha nenosiri lako.'
+              : 'Enter your registered school email address to receive password reset instructions.'}
           </p>
 
-          <AnimatePresence>
-            {authMessage && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className={`mb-5 p-3.5 rounded-xl border text-xs sm:text-sm flex items-start gap-2.5 text-left ${
-                  authMessage.type === 'error'
-                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                    : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                }`}
-              >
-                {authMessage.type === 'error' ? (
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                )}
-                <div className="flex-1 font-medium">{authMessage.text}</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {authMessage && (
+            <div
+              className={`mb-5 p-3.5 rounded-xl border text-xs sm:text-sm flex items-start gap-2.5 text-left ${
+                authMessage.type === 'error'
+                  ? 'bg-rose-50 border-rose-300 text-rose-900'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-950'
+              }`}
+            >
+              {authMessage.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              )}
+              <span className="font-semibold leading-relaxed">{authMessage.text}</span>
+            </div>
+          )}
+
+          {emailError && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold text-left">
+              {emailError}
+            </div>
+          )}
 
           {sentSuccess ? (
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-950/60 border border-emerald-500/40 rounded-2xl text-emerald-200 text-xs sm:text-sm leading-relaxed text-left">
-                <p className="font-bold text-emerald-400 mb-1">✓ Reset Email Dispatched</p>
-                Please check your inbox (and spam folder) for an email from Uomboni Secondary School with your password reset link.
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs text-left">
+                <p className="font-bold mb-1">
+                  {language === 'sw' ? '✅ Kiungo cha Kurejesha Kimeagizwa!' : '✅ Reset Instructions Dispatched!'}
+                </p>
+                <p className="leading-relaxed">
+                  {language === 'sw'
+                    ? 'Ikiwa barua pepe hiyo ipo kwenye mfumo, maelekezo ya kurejesha nenosiri yametumwa kwa usalama. Tafadhali fungua kikasha chako cha barua pepe.'
+                    : 'If that email address exists in our system, recovery instructions have been sent securely. Please check your inbox.'}
+                </p>
               </div>
 
               <button
@@ -118,77 +124,68 @@ export const ForgotPasswordPage: React.FC = () => {
                   setAuthMessage(null);
                   setActiveView('login');
                 }}
-                className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-[#102A43] hover:bg-[#064e3b] text-white text-xs font-bold transition-all cursor-pointer shadow-md"
               >
-                Return to Sign In
+                {language === 'sw' ? 'Rudi Kwenye Ukurasa wa Kuingia' : 'Return to Login Page'}
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 text-left" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-4 text-left">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Email Address
+                <label htmlFor="forgot-email" className="block text-xs font-bold text-[#102A43] mb-1.5">
+                  {language === 'sw' ? 'Barua Pepe (Email Address)' : 'Email Address'} <span className="text-rose-600">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Mail className="w-4 h-4" />
-                  </div>
                   <input
+                    id="forgot-email"
                     type="email"
+                    required
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (emailError) setEmailError('');
-                    }}
-                    placeholder="name@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="mwl@uombonisec.ac.tz"
+                    disabled={isSubmitting}
+                    className="w-full h-11 px-3.5 pr-10 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-[#102A43] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#102A43] transition-all"
                   />
+                  <Mail className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
                 </div>
-                {emailError && (
-                  <p className="mt-1 text-[11px] text-rose-400 font-medium flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {emailError}
-                  </p>
-                )}
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting || loading}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white font-black text-sm shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50"
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-xl bg-[#102A43] hover:bg-[#064e3b] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting || loading ? (
+                {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Sending Instructions...</span>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#C9A227]" />
+                    <span>{language === 'sw' ? 'Inatuma kiungo...' : 'Sending link...'}</span>
                   </>
                 ) : (
-                  <>
-                    <span className="tracking-wide uppercase">SEND RESET LINK</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </>
+                  <span>{language === 'sw' ? 'Tuma Kiungo cha Kurejesha' : 'Send Reset Link'}</span>
                 )}
               </button>
             </form>
           )}
 
-          <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
+          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
             <button
               type="button"
               onClick={() => {
                 setAuthMessage(null);
                 setActiveView('login');
               }}
-              className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="text-xs text-[#064e3b] hover:text-[#102A43] font-bold underline transition-colors cursor-pointer"
             >
-              Remembered your password? <span className="text-amber-400 font-bold hover:underline">Sign In</span>
+              {language === 'sw' ? '← Kumbuka Nenosiri? Ingia Sasa' : '← Remember Password? Sign In'}
             </button>
           </div>
-        </motion.div>
+
+        </div>
       </main>
 
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-500">
-        <p>UOMBONI SECONDARY SCHOOL • Education • Pray • Work</p>
+      {/* Official Footer */}
+      <footer className="w-full py-4 text-center text-xs text-slate-600 font-semibold bg-white border-t border-slate-200">
+        &copy; 2026 Uomboni Secondary School · Marangu, Moshi, Kilimanjaro · NECTA Centre S0486
       </footer>
     </div>
   );

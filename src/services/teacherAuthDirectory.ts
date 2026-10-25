@@ -467,6 +467,41 @@ export function isTeacherAuthorizedForSubject(
 }
 
 /**
+ * Validates whether a teacher is authorized to grade a subject and returns status details
+ */
+export function verifyTeacherCanGradeSubject(
+  teacherIdOrEmailOrName: string,
+  subjectName: string
+): { canGrade: boolean; reasonSw: string; reasonEn: string } {
+  const profile =
+    TEACHER_AUTH_DIRECTORY[teacherIdOrEmailOrName] ||
+    getTeacherAuthProfile(teacherIdOrEmailOrName);
+
+  if (!profile) {
+    return {
+      canGrade: false,
+      reasonSw: 'Mwalimu hakupatikana kwenye mfumo',
+      reasonEn: 'Teacher profile not found',
+    };
+  }
+
+  const isAuth = isTeacherAuthorizedForSubject(teacherIdOrEmailOrName, subjectName);
+  if (isAuth) {
+    return {
+      canGrade: true,
+      reasonSw: `Mwalimu ameidhinishwa kusahihisha ${subjectName}`,
+      reasonEn: `Teacher is authorized to grade ${subjectName}`,
+    };
+  }
+
+  return {
+    canGrade: false,
+    reasonSw: `Hujaidhinishwa kuingiza alama za somo la ${subjectName}. Masomo uliyopangiwa ni: ${profile.assignedSubjects.join(', ')}`,
+    reasonEn: `You are not authorized to grade ${subjectName}. Assigned subjects: ${profile.assignedSubjects.join(', ')}`,
+  };
+}
+
+/**
  * Normalizes subject names to official NECTA naming conventions
  */
 export function normalizeTeacherAssignedSubjects(rawSubjects: string[]): string[] {

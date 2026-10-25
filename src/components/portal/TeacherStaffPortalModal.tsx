@@ -37,7 +37,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
 }) => {
   const { language } = useLanguage();
   const { teachers } = useData();
-  const { userProfile, user } = useAuth();
+  const { userProfile, user, setActiveView } = useAuth();
 
   // Teacher Identity State
   const [authenticatedTeacher, setAuthenticatedTeacher] = useState<any | null>(null);
@@ -230,6 +230,19 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
                 <span>Thibitisha &amp; Ingia kwenye Staff Portal</span>
                 <ArrowRight className="w-4 h-4 text-[#C9A227]" />
               </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    setActiveView('login');
+                  }}
+                  className="text-xs text-[#064e3b] hover:text-[#102A43] font-bold underline transition cursor-pointer"
+                >
+                  Au ingia kwa Username &amp; Nenosiri (Full Staff Login Page) →
+                </button>
+              </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                 <span className="flex items-center gap-1 text-emerald-700 font-medium">
