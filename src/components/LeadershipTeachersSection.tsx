@@ -116,7 +116,7 @@ export const LeadershipTeachersSection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-[#102A43]/10">
           <div className="max-w-2xl space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-black tracking-wider uppercase border border-amber-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-50 text-amber-900 text-xs font-bold tracking-wider uppercase border border-amber-300">
               <Sparkles className="w-3.5 h-3.5 text-amber-700" />
               <span>{language === 'sw' ? 'WALIMU WETU' : 'OUR TEACHERS'}</span>
             </div>
@@ -133,11 +133,11 @@ export const LeadershipTeachersSection: React.FC = () => {
           {/* View Mode Switcher & Navigation Controls */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             {/* View Switcher: Individual vs Grid */}
-            <div className="inline-flex items-center p-1 bg-white rounded-full border border-slate-200 shadow-xs">
+            <div className="inline-flex items-center p-1 bg-white rounded-lg border border-slate-200 shadow-xs">
               <button
                 type="button"
                 onClick={() => setViewMode('individual')}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'individual'
                     ? 'bg-[#102A43] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -150,7 +150,7 @@ export const LeadershipTeachersSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-[#102A43] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -163,7 +163,7 @@ export const LeadershipTeachersSection: React.FC = () => {
 
             {/* Individual Stepper Controls */}
             {viewMode === 'individual' && (
-              <div className="inline-flex items-center gap-1.5 bg-white p-1 rounded-full border border-slate-200 shadow-xs">
+              <div className="inline-flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-xs">
                 {/* Optional Auto-Play Toggle (User Controlled) */}
                 <button
                   type="button"

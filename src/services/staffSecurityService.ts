@@ -23,7 +23,21 @@ export const AUTHORIZED_STAFF_DIRECTORY: Record<
     additionalRoles?: StaffRole[];
   }
 > = {
-  // Super Admin & Headmaster
+  // Super Admin & Headmaster (Official School Administration)
+  'uombiniss.sc.tz@gmail.com': {
+    role: 'admin',
+    name: 'Ofisi ya Mkuu wa Shule (Uomboni Secondary)',
+    titleSw: 'Mkuu wa Shule & Msimamizi Mkuu (Headmaster)',
+    titleEn: 'Headmaster & Executive Administration',
+    additionalRoles: ['academic_master', 'bursar', 'teacher'],
+  },
+  'uomboniss.sc.tz@gmail.com': {
+    role: 'admin',
+    name: 'Ofisi ya Mkuu wa Shule (Uomboni Secondary)',
+    titleSw: 'Mkuu wa Shule & Msimamizi Mkuu (Headmaster)',
+    titleEn: 'Headmaster & Executive Administration',
+    additionalRoles: ['academic_master', 'bursar', 'teacher'],
+  },
   'tumainifundtrustfoundation@gmail.com': {
     role: 'admin',
     name: 'Tumaini Fund Trust Foundation',

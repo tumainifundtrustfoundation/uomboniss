@@ -131,18 +131,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             {onOpenNews && (
               <button
                 onClick={onOpenNews}
-                className="fire-news-btn liquid-btn hidden md:inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black text-white border border-amber-300/80 transition-all cursor-pointer group"
-                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
+                className="fire-news-btn inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-white transition-all cursor-pointer"
+                title="Habari Mpya & Matangazo ya Shule (School News)"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <span className="relative flex items-center justify-center">
-                    <span className="absolute -inset-1 rounded-full bg-yellow-400 blur-xs opacity-75 animate-ping" />
-                    <Flame className="w-3.5 h-3.5 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_6px_rgba(255,200,0,1)]" />
-                  </span>
-                  <span className="drop-shadow-xs">{language === 'sw' ? 'Habari Mpya' : 'Hot News'}</span>
-                  <span className="px-1 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[8px] font-black uppercase">
-                    HOT
-                  </span>
+                <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />
+                <span>{language === 'sw' ? 'Habari Mpya' : 'School News'}</span>
+                <span className="px-1 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[8px] font-black uppercase">
+                  HOT
                 </span>
               </button>
             )}
@@ -268,25 +263,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-news-hot-btn"
                 onClick={onOpenNews}
-                className="fire-news-btn liquid-btn relative group inline-flex items-center gap-2 px-3 2xl:px-4 py-2 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer overflow-hidden"
-                title="Habari Mpya & Matangazo ya Shule (School Hot News)"
+                className="fire-news-btn inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-white transition-all cursor-pointer"
+                title="Habari Mpya & Matangazo ya Shule (School News)"
               >
-                {/* Glowing flame aura */}
-                <span className="absolute inset-0 bg-gradient-to-r from-yellow-300/30 via-orange-400/40 to-red-600/30 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse pointer-events-none" />
-
-                <span className="relative z-10 flex items-center gap-2">
-                  <span className="relative flex items-center justify-center">
-                    <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
-                    <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
-                  </span>
-
-                  <span className="font-black tracking-wider uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
-                    {language === 'sw' ? 'Habari' : 'News'}
-                  </span>
-
-                  <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black uppercase tracking-wider animate-pulse shadow-sm">
-                    🔥 HOT
-                  </span>
+                <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />
+                <span className="tracking-wide uppercase">
+                  {language === 'sw' ? 'Habari' : 'News'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
+                  HOT
                 </span>
               </button>
             )}
@@ -437,17 +422,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onOpenNews();
                   }}
-                  className="fire-news-btn liquid-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black text-white border border-amber-300/80 transition-all cursor-pointer"
+                  className="fire-news-btn w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-bold text-white transition-all cursor-pointer"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <span className="relative flex items-center justify-center">
-                      <span className="absolute -inset-1 rounded-full bg-yellow-300 blur-xs opacity-80 animate-ping" />
-                      <Flame className="w-4 h-4 text-yellow-100 fill-yellow-400 flame-spark drop-shadow-[0_0_10px_rgba(255,215,0,1)]" />
-                    </span>
-                    <span className="drop-shadow-xs">🔥 Habari Mpya &amp; Matangazo (Hot News)</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-yellow-300 text-slate-950 text-[9px] font-black animate-pulse">
-                      HOT
-                    </span>
+                  <Flame className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />
+                  <span>Habari Mpya &amp; Matangazo (School News)</span>
+                  <span className="px-1.5 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[9px] font-black uppercase">
+                    HOT
                   </span>
                 </button>
               )}

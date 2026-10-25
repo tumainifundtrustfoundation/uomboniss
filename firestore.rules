@@ -26,21 +26,24 @@ service cloud.firestore {
 
     function isAdmin() {
       return (isAuthenticated() && (
-        request.auth.uid == 'google-dev-user-tumaini' ||
         (request.auth.token.email != null && (
           request.auth.token.email == 'tumainifundtrustfoundation@gmail.com' ||
           request.auth.token.email == 'adolphmassawe@gmail.com' ||
           request.auth.token.email == 'uombiniss.sc.tz@gmail.com' ||
+          request.auth.token.email == 'uomboniss.sc.tz@gmail.com' ||
+          request.auth.token.email == 'yohanabahati665@gmail.com' ||
+          request.auth.token.email == 'headmaster@uombonisecondary.ac.tz' ||
           request.auth.token.email.matches('.*admin.*@uomboni.*')
         ))
       )) || hasRole('admin');
     }
 
     function isAcademicMaster() {
-      return isAdmin() || hasRole('academic_master') || hasRole('teacher') || (
+      return isAdmin() || hasRole('academic_master') || (
         isAuthenticated() && request.auth.token.email != null && (
           request.auth.token.email == 'yohana.bahati@uombonisec.ac.tz' ||
           request.auth.token.email == 'adela.manyanga@uombonisec.ac.tz' ||
+          request.auth.token.email == 'yohanabahati665@gmail.com' ||
           request.auth.token.email.matches('.*academic.*@uomboni.*')
         )
       );
@@ -86,25 +89,25 @@ service cloud.firestore {
     // Normal users CANNOT assign themselves 'admin'
     // ====================================================
     match /users/{userId} {
-      allow get: if (isAuthenticated() && (request.auth.uid == userId || isAdmin())) || userId == 'google-dev-user-tumaini';
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
       
       // On create, user must be creating their own profile, role cannot be 'admin' unless already admin
-      allow create: if ((isAuthenticated() && 
+      allow create: if isAuthenticated() && 
         isValidId(userId) && 
         (request.auth.uid == userId || isAdmin()) &&
         (request.resource.data.role != 'admin' || isAdmin()) &&
-        request.resource.data.uid == userId)) || userId == 'google-dev-user-tumaini';
+        request.resource.data.uid == userId;
 
       // On update, users can update profile details, but CANNOT escalate their role
-      allow update: if ((isAuthenticated() && (
+      allow update: if isAuthenticated() && (
         isAdmin() || 
         (
           request.auth.uid == userId && 
           request.resource.data.role == resource.data.role &&
           request.resource.data.uid == resource.data.uid
         )
-      ))) || userId == 'google-dev-user-tumaini';
+      );
 
       allow delete: if isAdmin();
     }
@@ -305,21 +308,23 @@ service cloud.firestore {
       );
     }
 
-    // Fee payments (existing collections support)
+    // Fee payments (Restricted to school Bursar, Administration, and Staff - NO PUBLIC LEAKS)
     match /feePayments/{paymentDocId} {
-      allow get, list: if true;
-      allow create, update, delete: if isValidId(paymentDocId) && (isStaff() || isBursar());
+      allow get, list: if isStaff() || isBursar() || isAdmin();
+      allow create, update, delete: if isValidId(paymentDocId) && (isAdmin() || isBursar());
     }
 
     // ====================================================
     // IMMUTABLE AUDIT LOGS (Append-Only Trail)
     // Read: Admin & Academic Master
-    // Create: Allowed for logging security & exam activities
+    // Create: Validated logging for security & exam actions (payload size bounded)
     // Update/Delete: STRICTLY FORBIDDEN
     // ====================================================
     match /auditLogs/{logId} {
       allow get, list: if isAdmin() || isAcademicMaster();
-      allow create: if (isAuthenticated() || request.auth == null) && isValidId(logId);
+      allow create: if isValidId(logId) && 
+        request.resource.data.size() <= 25 &&
+        (request.resource.data.keys().hasAll(['action', 'timestamp']) || isAuthenticated());
       allow update, delete: if false;
     }
 
@@ -344,10 +349,10 @@ service cloud.firestore {
 
     // ====================================================
     // ADMISSION APPLICATIONS
-    // Public can submit application; only staff can view & process
+    // Public can submit application (payload size bounded); only staff can view & process
     // ====================================================
     match /applications/{appId} {
-      allow create: if isValidId(appId);
+      allow create: if isValidId(appId) && request.resource.data.size() <= 30;
       allow get, list, update, delete: if isValidId(appId) && (isAdmin() || isStaff());
     }
 

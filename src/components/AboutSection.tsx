@@ -169,7 +169,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
           {/* Right Column: About Narrative + Main Motto Banner */}
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#102A43]/10 text-[#102A43] text-xs font-black tracking-wider uppercase mb-3 border border-[#102A43]/20">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#102A43]/10 text-[#102A43] text-xs font-bold tracking-wider uppercase mb-3 border border-[#102A43]/20">
                 <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
                 <span>{language === 'sw' ? 'Kuhusu Shule ya Sekondari Uomboni' : 'About Uomboni Secondary School'}</span>
               </div>
@@ -186,12 +186,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
             </div>
 
             {/* Prominent Official Document Identity Card */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#102A43] via-[#0b2545] to-[#102A43] text-white border-2 border-[#C9A227] shadow-md space-y-4">
+            <div className="p-5 sm:p-6 rounded-xl bg-[#102A43] text-white border border-[#C9A227]/40 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
                   {language === 'sw' ? '★ KAULIMBIU & UTAMBULISHO RASMI (OFFICIAL IDENTITY)' : '★ OFFICIAL SCHOOL IDENTITY & MOTTO'}
                 </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black">
+                <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-400 text-slate-950 font-bold">
                   Catholic Diocese of Moshi
                 </span>
               </div>

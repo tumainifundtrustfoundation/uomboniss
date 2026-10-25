@@ -51,8 +51,8 @@ const FAQ_DATA: FAQItem[] = [
     category: 'admissions',
     questionSw: 'Fomu za kujiunga na shule zinapatikana wapi na kwa njia gani?',
     questionEn: 'Where and how can I obtain the school admission joining instructions form?',
-    answerSw: 'Fomu zote za kujiunga (Joining Instructions & Admission Forms) zinapatikana bure mtandaoni kwenye sehemu ya "Hati za Udahili" (STUDENT ADMISSION) kwa kubonyeza kitufe chekundu cha Liquid Button kilichopo juu au kupitia ofisi ya shule Marangu, Moshi Bookshop mjini Moshi, na parokia ya Ngarenaro Arusha.',
-    answerEn: 'All official joining instructions and admission forms are available online on this website under the "STUDENT ADMISSION" red liquid button with direct PDF download. Physical copies are also available at the School Administration Office in Marangu, Moshi Bookshop in Moshi Town, and Ngarenaro Parish.',
+    answerSw: 'Fomu zote za kujiunga (Joining Instructions & Admission Forms) zinapatikana bure mtandaoni kwenye sehemu ya "Hati za Udahili" (STUDENT ADMISSION) kwa kubonyeza kitufe kilichopo juu au kupitia ofisi ya shule Marangu, Moshi Bookshop mjini Moshi, na parokia ya Ngarenaro Arusha.',
+    answerEn: 'All official joining instructions and admission forms are available online on this website under the "STUDENT ADMISSION" button with direct PDF download. Physical copies are also available at the School Administration Office in Marangu, Moshi Bookshop in Moshi Town, and Ngarenaro Parish.',
   },
 
   // 2. School Fees & Payment

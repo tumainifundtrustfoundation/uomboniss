@@ -307,6 +307,8 @@ export async function syncUserProfile(
 
   const cleanEmail = (user.email || '').toLowerCase().trim();
   const isMasterAdminEmail =
+    cleanEmail === 'uombiniss.sc.tz@gmail.com' ||
+    cleanEmail === 'uomboniss.sc.tz@gmail.com' ||
     cleanEmail === 'yohanabahati665@gmail.com' ||
     cleanEmail === 'tumainifundtrustfoundation@gmail.com' ||
     cleanEmail === 'adolphmassawe@gmail.com' ||

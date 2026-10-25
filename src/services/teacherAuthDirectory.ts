@@ -20,6 +20,30 @@ export interface TeacherAuthProfile {
 
 // Confidential Teacher Directory with Individual Secure PINs and Specific Assigned Subjects
 export const TEACHER_AUTH_DIRECTORY: Record<string, TeacherAuthProfile> = {
+  'tch-uomboni-admin': {
+    id: 'tch-uomboni-admin',
+    name: 'Ofisi ya Mkuu wa Shule (Uomboni Secondary)',
+    email: 'uombiniss.sc.tz@gmail.com',
+    role: 'Mkuu wa Shule (Headmaster) & Msimamizi Mkuu',
+    department: 'Utawala Mkuu (Executive Administration)',
+    assignedSubjects: [
+      'Civics',
+      'History',
+      'Geography',
+      'Kiswahili',
+      'English Language',
+      'Physics',
+      'Chemistry',
+      'Biology',
+      'Basic Mathematics',
+      'Commerce',
+      'Bookkeeping',
+      'Religious Education',
+    ],
+    defaultPin: '782558', // Confidential PIN unique to Headmaster
+    phone: '+255 782 558 127',
+    imageUrl: '/media/media_1.webp',
+  },
   'tch-003': {
     id: 'tch-003',
     name: 'Mwl. Yohana Bahati',

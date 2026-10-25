@@ -131,7 +131,7 @@ export const GallerySection: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#102A43]/15">
           <div className="max-w-2xl space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#102A43]/10 text-[#102A43] text-xs font-bold tracking-wider uppercase border border-[#102A43]/15">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#102A43]/10 text-[#102A43] text-xs font-bold tracking-wider uppercase border border-[#102A43]/15">
               <Camera className="w-3.5 h-3.5 text-[#C9A227]" />
               <span>{language === 'sw' ? 'Matunzio ya Shule' : 'Campus Photo Gallery'}</span>
             </div>

@@ -26,8 +26,8 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
       {/* Hero Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center animate-in fade-in duration-700">
         {/* Institutional Kicker */}
-        <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3.5 py-1.5 rounded-2xl sm:rounded-full bg-[#FFFFF0]/10 border border-[#C9A227]/40 text-[#FFFFF0] text-[11px] sm:text-xs font-semibold tracking-wider uppercase mb-5 backdrop-blur-xs max-w-full text-center leading-snug">
-          <span className="w-2 h-2 rounded-full bg-[#C9A227] animate-pulse shrink-0" />
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3.5 py-1.5 rounded-md bg-[#0A1C2E]/80 border border-[#C9A227]/40 text-[#FFFFF0] text-[11px] sm:text-xs font-semibold tracking-wider uppercase mb-5 max-w-full text-center leading-snug">
+          <span className="w-2 h-2 rounded-full bg-[#C9A227] shrink-0" />
           <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
         </div>
 
