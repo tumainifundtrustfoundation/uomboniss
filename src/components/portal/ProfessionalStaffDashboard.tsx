@@ -1657,13 +1657,11 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
                           🔒 Somo Lako Pekee
                         </span>
-                      🔒 Somo Lako Pekee
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Mwalimu {activeTeacher.name}: Chagua darasa, mtihani na somo, kisha jaza alama kwenye jedwali.
-                  </p>
-                </div>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Mwalimu {activeTeacher.name}: Chagua darasa, mtihani na somo, kisha jaza alama kwenye jedwali.
+                      </p>
+                    </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <input
@@ -2081,6 +2079,8 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
               </div>
             </div>
           )}
+        </div>
+      )}
 
           {/* ==================================================== */}
           {/* TAB 6: DRAFT RESULTS                                 */}
