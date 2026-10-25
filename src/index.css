@@ -564,6 +564,22 @@
   animation-play-state: paused;
 }
 
+/* Individual Teacher One-by-One Animation ("mtu mmojammoja, sio zoom in yote") */
+@keyframes teacherEnterIndividual {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-teacher-single {
+  animation: teacherEnterIndividual 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Fiery Blazing News Button ("moto unawakawaka" & warm orange/yellow pulsating radiance) */
 @keyframes fireFlicker {
   0%, 100% {

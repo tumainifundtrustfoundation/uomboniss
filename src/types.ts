@@ -44,7 +44,7 @@ export interface PendingStudentScore {
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
   points: number;
   remarks: string;
-  status: 'pending';
+  status: 'draft' | 'pending' | 'under_review' | 'approved' | 'returned' | 'rejected';
 }
 
 export interface PendingSubjectSubmission {
@@ -55,16 +55,25 @@ export interface PendingSubjectSubmission {
   stream: string;
   examType: string;
   academicYear: string;
+  term?: string;
+  maxMarks?: number;
   teacherName: string;
   teacherEmail?: string;
   teacherId?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'draft' | 'pending' | 'under_review' | 'approved' | 'returned' | 'rejected';
   submittedCount: number;
   studentScores: PendingStudentScore[];
   submittedAt: string;
   reviewedAt?: string | null;
   reviewedBy?: string | null;
   academicMasterNotes?: string;
+  returnComment?: string;
+  auditTrail?: Array<{
+    action: string;
+    by: string;
+    at: string;
+    notes?: string;
+  }>;
 }
 
 export interface AcademicDirective {
@@ -268,6 +277,11 @@ export interface SchoolVideo {
   descriptionEn?: string;
   featured?: boolean;
   order?: number;
+  videoSource?: 'youtube' | 'drive' | string;
+  videoUrl?: string;
+  embedUrl?: string;
+  driveFileId?: string;
+  thumbnailUrl?: string;
 }
 
 export interface ParentInquiry {

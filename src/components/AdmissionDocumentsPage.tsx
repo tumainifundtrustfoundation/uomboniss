@@ -560,6 +560,19 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
               </button>
 
               <div className="flex items-center gap-2">
+                {previewDoc.googleDriveUrl && (
+                  <a
+                    href={previewDoc.googleDriveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <FolderOpen className="w-4 h-4 text-blue-600" />
+                    <span>Google Drive</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                  </a>
+                )}
+
                 <button
                   onClick={() => {
                     handleDownload(previewDoc);

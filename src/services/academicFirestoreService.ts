@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { PendingSubjectSubmission, PendingStudentScore, StudentResult, AcademicDirective, ExamTypeConfig } from '../types';
+import { recordAuditLog } from './auditLoggingService';
 
 const PENDING_RESULTS_COLLECTION = 'pendingResults';
 const LOCAL_STORAGE_PENDING_KEY = 'uomboni_pending_subject_results';
@@ -60,19 +61,21 @@ export function generatePendingSubmissionId(
   return `pending_${safeForm}_${safeExam}_${safeSubject}_${timestamp}`;
 }
 
-/**
- * Save teacher-uploaded student scores by subject to Cloud Firestore with status 'pending'
- */
 export async function savePendingSubjectScoresToFirestore(params: {
+  submissionId?: string;
   subject: string;
   subjectCode: string;
   form: string;
   stream: string;
   examType: string;
   academicYear?: string;
+  term?: string;
+  maxMarks?: number;
   teacherName: string;
   teacherEmail?: string;
   teacherId?: string;
+  status?: 'draft' | 'pending' | 'under_review' | 'approved' | 'returned';
+  returnComment?: string;
   scores: Array<{
     examNumber: string;
     studentName: string;
@@ -89,7 +92,8 @@ export async function savePendingSubjectScoresToFirestore(params: {
   firestoreSaved: boolean;
   error?: string;
 }> {
-  const submissionId = generatePendingSubmissionId(params.form, params.examType, params.subject);
+  const currentStatus = params.status || 'pending';
+  const submissionId = params.submissionId || generatePendingSubmissionId(params.form, params.examType, params.subject);
   const now = new Date().toISOString();
 
   const studentScores: PendingStudentScore[] = params.scores.map((sc) => ({
@@ -100,7 +104,7 @@ export async function savePendingSubjectScoresToFirestore(params: {
     grade: sc.grade,
     points: sc.points,
     remarks: sc.remarks,
-    status: 'pending' as const,
+    status: currentStatus,
   }));
 
   const pendingSubmission: PendingSubjectSubmission = {
@@ -111,16 +115,27 @@ export async function savePendingSubjectScoresToFirestore(params: {
     stream: params.stream || 'ALL',
     examType: params.examType,
     academicYear: params.academicYear || '2025/2026',
+    term: params.term || 'Muhula wa 1 (Term 1)',
+    maxMarks: params.maxMarks || 100,
     teacherName: params.teacherName,
     teacherEmail: params.teacherEmail || '',
     teacherId: params.teacherId || '',
-    status: 'pending', // Explicitly marked as pending
+    status: currentStatus,
     submittedCount: studentScores.length,
     studentScores,
     submittedAt: now,
     reviewedAt: null,
     reviewedBy: null,
     academicMasterNotes: '',
+    returnComment: params.returnComment || '',
+    auditTrail: [
+      {
+        action: currentStatus === 'draft' ? 'saved_draft' : 'submitted',
+        by: params.teacherName,
+        at: now,
+        notes: currentStatus === 'draft' ? 'Matokeo yamehifadhiwa kama Rasimu' : 'Yamewasilishwa kwa Mkuu wa Taaluma',
+      },
+    ],
   };
 
   // Always save local backup first
@@ -178,6 +193,20 @@ export async function savePendingSubjectScoresToFirestore(params: {
     console.warn('Firestore write for pending results:', err);
     firestoreError = err?.message || 'Hitilafu ya mtandao wa Firestore';
   }
+
+  // Record audit log for submission or draft saving
+  recordAuditLog({
+    action: currentStatus === 'draft' ? 'RESULTS_DRAFT_SAVED' : 'RESULTS_SUBMITTED',
+    actorUid: params.teacherId || auth.currentUser?.uid || 'teacher-session',
+    actorEmail: params.teacherEmail || auth.currentUser?.email || 'teacher@uombonisec.ac.tz',
+    actorName: params.teacherName,
+    actorRole: 'teacher',
+    resourceType: 'pending_results',
+    resourceId: submissionId,
+    details: `${currentStatus === 'draft' ? 'Rasimu ya alama' : 'Uwasilishaji wa alama'} za somo la ${params.subject} (${params.form}) - Wanafunzi ${studentScores.length}`,
+    newState: { status: currentStatus, count: studentScores.length, subject: params.subject, form: params.form },
+    success: true,
+  }).catch(() => {});
 
   return {
     success: true,
@@ -261,6 +290,22 @@ export async function approvePendingSubjectSubmissionInFirestore(
       reviewedBy: reviewerName,
       academicMasterNotes: notes,
     });
+
+    recordAuditLog({
+      action: 'RESULTS_APPROVED',
+      actorUid: auth.currentUser?.uid || 'academic-master',
+      actorEmail: auth.currentUser?.email || 'academic@uombonisec.ac.tz',
+      actorName: reviewerName,
+      actorRole: 'academic_master',
+      resourceType: 'pending_results',
+      resourceId: submissionId,
+      details: `Uidhinisho rasmi wa matokeo ya mtihani: ${submissionId}. Maoni: ${notes || 'Hakuna'}`,
+      previousState: { status: 'pending' },
+      newState: { status: 'approved', reviewedBy: reviewerName },
+      reason: notes || 'Matokeo yameidhinishwa baada ya ukaguzi wa kitaaluma',
+      success: true,
+    }).catch(() => {});
+
     return { success: true };
   } catch (err: any) {
     if (err?.code === 'permission-denied') {
@@ -268,6 +313,104 @@ export async function approvePendingSubjectSubmissionInFirestore(
     }
     console.error('Error approving pending submission in Firestore:', err);
     return { success: false, error: err?.message };
+  }
+}
+
+/**
+ * Return a submission for correction with comments
+ */
+export async function returnPendingSubjectSubmissionInFirestore(
+  submissionId: string,
+  reviewerName: string,
+  comment: string
+): Promise<{ success: boolean; error?: string }> {
+  const now = new Date().toISOString();
+
+  // Update local cache
+  const locals = getFromLocalStorage();
+  const updated = locals.map((s) =>
+    s.id === submissionId
+      ? {
+          ...s,
+          status: 'returned' as const,
+          returnComment: comment,
+          reviewedAt: now,
+          reviewedBy: reviewerName,
+          academicMasterNotes: comment,
+        }
+      : s
+  );
+  localStorage.setItem(LOCAL_STORAGE_PENDING_KEY, JSON.stringify(updated));
+
+  recordAuditLog({
+    action: 'RESULTS_RETURNED',
+    actorUid: auth.currentUser?.uid || 'academic-master',
+    actorEmail: auth.currentUser?.email || 'academic@uombonisec.ac.tz',
+    actorName: reviewerName,
+    actorRole: 'academic_master',
+    resourceType: 'pending_results',
+    resourceId: submissionId,
+    details: `Matokeo yamerejeshwa kwa mwalimu kwa marekebisho: ${comment}`,
+    previousState: { status: 'pending' },
+    newState: { status: 'returned', returnComment: comment },
+    reason: comment,
+    success: true,
+  }).catch(() => {});
+
+  if (!auth.currentUser) {
+    return { success: true };
+  }
+
+  try {
+    const docRef = doc(db, PENDING_RESULTS_COLLECTION, submissionId);
+    await updateDoc(docRef, {
+      status: 'returned',
+      returnComment: comment,
+      reviewedAt: now,
+      reviewedBy: reviewerName,
+      academicMasterNotes: comment,
+    });
+    return { success: true };
+  } catch (err: any) {
+    if (err?.code === 'permission-denied') {
+      handleFirestoreError(err, OperationType.UPDATE, `${PENDING_RESULTS_COLLECTION}/${submissionId}`);
+    }
+    console.error('Error returning submission in Firestore:', err);
+    return { success: false, error: err?.message };
+  }
+}
+
+/**
+ * Delete a draft or submission from Firestore and localStorage
+ */
+export async function deletePendingSubmissionInFirestore(submissionId: string): Promise<boolean> {
+  const locals = getFromLocalStorage();
+  const filtered = locals.filter((s) => s.id !== submissionId);
+  localStorage.setItem(LOCAL_STORAGE_PENDING_KEY, JSON.stringify(filtered));
+
+  recordAuditLog({
+    action: 'RESULTS_DELETED',
+    actorUid: auth.currentUser?.uid || 'staff',
+    actorEmail: auth.currentUser?.email || 'staff@uombonisec.ac.tz',
+    actorName: 'Mtumishi wa Shule',
+    actorRole: 'teacher',
+    resourceType: 'pending_results',
+    resourceId: submissionId,
+    details: `Ufutaji wa rasimu ya matokeo: ${submissionId}`,
+    success: true,
+  }).catch(() => {});
+
+  if (!auth.currentUser) {
+    return true;
+  }
+
+  try {
+    const docRef = doc(db, PENDING_RESULTS_COLLECTION, submissionId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (err: any) {
+    console.warn('Could not delete submission from Firestore:', err);
+    return false;
   }
 }
 

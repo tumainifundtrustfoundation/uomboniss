@@ -146,8 +146,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </button>
             )}
-            {/* Academic Portal Quick Link */}
-            {onOpenAcademicPortal && (
+            {/* Academic Portal Quick Link - Only visible to authenticated academic staff or admin */}
+            {user && (userProfile?.role === 'admin' || userProfile?.role === 'teacher' || userProfile?.role === 'academic_master') && onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
                 className="liquid-btn liquid-btn-gold hidden lg:inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 cursor-pointer"
@@ -305,16 +305,42 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {onOpenAdmin && (
+            {user && userProfile?.role === 'admin' && onOpenAdmin && (
               <button
                 id="nav-admin-portal-btn"
                 onClick={onOpenAdmin}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black cursor-pointer"
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black cursor-pointer shadow-xs"
                 title="Lango la Utawala & Udahili (Administration)"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-950" />
-                  <span>Administration</span>
+                  <span>Utawala</span>
+                </span>
+              </button>
+            )}
+
+            {user && (userProfile?.role === 'admin' || userProfile?.role === 'parent') && onOpenParentPortal && (
+              <button
+                id="nav-parent-portal-btn"
+                onClick={onOpenParentPortal}
+                className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold cursor-pointer"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <span>Parent Portal</span>
+                </span>
+              </button>
+            )}
+
+            {user && (userProfile?.role === 'admin' || userProfile?.role === 'teacher') && onOpenStaffPortal && (
+              <button
+                id="nav-staff-portal-btn"
+                onClick={onOpenStaffPortal}
+                className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold cursor-pointer"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <span>Staff Portal</span>
                 </span>
               </button>
             )}
@@ -328,27 +354,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="relative z-10 flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5 text-[#C9A227]" />
                 <span>Student Portal</span>
-              </span>
-            </button>
-            <button
-              id="nav-parent-portal-btn"
-              onClick={onOpenParentPortal}
-              className="liquid-btn liquid-btn-glass inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold cursor-pointer"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Parent Portal</span>
-              </span>
-            </button>
-
-            <button
-              id="nav-staff-portal-btn"
-              onClick={onOpenStaffPortal}
-              className="liquid-btn liquid-btn-navy inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold cursor-pointer"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Staff Portal</span>
               </span>
             </button>
 
@@ -465,7 +470,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <PWAInstallButton variant="mobile" />
 
-              {onOpenAdmin && (
+              {user && userProfile?.role === 'admin' && onOpenAdmin && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -480,9 +485,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-
-
-              {onOpenAcademicPortal && (
+              {user && (userProfile?.role === 'admin' || userProfile?.role === 'teacher' || userProfile?.role === 'academic_master') && onOpenAcademicPortal && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -509,31 +512,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>Student Portal (Wanafunzi)</span>
                 </span>
               </button>
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenParentPortal) onOpenParentPortal();
-                }}
-                className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#C9A227]" />
-                  <span>Parent Portal</span>
-                </span>
-              </button>
 
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenStaffPortal) onOpenStaffPortal();
-                }}
-                className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-[#C9A227]" />
-                  <span>Staff Portal</span>
-                </span>
-              </button>
+              {user && (userProfile?.role === 'admin' || userProfile?.role === 'parent') && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onOpenParentPortal) onOpenParentPortal();
+                  }}
+                  className="liquid-btn liquid-btn-glass w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#C9A227]" />
+                    <span>Parent Portal</span>
+                  </span>
+                </button>
+              )}
+
+              {user && (userProfile?.role === 'admin' || userProfile?.role === 'teacher') && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onOpenStaffPortal) onOpenStaffPortal();
+                  }}
+                  className="liquid-btn liquid-btn-navy w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold cursor-pointer shadow-xs"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-[#C9A227]" />
+                    <span>Staff Portal</span>
+                  </span>
+                </button>
+              )}
 
               {user ? (
                 <button

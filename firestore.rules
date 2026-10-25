@@ -169,36 +169,68 @@ service cloud.firestore {
 
     // ====================================================
     // ACADEMIC RESULTS
-    // Students/parents can read; teachers/admins can record
+    // Public can only view published results
+    // Only Admin & Academic Master can record or publish official results
     // ====================================================
     match /results/{resultDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(resultDocId);
+      allow create, update, delete: if isValidId(resultDocId) && (isAdmin() || isAcademicMaster());
     }
 
-    // Published broadsheet examination results
+    // Published broadsheet examination results (Only certified by Academic Master or Admin)
     match /published_results/{publishedDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(publishedDocId);
+      allow create, update, delete: if isValidId(publishedDocId) && (isAdmin() || isAcademicMaster());
     }
 
     // Pending teacher submissions awaiting Academic Master certification
+    // Teachers can save drafts & submit, but CANNOT self-approve or overwrite approved results
     match /pendingResults/{pendingDocId} {
-      allow get, list: if isAuthenticated();
-      allow create, update: if isValidId(pendingDocId) && (isTeacher() || isStaff());
-      allow delete: if isValidId(pendingDocId) && (isAcademicMaster() || isAdmin());
+      allow get, list: if isStaff();
+      allow create: if isValidId(pendingDocId) && isStaff() && 
+        (request.resource.data.status in ['draft', 'pending']) && 
+        (request.resource.data.status != 'approved');
+      allow update: if isValidId(pendingDocId) && isStaff() && (
+        isAdmin() ||
+        isAcademicMaster() ||
+        (
+          isTeacher() &&
+          resource.data.status in ['draft', 'returned'] &&
+          request.resource.data.status in ['draft', 'pending'] &&
+          request.resource.data.status != 'approved'
+        )
+      );
+      allow delete: if isValidId(pendingDocId) && (
+        isAdmin() ||
+        (isTeacher() && resource.data.status == 'draft')
+      );
     }
 
     match /subjectSubmissions/{subDocId} {
-      allow get, list: if isAuthenticated();
-      allow create, update: if isValidId(subDocId) && (isTeacher() || isStaff());
-      allow delete: if isValidId(subDocId) && (isAcademicMaster() || isAdmin());
+      allow get, list: if isStaff();
+      allow create: if isValidId(subDocId) && isStaff() && 
+        (request.resource.data.status in ['draft', 'pending']) && 
+        (request.resource.data.status != 'approved');
+      allow update: if isValidId(subDocId) && isStaff() && (
+        isAdmin() ||
+        isAcademicMaster() ||
+        (
+          isTeacher() &&
+          resource.data.status in ['draft', 'returned'] &&
+          request.resource.data.status in ['draft', 'pending'] &&
+          request.resource.data.status != 'approved'
+        )
+      );
+      allow delete: if isValidId(subDocId) && (
+        isAdmin() ||
+        (isTeacher() && resource.data.status == 'draft')
+      );
     }
 
     // Legacy or alternate path compatibility
     match /academicResults/{resultDocId} {
       allow get, list: if true;
-      allow create, update: if isValidId(resultDocId) && isTeacher();
+      allow create, update: if isValidId(resultDocId) && (isAdmin() || isAcademicMaster() || isTeacher());
       allow delete: if isValidId(resultDocId) && isAdmin();
     }
 
@@ -279,29 +311,44 @@ service cloud.firestore {
       allow create, update, delete: if isValidId(paymentDocId) && (isStaff() || isBursar());
     }
 
-    // Security & administrative audit logs (immutable append-only)
+    // ====================================================
+    // IMMUTABLE AUDIT LOGS (Append-Only Trail)
+    // Read: Admin & Academic Master
+    // Create: Allowed for logging security & exam activities
+    // Update/Delete: STRICTLY FORBIDDEN
+    // ====================================================
     match /auditLogs/{logId} {
-      allow get, list: if isAdmin();
+      allow get, list: if isAdmin() || isAcademicMaster();
       allow create: if (isAuthenticated() || request.auth == null) && isValidId(logId);
       allow update, delete: if false;
     }
 
     // ====================================================
+    // BACKUPS & DISASTER RECOVERY SNAPSHOTS
+    // Read/Create/Delete: Admin & Academic Master only
+    // Update: STRICTLY FORBIDDEN (Immutable snapshots)
+    // ====================================================
+    match /backups/{backupId} {
+      allow get, list, create, delete: if isValidId(backupId) && (isAdmin() || isAcademicMaster());
+      allow update: if false;
+    }
+
+    // ====================================================
     // VIDEOS & MULTIMEDIA
-    // Read: all; Write: admin & staff
+    // Read: all; Write: admin & staff only
     // ====================================================
     match /school_videos/{videoId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(videoId);
+      allow create, update, delete: if isValidId(videoId) && (isAdmin() || isStaff());
     }
 
     // ====================================================
     // ADMISSION APPLICATIONS
-    // Read & write for applicants and school admissions staff
+    // Public can submit application; only staff can view & process
     // ====================================================
     match /applications/{appId} {
-      allow get, list: if true;
-      allow create, update, delete: if isValidId(appId);
+      allow create: if isValidId(appId);
+      allow get, list, update, delete: if isValidId(appId) && (isAdmin() || isStaff());
     }
 
     // ====================================================
@@ -310,7 +357,7 @@ service cloud.firestore {
     // ====================================================
     match /school_data/{dataDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(dataDocId);
+      allow create, update, delete: if isValidId(dataDocId) && (isAdmin() || isStaff());
     }
 
     // ====================================================
