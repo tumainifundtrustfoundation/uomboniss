@@ -85,6 +85,7 @@ import { Database, FileCheck, Lock, ShieldAlert, UploadCloud, Upload } from 'luc
 import * as XLSX from 'xlsx';
 import { OfficialExamReportPrintView } from '../results/OfficialExamReportPrintView';
 import { ExcelResultsEntryGrid } from './ExcelResultsEntryGrid';
+import { TeacherProfileSecurityCard } from './TeacherProfileSecurityCard';
 
 export interface ProfessionalStaffDashboardProps {
   onClose?: () => void;
@@ -2725,60 +2726,14 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
           )}
 
           {/* ==================================================== */}
-          {/* TAB 14: MY PROFILE                                   */}
+          {/* TAB 14: MY PROFILE (PHOTO VIA BLOB & PIN VIA FIREBASE) */}
           {/* ==================================================== */}
           {activeTab === 'profile' && (
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-                <div className="flex items-center gap-4 pb-6 border-b border-slate-200">
-                  <div className="w-16 h-16 rounded-2xl bg-[#102A43] text-white flex items-center justify-center font-bold text-2xl border-2 border-[#C9A227] shadow-sm">
-                    {activeTeacher.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-[#102A43]">{activeTeacher.name}</h3>
-                    <p className="text-xs text-slate-500 font-mono">{activeTeacher.email}</p>
-                    <span className="inline-block mt-1 px-3 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-900 border border-emerald-300">
-                      {activeTeacher.role}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Idara ya Masomo:</span>
-                    <strong className="text-[#102A43]">{activeTeacher.department}</strong>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Masomo Yaliyoidhinishwa:</span>
-                    <strong className="text-emerald-800 font-bold">{teacherSubjects.join(', ')}</strong>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Nambari ya Simu:</span>
-                    <strong className="text-slate-700 font-mono">{activeTeacher.phone}</strong>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-500">Taasisi:</span>
-                    <strong className="text-[#102A43]">Shule ya Sekondari Uomboni (NECTA S0486)</strong>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-slate-500">Uhalali wa Ufikiaji (RBAC):</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Akaunti Imethibitishwa Salama</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-200 flex justify-end">
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition shadow-xs"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Ondoka kwenye Mfumo (Logout)</span>
-                  </button>
-                </div>
-              </div>
+            <div className="max-w-4xl mx-auto space-y-6">
+              <TeacherProfileSecurityCard
+                teacherId={activeTeacher.id}
+                teacherEmail={activeTeacher.email}
+              />
             </div>
           )}
 

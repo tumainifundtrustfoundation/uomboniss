@@ -714,6 +714,104 @@ async function startServer() {
     }
   });
 
+  // ========================================================
+  // VERCEL BLOB STORAGE & SECURE FILE UPLOAD API
+  // Supports @vercel/blob when BLOB_READ_WRITE_TOKEN is set,
+  // or persists to /public/uploads/ with public URL fallback.
+  // ========================================================
+  app.post("/api/blob/upload", async (req, res) => {
+    try {
+      const { filename, data, mimeType, folder = "general" } = req.body;
+      if (!filename || !data) {
+        return res.status(400).json({ error: "Missing filename or base64 data" });
+      }
+
+      const buffer = Buffer.from(data, "base64");
+      const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, "");
+      const ext = path.extname(filename) || ".bin";
+      const baseName = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const uniqueName = `${safeFolder}/${baseName}_${Date.now()}${ext}`;
+
+      // 1. Try Vercel Blob if token is available
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      if (blobToken) {
+        try {
+          const { put } = await import("@vercel/blob");
+          const blob = await put(uniqueName, buffer, {
+            access: "public",
+            contentType: mimeType || "application/octet-stream",
+            token: blobToken,
+          });
+          return res.json({
+            success: true,
+            url: blob.url,
+            pathname: blob.pathname,
+            filename: path.basename(uniqueName),
+            size: buffer.length,
+            mimeType: mimeType || "application/octet-stream",
+            source: "vercel_blob",
+          });
+        } catch (vercelErr) {
+          console.warn("[Vercel Blob] Upload failed or token invalid, falling back to local storage:", vercelErr);
+        }
+      }
+
+      // 2. Local public/uploads fallback
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", safeFolder);
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const localFileName = `${baseName}_${Date.now()}${ext}`;
+      const filePath = path.join(uploadsDir, localFileName);
+      fs.writeFileSync(filePath, buffer);
+
+      const localUrl = `/uploads/${safeFolder}/${localFileName}`;
+      return res.json({
+        success: true,
+        url: localUrl,
+        filename: localFileName,
+        size: buffer.length,
+        mimeType: mimeType || "application/octet-stream",
+        source: "local_storage",
+      });
+    } catch (err: any) {
+      console.error("[Storage Upload Error]:", err);
+      return res.status(500).json({ error: err.message || "Failed to process upload" });
+    }
+  });
+
+  app.post("/api/blob/delete", async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) return res.status(400).json({ error: "Missing url" });
+
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      if (blobToken && url.includes("blob.vercel-storage.com")) {
+        try {
+          const { del } = await import("@vercel/blob");
+          await del(url, { token: blobToken });
+          return res.json({ success: true, source: "vercel_blob" });
+        } catch (delErr) {
+          console.warn("[Vercel Blob] Delete failed:", delErr);
+        }
+      }
+
+      // If local file
+      if (url.startsWith("/uploads/")) {
+        const localRel = url.replace(/^\//, "");
+        const localPath = path.join(process.cwd(), "public", localRel);
+        if (fs.existsSync(localPath)) {
+          fs.unlinkSync(localPath);
+        }
+      }
+
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Delete failed" });
+    }
+  });
+
   // AI School Assistant (Msaidizi wa Kitaaluma na Wazazi wa Uomboni)
   app.post("/api/ai-assistant", async (req, res) => {
     try {

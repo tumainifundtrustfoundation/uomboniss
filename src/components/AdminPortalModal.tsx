@@ -80,6 +80,7 @@ import {
 import { parseExcelResultsFile, downloadExcelTemplate, exportResultsToExcel } from '../utils/excelService';
 import { downloadStudentResultSlipPdf, downloadClassBroadsheetPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
 import { processImageFile } from '../utils/imageUploadHelper';
+import { uploadSchoolGalleryImage } from '../services/blobService';
 import { getActiveTeacherPin, setCustomTeacherPin } from '../services/teacherAuthDirectory';
 import { AdminStudentCouncilTab } from './admin/AdminStudentCouncilTab';
 import { AdminSchoolProfileTab } from './admin/AdminSchoolProfileTab';
@@ -424,6 +425,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   const [photoCategory, setPhotoCategory] = useState<string>('Matukio ya Kikanisa');
   const [photoDate, setPhotoDate] = useState(new Date().toISOString().split('T')[0]);
   const [photoFilePreview, setPhotoFilePreview] = useState<string | null>(null);
+  const [selectedGalleryFile, setSelectedGalleryFile] = useState<File | null>(null);
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const [photoUploadSuccess, setPhotoUploadSuccess] = useState<string | null>(null);
   const [editingPhoto, setEditingPhoto] = useState<GalleryPhoto | null>(null);
@@ -1168,21 +1170,22 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
   const handleGalleryFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setSelectedGalleryFile(file);
     setIsPhotoProcessing(true);
     setPhotoUploadError(null);
     try {
-      const dataUrl = await processImageFile(file, { maxWidth: 1024, maxHeight: 768, quality: 0.78, maxSizeBytes: 240 * 1024 });
+      const dataUrl = await processImageFile(file, { maxWidth: 1200, maxHeight: 900, quality: 0.85, maxSizeBytes: 500 * 1024 });
       setPhotoFilePreview(dataUrl);
     } catch (err: any) {
-      setPhotoUploadError(err?.message || 'Hitilafu imetokea wakati wa kupakia picha.');
+      setPhotoUploadError(err?.message || 'Hitilafu imetokea wakati wa kusoma picha.');
     } finally {
       setIsPhotoProcessing(false);
     }
   };
 
-  const handleCreateGalleryPhoto = (e: React.FormEvent) => {
+  const handleCreateGalleryPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!photoFilePreview) {
+    if (!photoFilePreview && !selectedGalleryFile) {
       setPhotoUploadError(language === 'sw' ? 'Tafadhali chagua picha ya kupakia.' : 'Please select an image to upload.');
       return;
     }
@@ -1190,32 +1193,95 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
       setPhotoUploadError(language === 'sw' ? 'Tafadhali weka maelezo ya picha.' : 'Please enter photo caption.');
       return;
     }
-    const newPhoto: GalleryPhoto = {
-      id: `photo-admin-${Date.now()}`,
-      titleSw: photoTitleSw.trim(),
-      titleEn: photoTitleEn.trim() || photoTitleSw.trim(),
-      category: photoCategory,
-      imageUrl: photoFilePreview,
-      date: photoDate,
-    };
-    addGalleryPhoto(newPhoto);
-    setPhotoUploadSuccess(language === 'sw' ? 'Picha mpya imehifadhiwa kwenye matunzio!' : 'Photo added to gallery successfully!');
-    setPhotoTitleSw('');
-    setPhotoTitleEn('');
-    setPhotoFilePreview(null);
-    setShowAddPhotoModal(false);
+
+    setIsPhotoProcessing(true);
+    setPhotoUploadError(null);
+
+    try {
+      let finalImageUrl = photoFilePreview || '';
+
+      // Upload via Vercel Blob API service
+      if (selectedGalleryFile) {
+        const uploadRes = await uploadSchoolGalleryImage(selectedGalleryFile, {
+          titleSw: photoTitleSw.trim(),
+          titleEn: photoTitleEn.trim() || photoTitleSw.trim(),
+          category: photoCategory,
+          date: photoDate,
+          updateFirestore: true,
+          uploadedBy: adminEmail || 'Admin',
+        });
+
+        if (uploadRes.success && uploadRes.photo) {
+          addGalleryPhoto(uploadRes.photo);
+          setPhotoUploadSuccess(
+            language === 'sw'
+              ? `Picha mpya imehifadhiwa kwenye ${uploadRes.source === 'vercel_blob' ? 'Vercel Blob Storage' : 'Hifadhi ya Shule'} na Firebase Firestore!`
+              : `New photo saved to ${uploadRes.source === 'vercel_blob' ? 'Vercel Blob' : 'School Server'} & Firebase Firestore!`
+          );
+          setPhotoTitleSw('');
+          setPhotoTitleEn('');
+          setPhotoFilePreview(null);
+          setSelectedGalleryFile(null);
+          setShowAddPhotoModal(false);
+          return;
+        }
+
+        if (uploadRes.url) {
+          finalImageUrl = uploadRes.url;
+        }
+      }
+
+      const newPhoto: GalleryPhoto = {
+        id: `photo-admin-${Date.now()}`,
+        titleSw: photoTitleSw.trim(),
+        titleEn: photoTitleEn.trim() || photoTitleSw.trim(),
+        category: photoCategory,
+        imageUrl: finalImageUrl,
+        date: photoDate,
+      };
+      addGalleryPhoto(newPhoto);
+      setPhotoUploadSuccess(language === 'sw' ? 'Picha mpya imehifadhiwa kwenye matunzio!' : 'Photo added to gallery successfully!');
+      setPhotoTitleSw('');
+      setPhotoTitleEn('');
+      setPhotoFilePreview(null);
+      setSelectedGalleryFile(null);
+      setShowAddPhotoModal(false);
+    } catch (err: any) {
+      setPhotoUploadError(err?.message || 'Hitilafu imetokea wakati wa kupakia picha.');
+    } finally {
+      setIsPhotoProcessing(false);
+    }
   };
 
   const handleSwapPhotoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !swapTargetPhoto) return;
+    setIsPhotoProcessing(true);
+    setPhotoUploadError(null);
     try {
-      const dataUrl = await processImageFile(file, { maxWidth: 1024, maxHeight: 768, quality: 0.78, maxSizeBytes: 240 * 1024 });
-      updateGalleryPhoto({ ...swapTargetPhoto, imageUrl: dataUrl });
-      setPhotoUploadSuccess(language === 'sw' ? 'Picha imebadilishwa kikamilifu!' : 'Photo swapped successfully!');
+      const uploadRes = await uploadSchoolGalleryImage(file, {
+        titleSw: swapTargetPhoto.titleSw,
+        titleEn: swapTargetPhoto.titleEn,
+        category: swapTargetPhoto.category,
+        date: swapTargetPhoto.date,
+        updateFirestore: true,
+      });
+
+      const finalUrl = uploadRes.success && uploadRes.url
+        ? uploadRes.url
+        : await processImageFile(file, { maxWidth: 1024, maxHeight: 768, quality: 0.78, maxSizeBytes: 240 * 1024 });
+
+      updateGalleryPhoto({ ...swapTargetPhoto, imageUrl: finalUrl });
+      setPhotoUploadSuccess(
+        language === 'sw'
+          ? `Picha imebadilishwa kikamilifu na kuhifadhiwa kwenye ${uploadRes.source === 'vercel_blob' ? 'Vercel Blob Storage' : 'Hifadhi ya Seva'}!`
+          : `Photo swapped successfully and stored on ${uploadRes.source === 'vercel_blob' ? 'Vercel Blob' : 'Server'}!`
+      );
       setSwapTargetPhoto(null);
     } catch (err: any) {
       setPhotoUploadError(err?.message || 'Hitilafu imetokea wakati wa kubadili picha.');
+    } finally {
+      setIsPhotoProcessing(false);
     }
   };
 

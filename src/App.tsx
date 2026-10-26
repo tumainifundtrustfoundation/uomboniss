@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SchoolLogo } from './components/SchoolLogo';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
-import { AboutSection } from './components/AboutSection';
 import { AcademicsSection } from './components/AcademicsSection';
 import { LeadershipTeachersSection } from './components/LeadershipTeachersSection';
 import { GallerySection } from './components/GallerySection';
@@ -341,7 +340,6 @@ function MainSchoolApp() {
   // Section Observer for Dynamic SEO on Scroll
   useEffect(() => {
     const sectionIds = [
-      'about',
       'academics',
       'teachers',
       'gallery',
@@ -502,10 +500,6 @@ function MainSchoolApp() {
         />
 
 
-        {/* 2. About */}
-        <AboutSection
-          onNavigate={handleNavigate}
-        />
 
         {/* 3. Academics & Performance */}
         <AcademicsSection

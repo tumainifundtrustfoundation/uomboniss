@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { UnauthorizedAccountView } from '../auth/UnauthorizedAccountView';
+import { TeacherProfileSecurityCard } from './TeacherProfileSecurityCard';
 
 export const PortalContainer: React.FC = () => {
   const { user, userProfile, activeRoleDashboard, setActiveView } = useAuth();
@@ -218,41 +219,53 @@ export const PortalContainer: React.FC = () => {
         )}
 
         {currentTab === 'profile' && (
-          <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#102A43] text-white font-bold text-xl flex items-center justify-center border-2 border-[#C9A227] shadow-sm">
-                {(userProfile?.fullName || 'U').charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-[#102A43]">{userProfile?.fullName || 'User'}</h1>
-                <p className="text-xs text-slate-500 font-mono">{userProfile?.email || user?.email}</p>
-                <span className="inline-block mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300 uppercase tracking-wider">
-                  Role: {userProfile?.role || 'parent'}
-                </span>
-              </div>
-            </div>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {userProfile?.role === 'teacher' ||
+            userProfile?.role === 'admin' ||
+            userProfile?.role === 'staff' ||
+            userProfile?.role === 'academic_master' ||
+            userProfile?.role === 'bursar' ? (
+              <TeacherProfileSecurityCard
+                teacherEmail={user?.email || userProfile?.email}
+              />
+            ) : (
+              <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-[#102A43] text-white font-bold text-2xl flex items-center justify-center border-2 border-[#C9A227] shadow-sm">
+                    {(userProfile?.fullName || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-[#102A43]">{userProfile?.fullName || 'User'}</h1>
+                    <p className="text-xs text-slate-500 font-mono">{userProfile?.email || user?.email}</p>
+                    <span className="inline-block mt-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300 uppercase tracking-wider">
+                      Role: {userProfile?.role || 'parent'}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="space-y-3 border-t border-slate-200 pt-4 text-xs">
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Taasisi / Shule</span>
-                <span className="font-bold text-[#102A43]">SHULE YA SEKONDARI UOMBONI</span>
+                <div className="space-y-3 border-t border-slate-200 pt-4 text-xs">
+                  <div className="flex justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-500">Taasisi / Shule:</span>
+                    <span className="font-bold text-[#102A43]">SHULE YA SEKONDARI UOMBONI (NECTA S0486)</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-500">Wito wa Shule:</span>
+                    <span className="font-bold text-[#C9A227]">&ldquo;TUJIENDELEZE SISI WENYEWE&rdquo;</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-500">Mahali:</span>
+                    <span className="text-slate-800 font-medium">Marangu Magharibi, Moshi Vijijini, Kilimanjaro</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-slate-500">Hali ya Usalama (Firebase):</span>
+                    <span className="font-bold text-emerald-900 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Akaunti Imethibitishwa Salama</span>
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Wito wa Shule</span>
-                <span className="font-bold text-[#C9A227]">&ldquo;TUJIENDELEZE SISI WENYEWE&rdquo;</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500">Mahali</span>
-                <span className="text-slate-800 font-medium">Marangu Magharibi, Moshi Vijijini, Kilimanjaro</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-slate-500">Hali ya Akaunti</span>
-                <span className="font-bold text-emerald-900 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  {user?.emailVerified || userProfile?.emailVerified ? 'Akaunti Imethibitishwa' : 'Akaunti Ipo Hai'}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </main>

@@ -2883,9 +2883,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'admin',
       '0486',
     ];
+    let teacherCustomPins: Record<string, string> = {};
+    try {
+      teacherCustomPins = JSON.parse(localStorage.getItem('uomboni_teacher_custom_pins') || '{}');
+      Object.values(teacherCustomPins).forEach((pin) => {
+        if (typeof pin === 'string' && pin.trim().length >= 4) {
+          validPasswords.push(pin.trim());
+        }
+      });
+    } catch {}
+
     if (customPass) validPasswords.push(customPass.trim());
     if (validPasswords.includes(p) || validPasswords.includes(p.toLowerCase())) {
-      const isYohana = p === '745225';
+      const isYohana =
+        p === '745225' ||
+        p === teacherCustomPins['yohanabahati665@gmail.com'] ||
+        p === teacherCustomPins['tch-003'] ||
+        p === teacherCustomPins['tch-yohana-google'];
       const profile = isYohana
         ? {
             email: 'yohanabahati665@gmail.com',

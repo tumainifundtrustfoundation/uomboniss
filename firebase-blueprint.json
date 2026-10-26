@@ -207,6 +207,26 @@
         "createdBy": { "type": "string" }
       },
       "required": ["title", "youtubeUrl", "videoId", "embedUrl", "published"]
+    },
+    "GalleryPhoto": {
+      "title": "GalleryPhoto",
+      "description": "School community, campus, laboratory, church, and academic event photographs.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique photo identifier." },
+        "titleSw": { "type": "string", "description": "Photo caption in Kiswahili." },
+        "titleEn": { "type": "string", "description": "Photo caption in English." },
+        "category": { "type": "string", "description": "Category (Matukio ya Kikanisa, Maabara na Sayansi, etc.)." },
+        "imageUrl": { "type": "string", "description": "Permanent public URL of the photo on Vercel Blob or secure cloud store." },
+        "fallbackUrl": { "type": "string", "description": "Alternative fallback URL." },
+        "filename": { "type": "string", "description": "Sanitized filename." },
+        "date": { "type": "string", "description": "Event date (YYYY-MM-DD)." },
+        "descriptionSw": { "type": "string", "description": "Extended description in Kiswahili." },
+        "descriptionEn": { "type": "string", "description": "Extended description in English." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." },
+        "uploadedBy": { "type": "string", "description": "Uploader UID or staff email." }
+      },
+      "required": ["id", "titleSw", "category", "imageUrl", "date"]
     }
   },
   "firestore": {
@@ -277,6 +297,10 @@
     "/school_videos/{videoId}": {
       "schema": { "$ref": "SchoolVideo" },
       "description": "Official school video clips, spotlights, and documentaries."
+    },
+    "/gallery_photos/{photoId}": {
+      "schema": { "$ref": "GalleryPhoto" },
+      "description": "School community photo gallery items stored in Vercel Blob with Firestore metadata."
     }
   }
 }

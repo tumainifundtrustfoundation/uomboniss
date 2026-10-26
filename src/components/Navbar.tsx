@@ -95,7 +95,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'home', label: language === 'sw' ? 'Mwanzo' : 'Home' },
-    { id: 'about', label: language === 'sw' ? 'Kuhusu Sisi' : 'About' },
     { id: 'academics', label: language === 'sw' ? 'Taaluma' : 'Academics' },
     { id: 'teachers', label: language === 'sw' ? 'Walimu' : 'Teachers' },
     { id: 'gallery', label: language === 'sw' ? 'Picha' : 'Gallery' },

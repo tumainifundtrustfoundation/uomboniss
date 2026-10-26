@@ -22,6 +22,7 @@ import {
   formatNectaDetailedSubjects,
 } from '../utils/nectaResultsEngine';
 import { downloadClassBroadsheetPdf, downloadStudentResultSlipPdf, printStudentResultSlipDirectly } from '../utils/pdfService';
+import { usePageSeo, generateResultsSeo } from '../utils/seo';
 
 interface NectaResultsOfficialViewProps {
   initialExamNumber?: string;
@@ -41,6 +42,9 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
     publishResultsToParents,
     recomputeNectaDivisions,
   } = useData();
+
+  // Programmatic SEO & Dataset JSON-LD injection for Results
+  usePageSeo(generateResultsSeo({ examType: 'NECTA CSEE', year: 2025 }));
 
   // Filters
   const [selectedForm, setSelectedForm] = useState<string>('Form 4');

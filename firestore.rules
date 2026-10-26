@@ -173,7 +173,14 @@ service cloud.firestore {
     // ====================================================
     match /teachers/{teacherDocId} {
       allow get, list: if true;
-      allow create, update, delete: if isValidId(teacherDocId) && isAdmin();
+      allow create, delete: if isValidId(teacherDocId) && isAdmin();
+      allow update: if isValidId(teacherDocId) && (
+        isAdmin() ||
+        (isAuthenticated() && (
+          request.auth.uid == teacherDocId ||
+          (request.auth.token.email != null && request.auth.token.email == resource.data.email)
+        ))
+      );
     }
 
     // ====================================================
@@ -408,6 +415,15 @@ service cloud.firestore {
     match /school_documents/{docId} {
       allow get, list: if true;
       allow create, update, delete: if isValidId(docId) && (isAdmin() || isStaff());
+    }
+
+    // ====================================================
+    // SCHOOL GALLERY PHOTOS (Vercel Blob & Firestore)
+    // Read: all; Write: admin & staff
+    // ====================================================
+    match /gallery_photos/{photoId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(photoId) && (isAdmin() || isStaff());
     }
   }
 }

@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { SAVED_NEWS } from '../data/savedSchoolMedia';
 import { NewsItem } from '../types';
+import { usePageSeo, generateNewsSeo } from '../utils/seo';
 import {
   Flame,
   X,
@@ -55,6 +56,26 @@ export const NewsModal: React.FC<NewsModalProps> = ({ isOpen, onClose }) => {
       return matchCat && matchQuery;
     });
   }, [newsList, selectedCategory, searchQuery]);
+
+  // Programmatic SEO for active news article or general news modal
+  usePageSeo(() => {
+    if (!isOpen) return { title: '', description: '' };
+    if (activeArticle) {
+      return generateNewsSeo({
+        title: activeArticle.titleSw,
+        summary: activeArticle.excerptSw,
+        date: activeArticle.date,
+        author: activeArticle.author,
+        id: activeArticle.id,
+        tags: [activeArticle.category],
+      });
+    }
+    return {
+      title: 'Habari Mpya & Matangazo ya Shule | Uomboni Secondary School',
+      description: 'Habari za hivi punde, matangazo rasmi ya taaluma, michezo na shughuli za shule ya Sekondari Uomboni, Marangu Moshi.',
+      canonicalPath: '/news',
+    };
+  }, [isOpen, activeArticle]);
 
   if (!isOpen) return null;
 

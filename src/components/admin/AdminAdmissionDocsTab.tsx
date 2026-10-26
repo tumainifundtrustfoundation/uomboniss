@@ -8,6 +8,7 @@ import {
   parseGoogleDriveUrl,
   extractGoogleDriveId,
 } from '../../utils/googleDriveHelper';
+import { uploadToStorage } from '../../utils/blobStorage';
 import {
   FileText,
   Plus,
@@ -25,6 +26,8 @@ import {
   Sparkles,
   ExternalLink,
   FolderOpen,
+  Loader2,
+  UploadCloud,
 } from 'lucide-react';
 
 export const AdminAdmissionDocsTab: React.FC = () => {
@@ -51,6 +54,47 @@ export const AdminAdmissionDocsTab: React.FC = () => {
   const [formRequirementsText, setFormRequirementsText] = useState('');
   const [formFeesSummary, setFormFeesSummary] = useState('Ada ya shule inalipwa kwa awamu kupitia benki.');
   const [formReportingDate, setFormReportingDate] = useState('Januari 2026/2027');
+
+  // Vercel Blob File Upload States
+  const fileUploadInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [uploadFeedback, setUploadFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingFile(true);
+    setUploadFeedback(null);
+
+    try {
+      const uploadRes = await uploadToStorage(file, { folder: 'documents' });
+      if (!uploadRes.success || !uploadRes.url) {
+        throw new Error(uploadRes.error || 'Imeshindwa kupakia faili.');
+      }
+
+      setFormGoogleDriveUrl(uploadRes.url);
+      setFormFileSize(`${(file.size / (1024 * 1024)).toFixed(1)} MB (${file.type.includes('pdf') ? 'PDF Document' : 'Document'})`);
+      if (!formTitleSw.trim()) {
+        const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+        setFormTitleSw(cleanTitle);
+        setFormTitleEn(cleanTitle);
+      }
+
+      setUploadFeedback({
+        type: 'success',
+        message: `Faili limepakiwa kikamilifu kwenye ${uploadRes.source === 'vercel_blob' ? 'Vercel Blob Storage' : 'Hifadhi ya Shule'}! Link: ${uploadRes.url}`,
+      });
+    } catch (err: any) {
+      setUploadFeedback({
+        type: 'error',
+        message: err?.message || 'Hitilafu ya kupakia faili.',
+      });
+    } finally {
+      setIsUploadingFile(false);
+      if (fileUploadInputRef.current) fileUploadInputRef.current.value = '';
+    }
+  };
 
   const openEditModal = (doc: JoiningDocument) => {
     setEditingDoc(doc);
@@ -308,15 +352,81 @@ export const AdminAdmissionDocsTab: React.FC = () => {
             </div>
 
             <form onSubmit={handleSave} className="p-6 overflow-y-auto space-y-4 text-xs">
+              {/* Direct File Upload via Vercel Blob */}
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-300 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-amber-950 flex items-center gap-1.5 text-xs">
+                    <UploadCloud className="w-4 h-4 text-amber-700" />
+                    <span>Pakia Faili Moja kwa Moja (Vercel Blob / Cloud Storage)</span>
+                  </label>
+                  <span className="text-[10px] bg-amber-200 text-amber-950 font-black px-2 py-0.5 rounded-md border border-amber-300 uppercase">
+                    Vercel Blob
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-900 leading-relaxed">
+                  Pakia faili halisi la PDF au Word moja kwa moja kutoka kwenye kifaa chako. Faili litahifadhiwa kwenye wingu la Vercel Blob na kiungo kitazalishwa moja kwa moja.
+                </p>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <input
+                    ref={fileUploadInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileUploadInputRef.current?.click()}
+                    disabled={isUploadingFile}
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl flex items-center gap-2 shadow-xs cursor-pointer transition disabled:opacity-50"
+                  >
+                    {isUploadingFile ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                        <span>Inapakia kwenye Vercel Blob...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4 text-slate-950" />
+                        <span>Chagua Faili la Kupakia (PDF/Doc)</span>
+                      </>
+                    )}
+                  </button>
+                  {formGoogleDriveUrl && (
+                    <span className="text-[11px] font-mono text-emerald-800 font-bold truncate max-w-xs">
+                      ✓ Faili limewekwa tayari
+                    </span>
+                  )}
+                </div>
+
+                {uploadFeedback && (
+                  <div
+                    className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+                      uploadFeedback.type === 'success'
+                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                        : 'bg-rose-100 text-rose-900 border border-rose-300'
+                    }`}
+                  >
+                    {uploadFeedback.type === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    )}
+                    <span className="truncate">{uploadFeedback.message}</span>
+                  </div>
+                )}
+              </div>
+
               {/* Google Drive Link Section */}
               <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-blue-950 flex items-center gap-1.5 text-xs">
                     <FolderOpen className="w-4 h-4 text-blue-600" />
-                    <span>Kiungo cha Google Drive (Google Drive Link)</span>
+                    <span>Kiungo cha Faili (Vercel Blob / Google Drive URL)</span>
                   </label>
                   <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-md border border-blue-200">
-                    Google Drive
+                    File URL
                   </span>
                 </div>
                 <input

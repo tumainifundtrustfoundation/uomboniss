@@ -461,6 +461,22 @@ export function generateClassBroadsheetPdfDoc(results: StudentResult[], title = 
  * Generates and downloads an official Joining Instructions PDF
  */
 export function downloadJoiningInstructionsPdf(docInfo?: any) {
+  // If this document is backed by a real Vercel Blob, uploaded file, or external PDF link, download or open it directly!
+  const realUrl = docInfo?.externalUrl || docInfo?.googleDriveUrl || docInfo?.fileUrl || docInfo?.blobUrl;
+  if (realUrl && (realUrl.startsWith('http://') || realUrl.startsWith('https://') || realUrl.startsWith('/uploads/'))) {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const link = document.createElement('a');
+      link.href = realUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.download = (docInfo?.titleSw || 'uomboni_document').replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+  }
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

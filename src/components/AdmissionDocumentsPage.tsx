@@ -4,6 +4,7 @@ import { useData } from '../context/DataContext';
 import { JoiningDocument } from '../types';
 import { SchoolLogo } from './SchoolLogo';
 import { downloadJoiningInstructionsPdf } from '../utils/pdfService';
+import { usePageSeo, generateAdmissionsSeo } from '../utils/seo';
 import { PWAInstallButton } from './PWAInstallButton';
 import {
   FileText,
@@ -45,6 +46,9 @@ export const AdmissionDocumentsPage: React.FC<AdmissionDocumentsPageProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const { joiningDocs, incrementDocDownload, isAdminLoggedIn } = useData();
+
+  // Programmatic SEO & OpenGraph metadata injection for Admissions & Joining Instructions
+  usePageSeo(generateAdmissionsSeo({ academicYear: '2026/2027' }));
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
