@@ -546,3 +546,34 @@ export async function deleteGalleryPhotoFromStorage(photoId: string, photoUrl?: 
 
   return blobDeleted;
 }
+
+/**
+ * Uploads a text/string file (such as articles, markdown, notes) directly to Vercel Blob store
+ * using the configured uomboniss storeId or token.
+ */
+export async function putTextBlobFile(
+  pathname: string,
+  text: string,
+  contentType: string = 'text/plain; charset=utf-8'
+): Promise<{ success: boolean; url: string; pathname?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/blob/put-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pathname, text, contentType }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      return { success: false, url: '', error: errText };
+    }
+    const json = await res.json();
+    return {
+      success: true,
+      url: json.url || '',
+      pathname: json.pathname || pathname,
+    };
+  } catch (err: any) {
+    return { success: false, url: '', error: err?.message || 'Failed to put blob text' };
+  }
+}
+

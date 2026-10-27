@@ -142,10 +142,16 @@ export function initSchoolDatabase(): SchoolDatabase {
         const missingStudents = defaultData.students.filter((s: any) => !existingExamNumbers.has(s.examNumber?.toLowerCase()?.replace(/[\/\-_]/g, '')));
         const combinedStudents = [...loadedStudents, ...missingStudents];
 
+        const loadedGallery = Array.isArray(parsed.data.galleryPhotos) ? parsed.data.galleryPhotos : [];
+        const existingGalleryIds = new Set(loadedGallery.map((g: any) => g.id || g.filename));
+        const missingGallery = defaultData.galleryPhotos.filter((g: any) => !existingGalleryIds.has(g.id) && !existingGalleryIds.has(g.filename));
+        const combinedGallery = [...loadedGallery, ...missingGallery];
+
         const mergedData: SchoolDataPayload = {
           ...defaultData,
           ...parsed.data,
           students: combinedStudents.length > 0 ? combinedStudents : defaultData.students,
+          galleryPhotos: combinedGallery.length > 0 ? combinedGallery : defaultData.galleryPhotos,
         };
 
         dbInstance = {
@@ -181,12 +187,18 @@ export function getSchoolDatabase(): SchoolDatabase {
         if (parsed && typeof parsed === 'object' && parsed.data) {
           lastDiskMtime = stats.mtimeMs;
           const defaultData = getDefaultSchoolData();
+          const loadedGallery = Array.isArray(parsed.data.galleryPhotos) ? parsed.data.galleryPhotos : [];
+          const existingGalleryIds = new Set(loadedGallery.map((g: any) => g.id || g.filename));
+          const missingGallery = defaultData.galleryPhotos.filter((g: any) => !existingGalleryIds.has(g.id) && !existingGalleryIds.has(g.filename));
+          const combinedGallery = [...loadedGallery, ...missingGallery];
+
           dbInstance = {
             version: (parsed.version || 1),
             lastUpdated: parsed.lastUpdated || stats.mtimeMs,
             data: {
               ...defaultData,
               ...parsed.data,
+              galleryPhotos: combinedGallery.length > 0 ? combinedGallery : defaultData.galleryPhotos,
             },
           };
           return dbInstance;

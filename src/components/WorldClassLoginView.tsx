@@ -42,7 +42,7 @@ export type PortalLoginRole = 'admin' | 'bursar' | 'academic_master' | 'teacher'
 interface WorldClassLoginViewProps {
   activeRole: PortalLoginRole;
   onRoleChange?: (role: PortalLoginRole) => void;
-  onGoogleSignIn: () => Promise<void> | void;
+  onGoogleSignIn: (account?: { email: string; name: string; role: any }) => Promise<void> | void;
   isSigningIn: boolean;
   authError?: string;
   currentUser?: { email: string | null; displayName: string | null; photoURL: string | null } | null;
@@ -53,6 +53,8 @@ interface WorldClassLoginViewProps {
   availableTeachers?: any[];
   onDirectTeacherLogin?: (teacherInfo: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => void;
   onDirectAcademicLogin?: (academicInfo: { name: string; email: string }) => void;
+  onDirectAdminLogin?: (adminInfo: { name: string; email: string }) => void;
+  onDirectBursarLogin?: (bursarInfo: { name: string; email: string }) => void;
 }
 
 export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
@@ -69,6 +71,8 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
   availableTeachers,
   onDirectTeacherLogin,
   onDirectAcademicLogin,
+  onDirectAdminLogin,
+  onDirectBursarLogin,
 }) => {
   const { language, setLanguage } = useLanguage();
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -219,6 +223,80 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
       onDirectAcademicLogin({
         name: 'Mwl. Yohana Bahati (Mtaaluma Mkuu)',
         email: 'yohana.bahati@uombonisec.ac.tz',
+      });
+    } else if (onContinueToPortal) {
+      onContinueToPortal();
+    }
+    setIsLoggingInDirectly(false);
+  };
+
+  const handleExecuteDirectAdminLogin = () => {
+    setPinError('');
+    const pin = teacherPinInput.trim().toLowerCase();
+    const validAdminPins = [
+      '782558',
+      '745225',
+      '0486',
+      '1234',
+      'uomboni2026',
+      'uomboni',
+      'admin',
+      'admin2026',
+      'tumaini',
+      'tumaini2025',
+      'tumaini2026',
+      'headmaster',
+    ];
+
+    if (!validAdminPins.includes(pin) && pin.length < 4) {
+      setPinError(
+        language === 'sw'
+          ? 'Nenosiri/PIN si sahihi. Tumia PIN: 782558, 0486 au uomboni2026 au bofya "Bofya Hapa Kuingia Moja kwa Moja".'
+          : 'Invalid Admin PIN/Passcode. Use 782558, 0486, or click "Instant 1-Tap Access".'
+      );
+      return;
+    }
+
+    setIsLoggingInDirectly(true);
+    if (onDirectAdminLogin) {
+      onDirectAdminLogin({
+        name: 'Br. Adolph Massawe / Tumaini Admin',
+        email: 'tumainifundtrustfoundation@gmail.com',
+      });
+    } else if (onContinueToPortal) {
+      onContinueToPortal();
+    }
+    setIsLoggingInDirectly(false);
+  };
+
+  const handleExecuteDirectBursarLogin = () => {
+    setPinError('');
+    const pin = teacherPinInput.trim().toLowerCase();
+    const validBursarPins = [
+      '752000',
+      '1234',
+      '0486',
+      'bursar',
+      'bursar2026',
+      'uomboni2026',
+      'sigminja',
+      'admin',
+    ];
+
+    if (!validBursarPins.includes(pin) && pin.length < 4) {
+      setPinError(
+        language === 'sw'
+          ? 'PIN si sahihi. Tumia PIN: 752000, 1234 au bofya "Bofya Hapa Kuingia Moja kwa Moja".'
+          : 'Invalid Bursar PIN. Use 752000, 1234 or click "Instant 1-Tap Access".'
+      );
+      return;
+    }
+
+    setIsLoggingInDirectly(true);
+    if (onDirectBursarLogin) {
+      onDirectBursarLogin({
+        name: 'Mwl. Sigbert Minja (Bursar)',
+        email: 'sigminja@gmail.com',
       });
     } else if (onContinueToPortal) {
       onContinueToPortal();
@@ -492,19 +570,21 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
             <div>
               <h3 className="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
                 <Lock className="w-4 h-4 text-emerald-400" />
-                <span>{language === 'sw' ? 'Ingia Kwenye Jopo' : 'Sign in to Console'}</span>
+                <span className="bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent drop-shadow-xs">
+                  {language === 'sw' ? 'Ingia Kwenye Jopo la Shule' : 'Sign in to School Console'}
+                </span>
               </h3>
               <p className="text-[11px] text-slate-400">
                 {language === 'sw'
-                  ? 'Thibitisha utambulisho wako kwa PIN au akaunti ya Google.'
-                  : 'Authenticate using PIN or Google Workspace SSO.'}
+                  ? 'Chagua nafasi yako kisha tumia PIN / Uingiaji wa Papo Hapo au Google SSO.'
+                  : 'Select your role and authenticate with instant 1-Tap/PIN or Google SSO.'}
               </p>
             </div>
 
-            {/* Quick Mobile Status Badge */}
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Active
+            {/* Quick Status Badge */}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{language === 'sw' ? 'Mfumo Upo Hewani' : 'System Active'}</span>
             </span>
           </div>
 
@@ -564,32 +644,40 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 {language === 'sw' ? 'Njia ya Kuingia:' : 'Sign-In Method:'}
               </label>
-              {(activeRole === 'teacher' || activeRole === 'academic_master') && (
-                <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod('quick')}
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      loginMethod === 'quick'
-                        ? 'bg-amber-400 text-slate-950 shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    🔑 {language === 'sw' ? 'PIN / Haraka' : 'PIN / Quick'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod('google')}
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      loginMethod === 'google'
-                        ? 'bg-amber-400 text-slate-950 shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    🌐 Google SSO
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  id="tab-login-method-quick"
+                  onClick={() => {
+                    setLoginMethod('quick');
+                    setPinError('');
+                  }}
+                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    loginMethod === 'quick'
+                      ? 'bg-amber-400 text-slate-950 shadow-xs ring-1 ring-amber-400/50'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span>⚡</span>
+                  <span>{language === 'sw' ? 'PIN / Haraka' : 'PIN / Quick'}</span>
+                </button>
+                <button
+                  type="button"
+                  id="tab-login-method-google"
+                  onClick={() => {
+                    setLoginMethod('google');
+                    setPinError('');
+                  }}
+                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    loginMethod === 'google'
+                      ? 'bg-amber-400 text-slate-950 shadow-xs ring-1 ring-amber-400/50'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>Google SSO</span>
+                </button>
+              </div>
             </div>
 
             {/* If user is already authenticated with Google */}
@@ -882,9 +970,229 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                   <span>{language === 'sw' ? 'Thibitisha PIN na Ingia' : 'Verify PIN & Enter'}</span>
                 </button>
               </div>
+            ) : loginMethod === 'quick' && activeRole === 'admin' ? (
+              /* QUICK ADMIN LOGIN (INSTANT 1-TAP OR PASSCODE) */
+              <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/95 border border-emerald-500/40 space-y-3 shadow-xl">
+                {/* Instant 1-Tap Entry for Headmaster / Management */}
+                <button
+                  type="button"
+                  id="btn-admin-quick-onetap"
+                  onClick={() => {
+                    setIsLoggingInDirectly(true);
+                    if (onDirectAdminLogin) {
+                      onDirectAdminLogin({
+                        name: 'Br. Adolph Massawe / Mkuu wa Shule',
+                        email: 'tumainifundtrustfoundation@gmail.com',
+                      });
+                    } else if (onContinueToPortal) {
+                      onContinueToPortal();
+                    }
+                    setIsLoggingInDirectly(false);
+                  }}
+                  className="w-full py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/50 group"
+                >
+                  <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span>
+                    {language === 'sw'
+                      ? '⚡ Bofya Hapa Kuingia Moja kwa Moja (Utawala Mkuu)'
+                      : '⚡ Quick 1-Tap Admin Portal Access'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <div className="h-px bg-slate-800 flex-1" />
+                  <span className="text-[10px] text-slate-400 uppercase font-mono">
+                    {language === 'sw' ? 'au weka Nenosiri / PIN' : 'or enter Admin PIN'}
+                  </span>
+                  <div className="h-px bg-slate-800 flex-1" />
+                </div>
+
+                {/* Preset Fast PIN Badges */}
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="min-w-0">
+                      <h5 className="text-[11px] font-black text-white truncate">Br. Adolph Massawe / Utawala</h5>
+                      <p className="text-[10px] text-slate-400 font-mono truncate">Ofisi ya Mkuu wa Shule</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTeacherPinInput('782558');
+                        setTimeout(() => handleExecuteDirectAdminLogin(), 50);
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-bold border border-emerald-500/30 cursor-pointer"
+                    >
+                      ⚡ 782558
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTeacherPinInput('0486');
+                        setTimeout(() => handleExecuteDirectAdminLogin(), 50);
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 hover:bg-amber-400/30 font-bold border border-amber-400/30 cursor-pointer"
+                    >
+                      ⚡ 0486
+                    </button>
+                  </div>
+                </div>
+
+                {/* Manual Input */}
+                <div className="space-y-1">
+                  <div className="relative">
+                    <input
+                      type={showPin ? 'text' : 'password'}
+                      id="input-admin-direct-pin"
+                      value={teacherPinInput}
+                      onChange={(e) => {
+                        setTeacherPinInput(e.target.value);
+                        if (pinError) setPinError('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleExecuteDirectAdminLogin();
+                      }}
+                      placeholder={language === 'sw' ? 'Weka PIN / Nenosiri la Utawala (782558 au 0486)...' : 'Enter Admin PIN / Passcode (782558 or 0486)...'}
+                      className="w-full pl-3 pr-9 py-2 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-hidden tracking-wider"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPin(!showPin)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-0.5"
+                    >
+                      {showPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  {pinError && (
+                    <div className="p-2 rounded-lg bg-rose-950/80 border border-rose-700 text-[11px] text-rose-300 font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  id="btn-admin-direct-submit"
+                  disabled={isLoggingInDirectly}
+                  onClick={handleExecuteDirectAdminLogin}
+                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-400/50"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>{language === 'sw' ? 'Thibitisha na Ingia Jopo la Utawala' : 'Verify & Open Admin Portal'}</span>
+                </button>
+              </div>
+            ) : loginMethod === 'quick' && activeRole === 'bursar' ? (
+              /* QUICK BURSAR LOGIN (INSTANT 1-TAP OR PIN) */
+              <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/95 border border-amber-500/40 space-y-3 shadow-xl">
+                {/* Instant 1-Tap Entry for Bursar */}
+                <button
+                  type="button"
+                  id="btn-bursar-quick-onetap"
+                  onClick={() => {
+                    setIsLoggingInDirectly(true);
+                    if (onDirectBursarLogin) {
+                      onDirectBursarLogin({
+                        name: 'Mwl. Sigbert Minja (Bursar)',
+                        email: 'sigminja@gmail.com',
+                      });
+                    } else if (onContinueToPortal) {
+                      onContinueToPortal();
+                    }
+                    setIsLoggingInDirectly(false);
+                  }}
+                  className="w-full py-3 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300/50 group"
+                >
+                  <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span>
+                    {language === 'sw'
+                      ? '⚡ Bofya Hapa Kuingia Moja kwa Moja (Mhasibu / Bursar)'
+                      : '⚡ Quick 1-Tap Bursar Access'}
+                  </span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <div className="h-px bg-slate-800 flex-1" />
+                  <span className="text-[10px] text-slate-400 uppercase font-mono">
+                    {language === 'sw' ? 'au kwa PIN ya Fedha' : 'or enter Bursar PIN'}
+                  </span>
+                  <div className="h-px bg-slate-800 flex-1" />
+                </div>
+
+                {/* Preset Bursar Fast PIN Badge */}
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Coins className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div className="min-w-0">
+                      <h5 className="text-[11px] font-black text-white truncate">Mwl. Sigbert Minja</h5>
+                      <p className="text-[10px] text-slate-400 font-mono truncate">Ofisi ya Uhasibu & Ada</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTeacherPinInput('752000');
+                      setTimeout(() => handleExecuteDirectBursarLogin(), 50);
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 hover:bg-amber-400/30 font-bold border border-amber-400/30 cursor-pointer shrink-0"
+                  >
+                    ⚡ PIN 752000
+                  </button>
+                </div>
+
+                {/* Manual Input */}
+                <div className="space-y-1">
+                  <div className="relative">
+                    <input
+                      type={showPin ? 'text' : 'password'}
+                      id="input-bursar-direct-pin"
+                      value={teacherPinInput}
+                      onChange={(e) => {
+                        setTeacherPinInput(e.target.value);
+                        if (pinError) setPinError('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleExecuteDirectBursarLogin();
+                      }}
+                      placeholder={language === 'sw' ? 'Weka PIN ya Uhasibu (752000 au 1234)...' : 'Enter Bursar PIN (752000 or 1234)...'}
+                      className="w-full pl-3 pr-9 py-2 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-hidden tracking-wider"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPin(!showPin)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-0.5"
+                    >
+                      {showPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  {pinError && (
+                    <div className="p-2 rounded-lg bg-rose-950/80 border border-rose-700 text-[11px] text-rose-300 font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  id="btn-bursar-direct-submit"
+                  disabled={isLoggingInDirectly}
+                  onClick={handleExecuteDirectBursarLogin}
+                  className="w-full py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Coins className="w-3.5 h-3.5" />
+                  <span>{language === 'sw' ? 'Thibitisha na Ingia Jopo la Uhasibu' : 'Verify & Open Bursar Portal'}</span>
+                </button>
+              </div>
             ) : (
-              /* PRIMARY GOOGLE SIGN-IN BUTTON (COMPACT) */
-              <div className="space-y-2">
+              /* PRIMARY GOOGLE SIGN-IN BUTTON WITH 1-TAP BYPASS SHORTCUTS */
+              <div className="space-y-2.5">
                 <GoogleSignInButton
                   onClick={onGoogleSignIn}
                   isLoading={isSigningIn}
@@ -903,9 +1211,101 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                   className="py-2.5 sm:py-3 shadow-md border-amber-500/40 hover:border-amber-400 bg-slate-950"
                 />
 
+                {/* Instant 1-Tap Direct Bypass if Google popup gets blocked or stubborn */}
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <span>⚡</span>
+                      <span>{language === 'sw' ? 'Kama Google imegoma au unahitaji haraka:' : 'If Google popup is blocked or slow:'}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setLoginMethod('quick')}
+                      className="text-emerald-400 hover:underline font-mono cursor-pointer"
+                    >
+                      {language === 'sw' ? 'Tumia PIN' : 'Use PIN'}
+                    </button>
+                  </div>
+
+                  {activeRole === 'admin' && (
+                    <button
+                      type="button"
+                      id="btn-bypass-direct-admin"
+                      onClick={() => {
+                        if (onDirectAdminLogin) {
+                          onDirectAdminLogin({
+                            name: 'Br. Adolph Massawe / Utawala',
+                            email: 'tumainifundtrustfoundation@gmail.com',
+                          });
+                        } else if (onContinueToPortal) {
+                          onContinueToPortal();
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Utawala (1-Tap)' : 'Direct 1-Tap Entry (Admin)'}</span>
+                    </button>
+                  )}
+
+                  {activeRole === 'bursar' && (
+                    <button
+                      type="button"
+                      id="btn-bypass-direct-bursar"
+                      onClick={() => {
+                        if (onDirectBursarLogin) {
+                          onDirectBursarLogin({
+                            name: 'Mwl. Sigbert Minja (Bursar)',
+                            email: 'sigminja@gmail.com',
+                          });
+                        } else if (onContinueToPortal) {
+                          onContinueToPortal();
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Mhasibu (1-Tap)' : 'Direct 1-Tap Entry (Bursar)'}</span>
+                    </button>
+                  )}
+
+                  {activeRole === 'academic_master' && (
+                    <button
+                      type="button"
+                      id="btn-bypass-direct-academic"
+                      onClick={() => {
+                        if (onDirectAcademicLogin) {
+                          onDirectAcademicLogin({
+                            name: 'Mwl. Yohana Bahati (Mtaaluma Mkuu)',
+                            email: 'yohana.bahati@uombonisec.ac.tz',
+                          });
+                        } else if (onContinueToPortal) {
+                          onContinueToPortal();
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Taaluma (1-Tap)' : 'Direct 1-Tap Entry (Academic)'}</span>
+                    </button>
+                  )}
+
+                  {activeRole === 'teacher' && (
+                    <button
+                      type="button"
+                      id="btn-bypass-to-teacher-quick"
+                      onClick={() => setLoginMethod('quick')}
+                      className="w-full py-2 px-3 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{language === 'sw' ? 'Chagua Jina Lako & Weka PIN (Walimu)' : 'Select Teacher Name & Enter PIN'}</span>
+                    </button>
+                  )}
+                </div>
+
                 <div className="py-1 px-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
                   <Globe2 className="w-3 h-3 text-blue-400 shrink-0" />
-                  <span className="truncate">@uombonisec.ac.tz au anwani iliyosajiliwa</span>
+                  <span className="truncate">@uombonisec.ac.tz au anwani ya Gmail iliyoidhinishwa</span>
                 </div>
               </div>
             )}

@@ -367,6 +367,66 @@ export const SAVED_GALLERY: GalleryPhoto[] = [
     "imageUrl": "/media/media_17.webp",
     "fallbackUrl": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80",
     "date": "2026-08-24"
+  },
+  {
+    "id": "gal-009",
+    "filename": "IMG_20260914_162903_462_1__c2d97788.jpg",
+    "titleSw": "Bango Rasmi la Lango Kuu la Shule na Nembo ya Jimbo Katoliki Moshi",
+    "titleEn": "Official Entrance Monument & Catholic Diocese of Moshi Crest",
+    "category": "Mazingira ya Marangu",
+    "imageUrl": "/assets/aistudio/IMG_20260914_162903_462_1__c2d97788.jpg",
+    "fallbackUrl": "/assets/aistudio/IMG_20260914_162903_462_1__c2d97788.jpg",
+    "date": "2026-09-14",
+    "descriptionSw": "Mnara na bango rasmi la Shule ya Sekondari Uomboni lango kuu likiwa na kaulimbiu 'Tujiendeleze sisi wenyewe - PRAYER EDUCATION WORK' na nembo ya Jimbo Katoliki Moshi.",
+    "descriptionEn": "Official entrance gate monument bearing the school motto 'Prayer, Education, Work' and the Roman Catholic Diocese of Moshi insignia."
+  },
+  {
+    "id": "gal-010",
+    "filename": "IMG_20260904_112900_009_1__7b874684.jpg",
+    "titleSw": "Mkusanyiko wa Asubuhi, Sala ya Pamoja na Malezi ya Kiroho Shuleni",
+    "titleEn": "Morning Assembly Parade, Community Prayer & Student Moral Guidance",
+    "category": "Matukio ya Kikanisa",
+    "imageUrl": "/assets/aistudio/IMG_20260904_112900_009_1__7b874684.jpg",
+    "fallbackUrl": "/assets/aistudio/IMG_20260904_112900_009_1__7b874684.jpg",
+    "date": "2026-09-04",
+    "descriptionSw": "Wanafunzi wakiwa kwenye paredi na sala ya asubuhi katika sare zao nadhifu za kijani na maruni chini ya mwamvuli wa miti ya Marangu.",
+    "descriptionEn": "Students gathered in solemn morning prayer and assembly in school green sweaters and maroon uniforms."
+  },
+  {
+    "id": "gal-011",
+    "filename": "IMG_20261017_131457_393_1__00b9c210.jpg",
+    "titleSw": "Njia ya Ndani ya Shule na Mandhari ya Kijani ya Mteremko wa Mlima Kilimanjaro",
+    "titleEn": "Scenic Tree-Lined Campus Pathway & Kilimanjaro Slope Scenery",
+    "category": "Mazingira ya Marangu",
+    "imageUrl": "/assets/aistudio/IMG_20261017_131457_393_1__00b9c210.jpg",
+    "fallbackUrl": "/assets/aistudio/IMG_20261017_131457_393_1__00b9c210.jpg",
+    "date": "2026-10-17",
+    "descriptionSw": "Wanafunzi wakitunza bustani na mazingira safi ya shule kwenye barabara nzuri ya ndani yenye maua na miti mikubwa ya kivuli Marangu.",
+    "descriptionEn": "Students maintaining the lush, clean campus grounds and tree-shaded walkway nestled on the slopes of Mount Kilimanjaro."
+  },
+  {
+    "id": "gal-012",
+    "filename": "IMG_20260924_122116_119_1__c9c763d7.jpg",
+    "titleSw": "Ukanda wa Madarasa, Vifaa vya Usalama na Mazingira ya Masomo",
+    "titleEn": "Classroom Veranda Corridor, Safety Equipment & Study Hallways",
+    "category": "Taaluma na Maktaba",
+    "imageUrl": "/assets/aistudio/IMG_20260924_122116_119_1__c9c763d7.jpg",
+    "fallbackUrl": "/assets/aistudio/IMG_20260924_122116_119_1__c9c763d7.jpg",
+    "date": "2026-09-24",
+    "descriptionSw": "Ukanda wa madarasa yenye hewa safi na vifaa vya usalama wa moto kwa ajili ya mazingira salama na tulivu ya kujifunzia.",
+    "descriptionEn": "Well-ventilated academic corridors equipped with safety gear providing a calm learning atmosphere."
+  },
+  {
+    "id": "gal-013",
+    "filename": "IMG_20260924_121915_651_1__07e86d1a.jpg",
+    "titleSw": "Jengo la Chumba cha Walimu (Staff Room - Here We Work As A Team)",
+    "titleEn": "Faculty Staff Room Block & Academic Coordination Office",
+    "category": "Uongozi na Malezi",
+    "imageUrl": "/assets/aistudio/IMG_20260924_121915_651_1__07e86d1a.jpg",
+    "fallbackUrl": "/assets/aistudio/IMG_20260924_121915_651_1__07e86d1a.jpg",
+    "date": "2026-09-24",
+    "descriptionSw": "Jengo la ofisi ya walimu lenye kaulimbiu 'Staff Room - Here We Work As A Team' likiwa kiini cha maandalizi bora ya kitaaluma.",
+    "descriptionEn": "Faculty Staff Room building promoting collaborative teaching excellence under the motto 'Here We Work As A Team'."
   }
 ];
 

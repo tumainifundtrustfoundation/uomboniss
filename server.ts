@@ -37,7 +37,7 @@ initSchoolDatabase();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // Gzip / Deflate compression for ultra-fast network transfer (<70% payload size)
   app.use(compression({
@@ -732,16 +732,21 @@ async function startServer() {
       const baseName = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
       const uniqueName = `${safeFolder}/${baseName}_${Date.now()}${ext}`;
 
-      // 1. Try Vercel Blob if token is available
-      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-      if (blobToken) {
+      // 1. Try Vercel Blob if storeId or token is available
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.uomboniss_READ_WRITE_TOKEN;
+      const storeId = process.env.uomboniss_STORE_ID || process.env.BLOB_STORE_ID;
+
+      if (blobToken || storeId) {
         try {
           const { put } = await import("@vercel/blob");
-          const blob = await put(uniqueName, buffer, {
+          const putOptions: any = {
             access: "public",
             contentType: mimeType || "application/octet-stream",
-            token: blobToken,
-          });
+          };
+          if (blobToken) putOptions.token = blobToken;
+          if (storeId) putOptions.storeId = storeId;
+
+          const blob = await put(uniqueName, buffer, putOptions);
           return res.json({
             success: true,
             url: blob.url,
@@ -752,7 +757,7 @@ async function startServer() {
             source: "vercel_blob",
           });
         } catch (vercelErr) {
-          console.warn("[Vercel Blob] Upload failed or token invalid, falling back to local storage:", vercelErr);
+          console.warn("[Vercel Blob] Upload failed or token/store invalid, falling back to local storage:", vercelErr);
         }
       }
 
@@ -786,11 +791,16 @@ async function startServer() {
       const { url } = req.body;
       if (!url) return res.status(400).json({ error: "Missing url" });
 
-      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-      if (blobToken && url.includes("blob.vercel-storage.com")) {
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.uomboniss_READ_WRITE_TOKEN;
+      const storeId = process.env.uomboniss_STORE_ID || process.env.BLOB_STORE_ID;
+
+      if ((blobToken || storeId) && url.includes("blob.vercel-storage.com")) {
         try {
           const { del } = await import("@vercel/blob");
-          await del(url, { token: blobToken });
+          const delOptions: any = {};
+          if (blobToken) delOptions.token = blobToken;
+          if (storeId) delOptions.storeId = storeId;
+          await del(url, delOptions);
           return res.json({ success: true, source: "vercel_blob" });
         } catch (delErr) {
           console.warn("[Vercel Blob] Delete failed:", delErr);
@@ -809,6 +819,51 @@ async function startServer() {
       return res.json({ success: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || "Delete failed" });
+    }
+  });
+
+  // Direct text/string Blob upload (e.g. articles/blob.txt, notes, documents)
+  app.post("/api/blob/put-text", async (req, res) => {
+    try {
+      const { pathname, text, contentType = "text/plain; charset=utf-8" } = req.body;
+      if (!pathname || text === undefined) {
+        return res.status(400).json({ error: "Missing pathname or text" });
+      }
+
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.uomboniss_READ_WRITE_TOKEN;
+      const storeId = process.env.uomboniss_STORE_ID || process.env.BLOB_STORE_ID;
+
+      if (blobToken || storeId) {
+        try {
+          const { put } = await import("@vercel/blob");
+          const putOptions: any = {
+            access: "public",
+            contentType,
+          };
+          if (blobToken) putOptions.token = blobToken;
+          if (storeId) putOptions.storeId = storeId;
+
+          const blob = await put(pathname, text, putOptions);
+          return res.json({
+            success: true,
+            url: blob.url,
+            pathname: blob.pathname,
+            source: "vercel_blob",
+          });
+        } catch (vercelErr: any) {
+          console.warn("[Vercel Blob Text] Error:", vercelErr);
+        }
+      }
+
+      // Local fallback
+      return res.json({
+        success: true,
+        url: `/uploads/${pathname}`,
+        pathname,
+        source: "local_storage",
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to put blob text" });
     }
   });
 

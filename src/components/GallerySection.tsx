@@ -26,6 +26,7 @@ import {
   ExternalLink,
   FolderOpen,
 } from 'lucide-react';
+import { ResponsiveGalleryGrid } from './ResponsiveGalleryGrid';
 
 export const GallerySection: React.FC = () => {
   const { language } = useLanguage();
@@ -475,63 +476,13 @@ export const GallerySection: React.FC = () => {
           })}
         </div>
 
-        {/* PHOTO GRID WITH SMOOTH HOVER & ENTRANCE ANIMATIONS */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredPhotos.map((photo, index) => {
-            const title = language === 'sw' ? photo.titleSw : photo.titleEn;
-
-            return (
-              <div
-                key={photo.id}
-                onClick={() => setSelectedPhotoIndex(index)}
-                className="group relative bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 ease-out cursor-pointer hover:-translate-y-1 flex flex-col justify-between"
-              >
-                {/* Photo container with zoom on hover */}
-                <div className="aspect-4/3 overflow-hidden bg-slate-900 relative">
-                  <img
-                    src={photo.imageUrl}
-                    alt={title}
-                    loading="lazy"
-                    className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-500 ease-out"
-                  />
-
-                  {/* Animated Hover Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-                    <span className="p-3 rounded-full bg-white/90 text-slate-950 transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg">
-                      <ZoomIn className="w-5 h-5 text-[#102A43]" />
-                    </span>
-                  </div>
-
-                  {/* Category Pill Tag */}
-                  <div className="absolute top-2.5 left-2.5">
-                    <span className="px-2.5 py-1 rounded-md bg-[#102A43]/85 text-[#FFFFF0] text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs border border-white/10 shadow-xs">
-                      {photo.category}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Details Footer */}
-                <div className="p-4 bg-white space-y-1.5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-[#102A43] group-hover:text-amber-700 transition-colors leading-snug line-clamp-2">
-                      {title}
-                    </h4>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1 font-mono text-[10px]">
-                      <Calendar className="w-3 h-3 text-[#C9A227]" />
-                      {photo.date || '2026'}
-                    </span>
-                    <span className="text-[#102A43] font-bold text-[11px] group-hover:underline flex items-center gap-1">
-                      <span>{language === 'sw' ? 'Tazama' : 'View'}</span>
-                      <Eye className="w-3 h-3 text-[#C9A227]" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        {/* RESPONSIVE CSS GRID COMPONENT FOR PHOTO GALLERY */}
+        <div className="mt-8">
+          <ResponsiveGalleryGrid
+            photos={filteredPhotos}
+            language={language}
+            onSelectPhoto={(_, index) => setSelectedPhotoIndex(index)}
+          />
         </div>
 
         {/* LIGHTBOX MODAL PREVIEW (With Animations & Thumbnails) */}

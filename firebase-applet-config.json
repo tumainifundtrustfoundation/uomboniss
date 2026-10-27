@@ -1,12 +1,13 @@
 {
-  "projectId": "analog-helper-62sm5",
-  "appId": "1:565695588928:web:0a8b583d8f70c2f2fc0da5",
-  "apiKey": "AIzaSyBq-Ca71dDpZUUVzBcHagGdl3Mnr1qMO2M",
-  "authDomain": "analog-helper-62sm5.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-uombonisecondary-a226512e-0a0d-4611-a810-0c50714ff3f2",
-  "storageBucket": "analog-helper-62sm5.firebasestorage.app",
-  "messagingSenderId": "565695588928",
-  "measurementId": "",
-  "oAuthClientId": "565695588928-ghmref21lnsa4jfmickdfn4aukpbt8il.apps.googleusercontent.com",
+  "projectId": "uomboni-secondaryschool",
+  "appId": "1:565768915142:web:119c1d6e9700f74f4eefc7",
+  "apiKey": "AIzaSyC2Reci9HeMZMQQOb8vzYYYE16kJNzUqSY",
+  "authDomain": "uomboni-secondaryschool.firebaseapp.com",
+  "databaseURL": "https://uomboni-secondaryschool-default-rtdb.firebaseio.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "uomboni-secondaryschool.firebasestorage.app",
+  "messagingSenderId": "565768915142",
+  "measurementId": "G-H9KVX7VKMQ",
+  "oAuthClientId": "565768915142-ghmref21lnsa4jfmickdfn4aukpbt8il.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }

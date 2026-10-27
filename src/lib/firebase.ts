@@ -46,14 +46,25 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// Initialize Firestore with custom database ID and resilient transport settings.
+// Initialize Firestore with custom database ID (if configured) and resilient transport settings.
 // In iframe and proxy environments, WebChannel streaming gets buffered/blocked causing a 10s backend unreachable timeout.
 // Enabling experimentalForceLongPolling with useFetchStreams: false prevents stream buffering delays.
+const customDbId = (firebaseConfig as any).firestoreDatabaseId && (firebaseConfig as any).firestoreDatabaseId !== '(default)'
+  ? (firebaseConfig as any).firestoreDatabaseId
+  : undefined;
+
 try {
-  initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    useFetchStreams: false,
-  } as any, firebaseConfig.firestoreDatabaseId);
+  if (customDbId) {
+    initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      useFetchStreams: false,
+    } as any, customDbId);
+  } else {
+    initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+      useFetchStreams: false,
+    } as any);
+  }
 } catch {
   // Already initialized
 }
@@ -65,7 +76,7 @@ try {
   // Ignore
 }
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
+export const db = customDbId ? getFirestore(app, customDbId) : getFirestore(app); /* CRITICAL: The app will break without this line */
 
 // Firestore Error Handler Infrastructure as required by Firebase skill
 export enum OperationType {
