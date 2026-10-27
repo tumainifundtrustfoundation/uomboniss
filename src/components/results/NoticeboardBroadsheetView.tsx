@@ -27,6 +27,7 @@ import {
 } from '../../data/csscJointExamResults2026';
 import { downloadClassBroadsheetPdf } from '../../utils/pdfService';
 import { exportResultsToExcel } from '../../utils/excelService';
+import { maskStudentName } from '../../utils/nectaResultsEngine';
 import { OfficialExamReportPrintView } from './OfficialExamReportPrintView';
 
 interface NoticeboardBroadsheetViewProps {
@@ -40,6 +41,7 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
   const [viewMode, setViewMode] = useState<'official_sheet' | 'noticeboard'>('official_sheet');
   const [selectedExamType, setSelectedExamType] = useState<'cssc_f4_2026' | 'cssc_f2_2026' | 'annual_f4_2025'>('cssc_f4_2026');
   const [filterQuery, setFilterQuery] = useState('');
+  const [isParentPrivacyMode, setIsParentPrivacyMode] = useState<boolean>(true);
 
   // Determine active dataset based on selected examination
   let candidates: StudentResult[] = CSSC_FORM_FOUR_JOINT_RESULTS_2026;
@@ -224,6 +226,33 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
         >
           <FileText className="w-3.5 h-3.5 text-blue-400" />
           <span>Form 4 Annual Examination 2025</span>
+        </button>
+      </div>
+
+      {/* Parent Privacy Indicator & Child Filter Banner */}
+      <div className="bg-amber-50 border-2 border-amber-300/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs print:hidden">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse shrink-0" />
+          <div>
+            <span className="font-black text-amber-950 uppercase tracking-wide block">
+              {isParentPrivacyMode
+                ? (language === 'sw' ? '🔒 Ulinzi wa Faragha: Mzazi Anaona Matokeo ya Mwanae Tu' : '🔒 Student Privacy: Parent Views Child Results Only')
+                : (language === 'sw' ? '👁️ Mwonekano Kamili wa Broadsheet (Utawala/Walimu)' : '👁️ Full Broadsheet View (Admin/Staff)')}
+            </span>
+            <span className="text-amber-800 text-[11px]">
+              {isParentPrivacyMode
+                ? (language === 'sw' ? 'Majina ya wanafunzi wengine yamefichwa; weka jina au namba ya mtihani wa mwanao kumtazama' : 'Other students names are masked; search your child name or exam number to highlight')
+                : (language === 'sw' ? 'Majina yote yanaonekana kwa matumizi rasmi ya tathmini' : 'All student names displayed for evaluation')}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsParentPrivacyMode(!isParentPrivacyMode)}
+          className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-950 font-bold border border-amber-300 text-[11px] shadow-xs cursor-pointer transition-all self-start sm:self-auto shrink-0"
+        >
+          {isParentPrivacyMode ? '👁️ Onyesha Yote (Staff Only)' : '🔒 Ficha Wengine (Parent View)'}
         </button>
       </div>
 
@@ -439,20 +468,27 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
                 </tr>
               </thead>
               <tbody className="divide-y divide-emerald-100 font-semibold text-slate-800">
-                {summary.best5.map((st) => (
-                  <tr key={st.name} className="hover:bg-emerald-50/50">
-                    <td className="py-2 px-2 text-center font-black text-emerald-800">
-                      #{st.position}
-                    </td>
-                    <td className="py-2 px-2 font-bold text-slate-900 truncate max-w-[120px]">
-                      {st.name}
-                    </td>
-                    <td className="py-2 px-1 text-center text-slate-600">{st.sex}</td>
-                    <td className="py-2 px-1 text-center font-mono font-bold">{st.points}</td>
-                    <td className="py-2 px-1 text-center font-bold text-blue-800">{st.division}</td>
-                    <td className="py-2 px-2 text-center font-black text-emerald-900">{st.average}%</td>
-                  </tr>
-                ))}
+                {summary.best5.map((st) => {
+                  const isMyChild = Boolean(filterQuery.trim() && st.name.toLowerCase().includes(filterQuery.toLowerCase().trim()));
+                  const displayName = !isParentPrivacyMode || isMyChild ? st.name : maskStudentName(st.name);
+                  return (
+                    <tr key={st.name} className={`hover:bg-emerald-50/50 ${isMyChild ? 'bg-amber-100 font-bold' : ''}`}>
+                      <td className="py-2 px-2 text-center font-black text-emerald-800">
+                        #{st.position}
+                      </td>
+                      <td className="py-2 px-2 font-bold text-slate-900 truncate max-w-[140px]">
+                        <span className={isMyChild ? 'text-emerald-950 font-black' : (!isParentPrivacyMode ? 'text-slate-900' : 'text-slate-500 italic')}>
+                          {displayName}
+                        </span>
+                        {isMyChild && <span className="ml-1 text-[9px] bg-amber-400 text-slate-900 px-1 py-0.2 rounded font-black">Mtoto Wako</span>}
+                      </td>
+                      <td className="py-2 px-1 text-center text-slate-600">{st.sex}</td>
+                      <td className="py-2 px-1 text-center font-mono font-bold">{st.points}</td>
+                      <td className="py-2 px-1 text-center font-bold text-blue-800">{st.division}</td>
+                      <td className="py-2 px-2 text-center font-black text-emerald-900">{st.average}%</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -476,20 +512,27 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
                 </tr>
               </thead>
               <tbody className="divide-y divide-amber-100 font-semibold text-slate-800">
-                {summary.last5.map((st) => (
-                  <tr key={st.name} className="hover:bg-amber-50/50">
-                    <td className="py-2 px-2 text-center font-black text-amber-900">
-                      #{st.position}
-                    </td>
-                    <td className="py-2 px-2 font-bold text-slate-900 truncate max-w-[120px]">
-                      {st.name}
-                    </td>
-                    <td className="py-2 px-1 text-center text-slate-600">{st.sex}</td>
-                    <td className="py-2 px-1 text-center font-mono">{st.points}</td>
-                    <td className="py-2 px-1 text-center font-bold text-orange-800">{st.division}</td>
-                    <td className="py-2 px-2 text-center font-bold text-slate-700">{st.average}%</td>
-                  </tr>
-                ))}
+                {summary.last5.map((st) => {
+                  const isMyChild = Boolean(filterQuery.trim() && st.name.toLowerCase().includes(filterQuery.toLowerCase().trim()));
+                  const displayName = !isParentPrivacyMode || isMyChild ? st.name : maskStudentName(st.name);
+                  return (
+                    <tr key={st.name} className={`hover:bg-amber-50/50 ${isMyChild ? 'bg-amber-100 font-bold' : ''}`}>
+                      <td className="py-2 px-2 text-center font-black text-amber-900">
+                        #{st.position}
+                      </td>
+                      <td className="py-2 px-2 font-bold text-slate-900 truncate max-w-[140px]">
+                        <span className={isMyChild ? 'text-amber-950 font-black' : (!isParentPrivacyMode ? 'text-slate-900' : 'text-slate-500 italic')}>
+                          {displayName}
+                        </span>
+                        {isMyChild && <span className="ml-1 text-[9px] bg-amber-400 text-slate-900 px-1 py-0.2 rounded font-black">Mtoto Wako</span>}
+                      </td>
+                      <td className="py-2 px-1 text-center text-slate-600">{st.sex}</td>
+                      <td className="py-2 px-1 text-center font-mono">{st.points}</td>
+                      <td className="py-2 px-1 text-center font-bold text-orange-800">{st.division}</td>
+                      <td className="py-2 px-2 text-center font-bold text-slate-700">{st.average}%</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -560,24 +603,52 @@ export const NoticeboardBroadsheetView: React.FC<NoticeboardBroadsheetViewProps>
                     );
                   };
 
+                  const isMyChild = Boolean(
+                    filterQuery.trim() && (
+                      st.studentName.toLowerCase().includes(filterQuery.toLowerCase().trim()) ||
+                      (st.examNumber && st.examNumber.toLowerCase().includes(filterQuery.toLowerCase().trim()))
+                    )
+                  );
+                  const showFullName = !isParentPrivacyMode || isMyChild;
+                  const displayName = showFullName ? st.studentName : maskStudentName(st.studentName);
+
                   return (
                     <tr
                       key={`${st.id}-${st.examNumber || idx}-${idx}`}
                       className={`hover:bg-blue-50/60 transition-colors ${
-                        idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
+                        isMyChild
+                          ? 'bg-amber-100/90 font-bold border-y-2 border-amber-500'
+                          : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
                       }`}
                     >
                       <td className="py-2 px-2 text-center font-bold text-slate-800">
                         {st.classPosition}
                       </td>
                       <td className="py-2 px-3 font-bold text-slate-900">
-                        <button
-                          type="button"
-                          onClick={() => onSelectStudent && onSelectStudent(st)}
-                          className="hover:text-blue-700 hover:underline text-left cursor-pointer"
-                        >
-                          {st.studentName}
-                        </button>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {isMyChild && <span className="text-amber-600 font-black">★</span>}
+                          <button
+                            type="button"
+                            onClick={() => onSelectStudent && onSelectStudent(st)}
+                            className={`hover:underline text-left cursor-pointer ${
+                              isMyChild
+                                ? 'text-emerald-950 font-black'
+                                : (showFullName ? 'hover:text-blue-700 text-slate-900' : 'text-slate-500 italic')
+                            }`}
+                          >
+                            {displayName}
+                          </button>
+                          {isMyChild && (
+                            <span className="px-1.5 py-0.2 rounded-md bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
+                              {language === 'sw' ? 'Mtoto Wako' : 'Your Child'}
+                            </span>
+                          )}
+                          {!showFullName && (
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              🔒
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[9px] text-slate-400 font-mono">{st.examNumber}</div>
                       </td>
                       <td className="py-2 px-1 text-center font-semibold text-slate-600">{st.gender}</td>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { SchoolLogo } from './SchoolLogo';
+import { useData } from '../context/DataContext';
 import {
   GraduationCap,
   MapPin,
@@ -55,6 +56,8 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenResultsEntry,
   onOpenPolicy,
 }) => {
+  const { schoolProfile } = useData();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -85,6 +88,13 @@ export const Footer: React.FC<FooterProps> = ({
     }
   };
 
+  const schoolName = schoolProfile?.name || 'Uomboni Secondary School';
+  const slogan = schoolProfile?.slogan || schoolProfile?.sloganSw || 'Tujiendeleze sisi wenyewe.';
+  const nectaCode = schoolProfile?.nectaCode || 'S0486';
+  const postalAddress = schoolProfile?.postalAddress || 'P.O. Box 361, Marangu - Moshi, Tanzania';
+  const phone = schoolProfile?.phone || (schoolProfile?.phones && schoolProfile.phones.join(' / ')) || '0767 207 688 / +255 782 558 127';
+  const email = schoolProfile?.email || 'uombonisecondary@gmail.com';
+
   return (
     <footer className="bg-[#102A43] text-[#FFFFF0] border-t border-[#C9A227]/30">
       {/* Main Footer Directory */}
@@ -98,36 +108,36 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-bold text-white tracking-tight">
-                  Uomboni Secondary School
+                  {schoolName}
                 </h3>
                 <p className="text-xs text-[#C9A227] font-semibold">
-                  NECTA Centre S0486 · Marangu West
+                  NECTA Centre {nectaCode} · Marangu West
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-amber-300 font-bold tracking-wide">
-              Motto: “Tujiendeleze sisi wenyewe.”
+              Motto: “{slogan}”
             </p>
             <p className="text-xs text-[#FFFFF0]/80 leading-relaxed max-w-sm">
-              Shule ya Sekondari Uomboni chini ya Jimbo Katoliki la Moshi (Catholic Diocese of Moshi). Kituo cha NECTA S0486, Marangu-Moshi.
+              Shule ya Sekondari Uomboni chini ya Jimbo Katoliki la Moshi (Catholic Diocese of Moshi). Kituo cha NECTA {nectaCode}, Marangu-Moshi.
             </p>
 
             <div className="pt-2 text-xs space-y-2.5 text-[#FFFFF0]/80">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0 mt-0.5" />
                 <div className="leading-snug">
-                  <span className="block font-semibold text-white">Uomboni Secondary School</span>
-                  <span className="text-[#FFFFF0]/85">P.O. Box 361, Marangu - Moshi, Tanzania</span>
+                  <span className="block font-semibold text-white">{schoolName}</span>
+                  <span className="text-[#FFFFF0]/85">{postalAddress}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="tel:+255767207688" className="hover:text-[#C9A227] transition-colors font-mono">0767 207 688 / +255 782 558 127</a>
+                <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className="hover:text-[#C9A227] transition-colors font-mono">{phone}</a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-                <a href="mailto:uombonisecondary@gmail.com" className="hover:text-[#C9A227] transition-colors font-mono">uombonisecondary@gmail.com</a>
+                <a href={`mailto:${email}`} className="hover:text-[#C9A227] transition-colors font-mono">{email}</a>
               </div>
             </div>
 

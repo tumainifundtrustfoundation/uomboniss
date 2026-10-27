@@ -255,3 +255,23 @@ export function computeDivisionPerformanceSummary(results: StudentResult[]): Div
 
   return summary;
 }
+
+/**
+ * Masks student names for parental privacy (Ulinzi wa Faragha ya Mwanafunzi).
+ * Hides other students' names when viewed by parents or visitors.
+ * e.g. "Daudi Inocent Massawe" -> "D**** I****** M****** (Faragha)"
+ */
+export function maskStudentName(name: string): string {
+  if (!name) return '****** (Faragha)';
+  const clean = name.trim();
+  const parts = clean.split(/\s+/);
+  if (parts.length === 1) {
+    const p = parts[0];
+    if (p.length <= 2) return p[0] + '* (Faragha)';
+    return p[0] + '*'.repeat(Math.max(3, p.length - 2)) + p[p.length - 1] + ' (Faragha)';
+  }
+  return parts.map((part) => {
+    if (part.length <= 2) return part[0] + '*';
+    return part[0] + '*'.repeat(Math.max(3, part.length - 1));
+  }).join(' ') + ' (Faragha)';
+}

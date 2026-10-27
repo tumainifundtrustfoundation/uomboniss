@@ -20,6 +20,7 @@ import {
   computeDivisionPerformanceSummary,
   formatCno,
   formatNectaDetailedSubjects,
+  maskStudentName,
 } from '../utils/nectaResultsEngine';
 import { downloadClassBroadsheetPdf, downloadStudentResultSlipPdf, printStudentResultSlipDirectly } from '../utils/pdfService';
 import { usePageSeo, generateResultsSeo } from '../utils/seo';
@@ -231,18 +232,29 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
         <div className="p-4 rounded-3xl bg-[#FAF7EE] border-2 border-red-200/80 shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-red-950 font-black text-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
               <span>
                 {language === 'sw'
-                  ? 'UTAMBUZI WA MTOTO WAKO NA ORODHA YA MATOKEO:'
-                  : 'IDENTIFY YOUR CHILD & RESULTS LIST:'}
+                  ? '🔒 ULINZI WA FARAGHA: MZAZI ANAONA MATOKEO YA MWANAE TU'
+                  : '🔒 STUDENT PRIVACY: PARENT VIEWS CHILD RESULTS ONLY'}
               </span>
             </div>
-            <span className="text-[11px] text-stone-600 font-medium">
-              {language === 'sw'
-                ? 'Majina yote ya wanafunzi yanaonekana wazi; weka jina au namba kuangazia mtoto wako'
-                : 'All candidate names are clearly displayed; search name or exam number to highlight your child'}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-stone-600 font-medium">
+                {language === 'sw'
+                  ? 'Majina ya wanafunzi wengine yamefichwa; weka jina au namba ya mtihani wa mwanao kumtambua'
+                  : 'Other students names are masked for child privacy; enter your child candidate number or name'}
+              </span>
+              {isAcademicMasterView && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllNamesAdminToggle(!showAllNamesAdminToggle)}
+                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-red-300 bg-white hover:bg-red-50 text-red-900 cursor-pointer transition-all shrink-0"
+                >
+                  {showAllNamesAdminToggle ? '🔒 Ficha Majina (Parent View)' : '👁️ Onyesha Yote (Staff Only)'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -482,8 +494,9 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                       (matchedChildResult.id === st.id ||
                         formatCno(matchedChildResult.examNumber) === cnoFormatted);
 
-                    // Names are always visible across all portal views
-                    const showNameInThisRow = true;
+                    // Student Privacy: parent views only their child; other student names are masked
+                    const showFullName = Boolean(isMyChild || showAllNamesAdminToggle);
+                    const displayName = showFullName ? st.studentName : maskStudentName(st.studentName);
 
                     // Compute clean aggregate
                     const divUpper = (st.division || '').toUpperCase();
@@ -523,12 +536,17 @@ export const NectaResultsOfficialView: React.FC<NectaResultsOfficialViewProps> =
                           <div className="font-mono font-bold text-slate-900">{cnoFormatted}</div>
                           <div className="mt-0.5 font-sans font-bold text-xs flex flex-wrap items-center gap-1.5">
                             {isMyChild && <span className="text-amber-600 font-black">★</span>}
-                            <span className={isMyChild ? 'text-emerald-950 font-black' : 'text-slate-900 font-semibold'}>
-                              {st.studentName}
+                            <span className={isMyChild ? 'text-emerald-950 font-black' : (showFullName ? 'text-slate-900 font-semibold' : 'text-slate-500 italic')}>
+                              {displayName}
                             </span>
                             {isMyChild && (
                               <span className="px-1.5 py-0.2 rounded-md bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
                                 {language === 'sw' ? 'Mtoto Wako' : 'Your Child'}
+                              </span>
+                            )}
+                            {!showFullName && (
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                🔒
                               </span>
                             )}
                           </div>

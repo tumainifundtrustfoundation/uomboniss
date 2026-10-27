@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 export const ContactSection: React.FC = () => {
+  const { schoolProfile } = useData();
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -20,6 +22,11 @@ export const ContactSection: React.FC = () => {
     }, 6000);
   };
 
+  const primaryPhone = schoolProfile?.phone || (schoolProfile?.phones && schoolProfile.phones[0]) || '0767 207 688';
+  const primaryEmail = schoolProfile?.email || 'uombonisecondary@gmail.com';
+  const primaryLocation = schoolProfile?.location || 'Marangu West, Moshi Rural District, Mount Kilimanjaro Slopes';
+  const postalAddress = schoolProfile?.postalAddress || 'P.O. Box 361, Marangu - Moshi, Tanzania';
+
   return (
     <section id="contact" className="py-12 sm:py-16 bg-[#FFFFF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,7 +35,7 @@ export const ContactSection: React.FC = () => {
             Get In Touch
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#102A43] tracking-tight leading-[1.2]">
-            Contact Uomboni Secondary School
+            Contact {schoolProfile?.name || 'Uomboni Secondary School'}
           </h2>
           <p className="mt-4 text-sm sm:text-base text-slate-700 leading-[1.75] font-normal">
             We welcome inquiries from prospective parents, alumni, and educational partners. Reach out to our administrative team or visit our school offices in Marangu.
@@ -51,9 +58,8 @@ export const ContactSection: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Physical Address</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">
-                    Marangu West, Moshi Rural District<br />
-                    Mount Kilimanjaro Slopes, Kilimanjaro Region<br />
-                    P.O. Box 361, Marangu - Moshi, Tanzania
+                    {primaryLocation}<br />
+                    {postalAddress}
                   </p>
                 </div>
               </div>
@@ -66,7 +72,7 @@ export const ContactSection: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Telephone Hotlines</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 space-y-1 font-mono font-medium">
-                    <span className="block text-[#102A43] font-bold">0767 207 688 (Simu Kuu ya Shule / Official Line)</span>
+                    <span className="block text-[#102A43] font-bold">{primaryPhone} (Simu Kuu ya Shule / Official Line)</span>
                     <span className="block">+255 752 000 939 (Admissions Desk)</span>
                     <span className="block">+255 782 558 127 (Headmaster)</span>
                     <span className="block">+255 754 532 949 (Second Master)</span>
@@ -83,7 +89,7 @@ export const ContactSection: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-[#102A43] block">Official Email &amp; Web</span>
                   <p className="text-xs sm:text-sm text-slate-600 mt-0.5 font-mono">
-                    <strong className="text-[#102A43]">uombonisecondary@gmail.com</strong><br />
+                    <strong className="text-[#102A43]">{primaryEmail}</strong><br />
                     info@uomboniss.ac.tz<br />
                     uombonisec@gmail.com<br />
                     <span className="text-xs text-[#102A43] font-semibold">www.uomboniss.ac.tz</span>

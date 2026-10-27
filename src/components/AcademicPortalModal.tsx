@@ -126,6 +126,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
     bulkReplaceStudentResults,
     addResultsPdfDoc,
     deleteResultsPdfDoc,
+    isAdminLoggedIn,
   } = useData();
 
   const { userProfile, user } = useAuth();
@@ -134,28 +135,27 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
   const [activeRole, setActiveRole] = useState<AcademicRole>(initialRole);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (initialRole === 'parent') return true;
+    if (isAdminLoggedIn) return true;
     if (initialRole === 'teacher') {
-      // Walimu lazima waingie kwa kutumia Firebase security
-      return Boolean(initialAuthenticated && auth.currentUser);
+      return Boolean((initialAuthenticated && auth.currentUser) || isAdminLoggedIn);
     }
     return initialAuthenticated;
   });
 
   // Sync role and authentication when modal is opened or reopened with new role, or if user is logged in
   React.useEffect(() => {
-    if (userProfile && ['academic_master', 'admin', 'teacher'].includes(userProfile.role)) {
+    if (isAdminLoggedIn || (userProfile && ['academic_master', 'admin', 'teacher'].includes(userProfile.role))) {
       setIsAuthenticated(true);
-      if (userProfile.role === 'academic_master' || userProfile.role === 'admin') {
-        setActiveRole('academic_master');
-      } else if (userProfile.role === 'teacher') {
+      if (userProfile?.role === 'teacher' && !isAdminLoggedIn) {
         setActiveRole('teacher');
+      } else {
+        setActiveRole('academic_master');
       }
     } else {
       setActiveRole(initialRole);
       if (initialRole === 'parent') {
         setIsAuthenticated(true);
       } else if (initialRole === 'teacher') {
-        // Walimu lazima waingie kwa kutumia Firebase security
         setIsAuthenticated(Boolean(initialAuthenticated && auth.currentUser));
       } else if (initialAuthenticated) {
         setIsAuthenticated(true);
@@ -163,7 +163,7 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
         setIsAuthenticated(false);
       }
     }
-  }, [initialRole, initialAuthenticated, userProfile]);
+  }, [initialRole, initialAuthenticated, userProfile, isAdminLoggedIn]);
 
   // Parent State
   const [parentSearchQuery, setParentSearchQuery] = useState(initialStudentId || '');

@@ -1,16 +1,18 @@
 import React from 'react';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Users, ShieldCheck, Lock } from 'lucide-react';
 
 interface AcademicsSectionProps {
   onOpenAdmissions?: () => void;
   onOpenResults?: () => void;
   onOpenAcademicPortal?: () => void;
+  onOpenParentPortal?: () => void;
 }
 
 export const AcademicsSection: React.FC<AcademicsSectionProps> = ({
   onOpenAdmissions,
   onOpenResults,
   onOpenAcademicPortal,
+  onOpenParentPortal,
 }) => {
   const forms = [
     {
@@ -84,18 +86,33 @@ export const AcademicsSection: React.FC<AcademicsSectionProps> = ({
             {onOpenResults && (
               <button
                 onClick={onOpenResults}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-[#102A43] text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer border border-[#102A43]/20"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-[#102A43] text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer border border-[#102A43]/20"
+                title="Tazama Matokeo ya Mitihani (Faragha ya Mzazi: Majina ya Wengine Yamefichwa)"
               >
                 <span>📊 Matokeo ya Mitihani</span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                  <Lock className="w-2.5 h-2.5" />
+                  <span>Faragha ya Mzazi</span>
+                </span>
               </button>
             )}
             {onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all cursor-pointer border border-amber-500/60"
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all cursor-pointer border border-amber-500/60"
               >
                 <GraduationCap className="w-4 h-4 text-slate-950" />
                 <span>🎓 Portal ya Taaluma</span>
+              </button>
+            )}
+            {onOpenParentPortal && (
+              <button
+                onClick={onOpenParentPortal}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#704214] hover:bg-[#58330F] text-[#FFFFF0] text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all cursor-pointer border border-[#C9A227]/40"
+                title="Portal ya Mzazi: Tazama matokeo ya mwanao pekee"
+              >
+                <Users className="w-4 h-4 text-[#C9A227]" />
+                <span>👨‍👩‍👧 Portal ya Mzazi</span>
               </button>
             )}
           </div>
@@ -157,33 +174,51 @@ export const AcademicsSection: React.FC<AcademicsSectionProps> = ({
           </div>
         </div>
 
-        {/* Footer info strip */}
-        <div className="mt-12 p-6 rounded-lg bg-[#FFFFF0] border border-[#C9A227]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <span className="text-sm font-bold text-[#102A43] block">
-              Official Examination Centre: NECTA S0486
-            </span>
-            <span className="text-xs text-slate-600">
-              Regular continuous assessments, weekly tests, and supervised evening prep for all students.
-            </span>
+        {/* Footer info strip — Student Privacy & Parental Results Notice */}
+        <div className="mt-12 p-6 rounded-2xl bg-[#FFFFF0] border-2 border-[#C9A227]/40 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-flex items-center gap-1.5 shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Ulinzi wa Faragha: Mzazi Anaona Matokeo ya Mwanae Tu</span>
+              </span>
+              <span className="text-[11px] font-mono font-bold text-slate-500">
+                NECTA S0486
+              </span>
+            </div>
+            <h4 className="text-base sm:text-lg font-bold text-[#102A43]">
+              Majina ya Wanafunzi Wengine Yamefichwa Kulinda Faragha ya Mtoto
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Katika shule ya sekondari Uomboni, kila mzazi au mlezi anapofungua ripoti za mitihani ataona taarifa kamili na matokeo ya mwanafunzi wake pekee. Majina ya watahiniwa wengine hufichwa kwenye orodha zote za mitihani ili kulinda faragha ya watoto kwa mujibu wa miongozo ya elimu.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            {onOpenAcademicPortal && (
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
+            {onOpenParentPortal && (
               <button
-                onClick={onOpenAcademicPortal}
-                className="px-4 py-2 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-md transition-colors cursor-pointer shadow-xs border border-amber-500/50 flex items-center gap-1.5"
+                onClick={onOpenParentPortal}
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-bold text-[#FFFFF0] bg-[#704214] hover:bg-[#58330F] rounded-xl transition-all cursor-pointer shadow-sm border border-[#C9A227]/40 flex items-center justify-center gap-2"
               >
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Portal ya Taaluma</span>
+                <Users className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>Fungua Portal ya Mzazi (Mwanao Tu)</span>
               </button>
             )}
             {onOpenResults && (
               <button
                 onClick={onOpenResults}
-                className="px-4 py-2 text-xs font-semibold text-[#102A43] border border-[#102A43]/20 bg-white hover:bg-slate-50 rounded-md transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#102A43] border border-[#102A43]/20 bg-white hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
-                View Examination Results
+                <span>Tazama Matokeo (Search)</span>
+              </button>
+            )}
+            {onOpenAcademicPortal && (
+              <button
+                onClick={onOpenAcademicPortal}
+                className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-colors cursor-pointer shadow-xs border border-amber-500/50 flex items-center justify-center gap-1.5"
+              >
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Portal ya Taaluma</span>
               </button>
             )}
           </div>

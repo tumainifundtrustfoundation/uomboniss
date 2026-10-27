@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SAVED_TEACHERS } from '../data/savedSchoolMedia';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
 import { Teacher } from '../types';
 import {
   Phone,
@@ -24,7 +25,8 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' 
 
 export const LeadershipTeachersSection: React.FC = () => {
   const { language } = useLanguage();
-  const teachers: Teacher[] = SAVED_TEACHERS;
+  const { teachers: liveTeachers } = useData();
+  const teachers: Teacher[] = Array.isArray(liveTeachers) && liveTeachers.length > 0 ? liveTeachers : SAVED_TEACHERS;
 
   // View Mode: 'individual' (Mtu Mmojammoja - Default) or 'grid' (Orodha ya Wote)
   const [viewMode, setViewMode] = useState<'individual' | 'grid'>('individual');

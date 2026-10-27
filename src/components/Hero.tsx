@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, ArrowRight, FileText } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 interface HeroProps {
   onNavigate: (sectionId: string) => void;
@@ -8,6 +9,13 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmissionDocuments }) => {
+  const { schoolProfile } = useData();
+
+  const schoolName = schoolProfile?.name || 'Uomboni Secondary School';
+  const slogan = schoolProfile?.slogan || schoolProfile?.sloganSw || 'Tujiendeleze sisi wenyewe.';
+  const vision = schoolProfile?.vision || schoolProfile?.visionEn || 'To Provide Quality Education and Impressive Academic Performance';
+  const nectaCode = schoolProfile?.nectaCode || 'S0486';
+  const location = schoolProfile?.location || 'Marangu, Kilimanjaro';
 
   return (
     <section id="home" className="relative w-full min-h-[82vh] lg:min-h-[88vh] flex items-center justify-center overflow-hidden bg-[#102A43]">
@@ -28,19 +36,19 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenAdmin, onOpenAdmis
         {/* Institutional Kicker */}
         <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3.5 py-1.5 rounded-md bg-[#0A1C2E]/80 border border-[#C9A227]/40 text-[#FFFFF0] text-[11px] sm:text-xs font-semibold tracking-wider uppercase mb-5 max-w-full text-center leading-snug">
           <span className="w-2 h-2 rounded-full bg-[#C9A227] shrink-0" />
-          <span>NECTA S0486 · Catholic Diocese of Moshi · Marangu, Kilimanjaro</span>
+          <span>NECTA {nectaCode} · Catholic Diocese of Moshi · {location}</span>
         </div>
 
         {/* Headline */}
         <div className="space-y-3 max-w-4xl mx-auto">
           <span className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#C9A227] block">
-            Kauli Mbiu: “Tujiendeleze sisi wenyewe.”
+            Kauli Mbiu: “{slogan}”
           </span>
           <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] break-words">
-            Uomboni Secondary School
+            {schoolName}
           </h1>
           <p className="text-xs sm:text-base text-amber-200/90 font-medium max-w-2xl mx-auto leading-relaxed">
-            To Provide Quality Education and Impressive Academic Performance
+            {vision}
           </p>
         </div>
 

@@ -227,12 +227,13 @@ function MainSchoolApp() {
 
   const handleOpenResultsEntry = () => {
     closeAllModals();
-    // Walimu lazima waingie kwa kutumia Firebase security
+    // Walimu na Utawala: ingia kwa kutumia Firebase security au Admin pass
     const isTeacherFirebaseAuthed = Boolean(
-      user &&
-      userProfile &&
-      userProfile.status === 'approved' &&
-      ['teacher', 'academic_master', 'admin'].includes(userProfile.role)
+      isAdminLoggedIn ||
+      (user &&
+        userProfile &&
+        userProfile.status === 'approved' &&
+        ['teacher', 'academic_master', 'admin'].includes(userProfile.role))
     );
     handleOpenAcademicPortal('teacher', isTeacherFirebaseAuthed);
   };
@@ -563,6 +564,7 @@ function MainSchoolApp() {
             setIsNectaResultsOpen(true);
           }}
           onOpenAcademicPortal={() => handleOpenAcademicPortal('academic_master')}
+          onOpenParentPortal={handleOpenParentPortal}
         />
 
         {/* 4. Teachers (Meet Our Faculty) */}

@@ -14,6 +14,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { StudentResult } from '../../types';
 import { SchoolLogo } from '../SchoolLogo';
+import { maskStudentName } from '../../utils/nectaResultsEngine';
 
 interface PublicResultsSearchSectionProps {
   studentResults: StudentResult[];
@@ -188,8 +189,8 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <p className="text-xs text-slate-500">
               {language === 'sw'
-                ? 'Weka namba ya mtihani, namba ya PREM / mtihani wa la saba, au jina la mwanafunzi kisha bofya kitufe cha kutafuta matokeo.'
-                : 'Enter the candidate examination number, PREM / Std 7 exam number, or student name then click Search Results.'}
+                ? '🔒 Sera ya Faragha ya Mzazi: Mzazi anaona matokeo ya mwanae tu. Weka namba ya mtihani au jina la mwanao kutazama ripoti yake; majina ya wanafunzi wengine yamefichwa.'
+                : '🔒 Student Privacy Policy: Parents only view their child results. Enter candidate number or name to search; other students names remain masked.'}
             </p>
 
             <button
@@ -214,12 +215,12 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
           </div>
         </form>
 
-        {/* Quick Select Candidates from Authentic Noticeboard */}
+        {/* Quick Select Candidates with Parental Privacy Protection */}
         <div className="pt-4 border-t border-slate-200/80 space-y-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-700 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>{language === 'sw' ? 'Watahiniwa Waliofanya Vizuri CSEE & CSSC (Kituo S0486):' : 'Top Performing Candidates (Center S0486):'}</span>
+              <span>{language === 'sw' ? 'Mifano ya Watahiniwa (Faragha ya Wanafunzi Wengine Imehifadhiwa):' : 'Sample Candidates (Other Student Names Masked):'}</span>
             </span>
             <span className="text-[11px] text-slate-500 font-mono">
               {studentResults.length} {language === 'sw' ? 'Watahiniwa Hewani' : 'Published Candidates'}
@@ -230,6 +231,7 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
             {quickStudents.map((st, idx) => {
               const isActive = activeResultId === st.id;
               const shortNum = st.examNumber.split('/')[1] || st.examNumber;
+              const displayName = isActive ? st.studentName : maskStudentName(st.studentName);
 
               return (
                 <button
@@ -240,13 +242,20 @@ export const PublicResultsSearchSection: React.FC<PublicResultsSearchSectionProp
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 border ${
                     isActive
                       ? 'bg-blue-900 text-amber-300 border-blue-900 shadow-md font-bold scale-102 ring-2 ring-blue-500/20'
-                      : 'bg-white hover:bg-blue-50/70 text-slate-800 border-slate-200/90 shadow-2xs'
+                      : 'bg-white hover:bg-blue-50/70 text-slate-700 border-slate-200/90 shadow-2xs'
                   }`}
                 >
                   <span className="font-mono text-[11px] text-blue-700 font-bold bg-blue-100/70 px-1.5 py-0.5 rounded-md">
                     {shortNum}
                   </span>
-                  <span>{st.studentName}</span>
+                  <span className={isActive ? 'font-black text-amber-200' : 'text-slate-600'}>
+                    {displayName}
+                  </span>
+                  {isActive && (
+                    <span className="px-1.5 py-0.2 rounded-md bg-amber-400 text-slate-950 text-[9px] font-black uppercase">
+                      Mtoto Wako
+                    </span>
+                  )}
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                       st.division === 'Division I'

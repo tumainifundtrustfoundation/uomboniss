@@ -503,6 +503,7 @@ export interface SchoolProfile {
   yearsOfService: string;
   postalAddress: string;
   email: string;
+  phone?: string;
   phones: string[];
   phonesFormatted: string[];
   location: string;

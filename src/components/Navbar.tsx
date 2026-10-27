@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import { SchoolLogo } from './SchoolLogo';
 import {
   Menu,
@@ -59,6 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { language, setLanguage } = useLanguage();
   const { user, userProfile, logout } = useAuth();
+  const { schoolProfile, isAdminLoggedIn } = useData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -116,15 +118,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-3 sm:gap-6 min-w-0">
             <span className="hidden md:inline-flex items-center gap-1.5 font-medium text-[#FFFFF0]/90 truncate">
               <MapPin className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-              <span>Marangu, Moshi, Kilimanjaro</span>
+              <span>{schoolProfile?.location || 'Marangu, Moshi, Kilimanjaro'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 text-[#FFFFF0]/90 font-medium shrink-0">
               <Phone className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-              <span>+255 782 558 127</span>
+              <span>{schoolProfile?.phone || (schoolProfile?.phones && schoolProfile.phones[0]) || '+255 782 558 127'}</span>
             </span>
             <span className="hidden lg:inline-flex items-center gap-1.5 text-[#FFFFF0]/80 truncate">
               <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
-              <span>uombonisec@gmail.com</span>
+              <span>{schoolProfile?.email || 'uombonisec@gmail.com'}</span>
             </span>
           </div>
 
@@ -185,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <PWAInstallButton variant="navbar" />
             </div>
             <span className="hidden sm:inline text-[11px] font-semibold tracking-wider text-[#C9A227]">
-              NECTA CENTRE S0486
+              {schoolProfile?.nectaCode ? `NECTA CENTRE ${schoolProfile.nectaCode}` : 'NECTA CENTRE S0486'}
             </span>
             <span className="hidden sm:inline text-[#FFFFF0]/30">|</span>
             <button
@@ -220,10 +222,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <SchoolLogo size="md" className="shrink-0" />
             <div className="min-w-0">
               <span className="block text-xs sm:text-base font-bold text-[#102A43] tracking-tight group-hover:text-[#102A43]/85 transition-colors truncate">
-                Uomboni Secondary School
+                {schoolProfile?.name || 'Uomboni Secondary School'}
               </span>
               <span className="block text-[10px] sm:text-[11px] text-[#C9A227] font-bold tracking-wide truncate">
-                Tujiendeleze sisi wenyewe
+                {schoolProfile?.slogan || schoolProfile?.sloganSw || 'Tujiendeleze sisi wenyewe'}
               </span>
             </div>
           </button>
@@ -308,12 +310,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-admin-portal-btn"
                 onClick={onOpenAdmin}
-                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black cursor-pointer shadow-xs"
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black cursor-pointer shadow-xs group"
                 title="Lango la Utawala & Udahili (Administration)"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-950" />
                   <span>Utawala</span>
+                  {(isAdminLoggedIn || userProfile?.role === 'admin') && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" title="Admin Active" />
+                  )}
                 </span>
               </button>
             )}
