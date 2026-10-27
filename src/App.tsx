@@ -227,7 +227,14 @@ function MainSchoolApp() {
 
   const handleOpenResultsEntry = () => {
     closeAllModals();
-    handleOpenAcademicPortal('teacher', true);
+    // Walimu lazima waingie kwa kutumia Firebase security
+    const isTeacherFirebaseAuthed = Boolean(
+      user &&
+      userProfile &&
+      userProfile.status === 'approved' &&
+      ['teacher', 'academic_master', 'admin'].includes(userProfile.role)
+    );
+    handleOpenAcademicPortal('teacher', isTeacherFirebaseAuthed);
   };
 
   const handleNavigate = (sectionId: string) => {

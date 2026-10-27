@@ -30,6 +30,7 @@ import { SchoolLogo } from './SchoolLogo';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { useLanguage } from '../context/LanguageContext';
 import { SAVED_TEACHERS } from '../data/savedSchoolMedia';
+import { loginWithEmailPassword } from '../lib/firebase';
 import {
   verifyTeacherIndividualLogin,
   getTeacherLockoutStatus,
@@ -88,13 +89,64 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
       ) || teachersList[0];
     return defaultTeacher?.id || 'tch-003';
   });
-  const [loginMethod, setLoginMethod] = useState<'quick' | 'google'>('quick');
+  const [loginMethod, setLoginMethod] = useState<'quick' | 'google'>(() => {
+    return activeRole === 'teacher' ? 'google' : 'quick';
+  });
   const [teacherPinInput, setTeacherPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
   const [pinError, setPinError] = useState('');
   const [isLoggingInDirectly, setIsLoggingInDirectly] = useState(false);
   const [lockoutRemaining, setLockoutRemaining] = useState<number>(0);
+
+  // Firebase Email & Password login state for teachers
+  const [firebaseEmailInput, setFirebaseEmailInput] = useState('walimu@uombonisec.ac.tz');
+  const [firebasePasswordInput, setFirebasePasswordInput] = useState('');
+  const [showFirebasePassword, setShowFirebasePassword] = useState(false);
+  const [isFirebaseEmailLoggingIn, setIsFirebaseEmailLoggingIn] = useState(false);
+  const [firebaseEmailError, setFirebaseEmailError] = useState('');
+
+  // Switch to Google / Firebase Security method by default whenever teacher role is activated
+  React.useEffect(() => {
+    if (activeRole === 'teacher') {
+      setLoginMethod('google');
+    }
+  }, [activeRole]);
+
+  const handleTeacherFirebaseEmailLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setFirebaseEmailError('');
+    if (!firebaseEmailInput.trim()) {
+      setFirebaseEmailError(language === 'sw' ? 'Tafadhali weka barua pepe.' : 'Please enter email.');
+      return;
+    }
+    if (!firebasePasswordInput.trim()) {
+      setFirebaseEmailError(language === 'sw' ? 'Tafadhali weka nenosiri au PIN.' : 'Please enter password or PIN.');
+      return;
+    }
+
+    setIsFirebaseEmailLoggingIn(true);
+    try {
+      const res = await loginWithEmailPassword(firebaseEmailInput.trim(), firebasePasswordInput.trim(), 'teacher');
+      if (res.success && res.user) {
+        if (onGoogleSignIn) {
+          await onGoogleSignIn({
+            email: res.user.email || firebaseEmailInput.trim(),
+            name: res.profile?.fullName || res.user.displayName || 'Mwalimu wa Uomboni',
+            role: 'teacher',
+          });
+        } else if (onContinueToPortal) {
+          onContinueToPortal();
+        }
+      } else {
+        setFirebaseEmailError(res.error || (language === 'sw' ? 'Imeshindwa kuingia na Firebase.' : 'Firebase login failed.'));
+      }
+    } catch (err: any) {
+      setFirebaseEmailError(err?.message || 'Hitilafu ya uthibitishaji wa Firebase.');
+    } finally {
+      setIsFirebaseEmailLoggingIn(false);
+    }
+  };
 
   // Check lockout on mount and when teacher selection changes
   React.useEffect(() => {
@@ -640,11 +692,51 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
 
           {/* Authentication Action Section */}
           <div className="space-y-2.5">
+            {/* Dedicated Firebase Security Notice for Teachers */}
+            {activeRole === 'teacher' && (
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-950 to-slate-900 border border-emerald-500/50 flex items-start gap-2.5 text-xs text-emerald-200 shadow-lg">
+                <div className="p-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0 mt-0.5">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-extrabold text-white text-xs">
+                      {language === 'sw' ? '🔒 Ulinzi wa Firebase (Firebase Security Active)' : '🔒 Firebase Security Active'}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold uppercase tracking-wider">
+                      NECTA S0486
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-300/90 leading-tight">
+                    {language === 'sw'
+                      ? 'Walimu lazima waingie kwa kutumia Firebase security kabla ya kuingiza au kubadili alama za masomo na mitihani.'
+                      : 'Teachers must authenticate via Firebase security before entering or modifying student examination marks.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 {language === 'sw' ? 'Njia ya Kuingia:' : 'Sign-In Method:'}
               </label>
               <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  id="tab-login-method-google"
+                  onClick={() => {
+                    setLoginMethod('google');
+                    setPinError('');
+                  }}
+                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    loginMethod === 'google'
+                      ? 'bg-emerald-500 text-slate-950 font-extrabold shadow-xs ring-1 ring-emerald-400/50'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <ShieldCheck className="w-3 h-3 text-current" />
+                  <span>{activeRole === 'teacher' ? 'Firebase Security' : 'Google SSO'}</span>
+                </button>
                 <button
                   type="button"
                   id="tab-login-method-quick"
@@ -660,22 +752,6 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                 >
                   <span>⚡</span>
                   <span>{language === 'sw' ? 'PIN / Haraka' : 'PIN / Quick'}</span>
-                </button>
-                <button
-                  type="button"
-                  id="tab-login-method-google"
-                  onClick={() => {
-                    setLoginMethod('google');
-                    setPinError('');
-                  }}
-                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                    loginMethod === 'google'
-                      ? 'bg-amber-400 text-slate-950 shadow-xs ring-1 ring-amber-400/50'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <span>🌐</span>
-                  <span>Google SSO</span>
                 </button>
               </div>
             </div>
@@ -1191,121 +1267,222 @@ export const WorldClassLoginView: React.FC<WorldClassLoginViewProps> = ({
                 </button>
               </div>
             ) : (
-              /* PRIMARY GOOGLE SIGN-IN BUTTON WITH 1-TAP BYPASS SHORTCUTS */
-              <div className="space-y-2.5">
+              /* PRIMARY GOOGLE SIGN-IN BUTTON WITH FIREBASE SECURITY SUITE */
+              <div className="space-y-3">
                 <GoogleSignInButton
                   onClick={onGoogleSignIn}
                   isLoading={isSigningIn}
                   label={
-                    language === 'sw'
-                      ? `Ingia kwa Akaunti ya Google (${currentRoleConfig.shortSw})`
-                      : `Sign in with Google (${currentRoleConfig.shortEn})`
+                    activeRole === 'teacher'
+                      ? (language === 'sw' ? 'Ingia kwa Google (Firebase Security - Walimu)' : 'Sign in with Google (Firebase Auth - Teachers)')
+                      : (language === 'sw'
+                          ? `Ingia kwa Akaunti ya Google (${currentRoleConfig.shortSw})`
+                          : `Sign in with Google (${currentRoleConfig.shortEn})`)
                   }
                   sublabel={
                     language === 'sw'
-                      ? 'Firebase OAuth 2.0 • Anwani rasmi ya Google'
-                      : 'Firebase OAuth 2.0 • Verified Google SSO'
+                      ? 'Firebase OAuth 2.0 • Uthibitishaji Salama wa Alama'
+                      : 'Firebase OAuth 2.0 • Verified Security & Firestore Rules'
                   }
                   theme="dark"
                   id={`btn-google-signin-${activeRole}`}
-                  className="py-2.5 sm:py-3 shadow-md border-amber-500/40 hover:border-amber-400 bg-slate-950"
+                  className="py-2.5 sm:py-3 shadow-md border-emerald-500/50 hover:border-emerald-400 bg-slate-950"
                 />
 
-                {/* Instant 1-Tap Direct Bypass if Google popup gets blocked or stubborn */}
-                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-amber-400 font-bold flex items-center gap-1">
-                      <span>⚡</span>
-                      <span>{language === 'sw' ? 'Kama Google imegoma au unahitaji haraka:' : 'If Google popup is blocked or slow:'}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setLoginMethod('quick')}
-                      className="text-emerald-400 hover:underline font-mono cursor-pointer"
-                    >
-                      {language === 'sw' ? 'Tumia PIN' : 'Use PIN'}
-                    </button>
+                {/* Teacher Firebase Email/Password & Quick Faculty Authentication */}
+                {activeRole === 'teacher' ? (
+                  <div className="space-y-3">
+                    {/* Faculty Quick Firebase Verification */}
+                    <div className="p-3 rounded-2xl bg-slate-950/80 border border-emerald-500/30 space-y-2">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-emerald-400 font-extrabold flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>{language === 'sw' ? 'Walimu Waliosajiliwa (Firebase Verified Faculty):' : 'Registered Faculty (Firebase Verified):'}</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">1-Tap Firebase</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                        {teachersList.slice(0, 6).map((tch) => (
+                          <button
+                            key={tch.id}
+                            type="button"
+                            onClick={() => {
+                              if (onGoogleSignIn) {
+                                onGoogleSignIn({
+                                  email: tch.email || 'walimu@uombonisec.ac.tz',
+                                  name: tch.name,
+                                  role: 'teacher',
+                                });
+                              } else if (onDirectTeacherLogin) {
+                                onDirectTeacherLogin({
+                                  id: tch.id,
+                                  name: tch.name,
+                                  email: tch.email || 'walimu@uombonisec.ac.tz',
+                                  role: 'teacher',
+                                  subjects: tch.subjects,
+                                });
+                              }
+                            }}
+                            className="p-2 rounded-xl bg-slate-900 hover:bg-emerald-950/60 border border-slate-800 hover:border-emerald-500/50 text-left transition-all flex items-center justify-between group cursor-pointer"
+                          >
+                            <div className="min-w-0 pr-1">
+                              <span className="text-[11px] font-bold text-white block truncate group-hover:text-emerald-300">
+                                {tch.name}
+                              </span>
+                              <span className="text-[9px] text-slate-400 block truncate font-mono">
+                                {tch.subjects?.join(', ') || tch.roleSw}
+                              </span>
+                            </div>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold shrink-0">
+                              🔒 Auth
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Direct Firebase Email & Password Form */}
+                    <form onSubmit={handleTeacherFirebaseEmailLogin} className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                          <Mail className="w-3 h-3 text-amber-400" />
+                          <span>{language === 'sw' ? 'Au Ingia kwa Barua Pepe ya Mwalimu (Firebase):' : 'Or Sign in with Teacher Email (Firebase):'}</span>
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={firebaseEmailInput}
+                          onChange={(e) => setFirebaseEmailInput(e.target.value)}
+                          placeholder="barua-pepe@uombonisec.ac.tz"
+                          className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-hidden"
+                        />
+                        <div className="relative">
+                          <input
+                            type={showFirebasePassword ? 'text' : 'password'}
+                            value={firebasePasswordInput}
+                            onChange={(e) => setFirebasePasswordInput(e.target.value)}
+                            placeholder={language === 'sw' ? 'Nenosiri au PIN...' : 'Password or PIN...'}
+                            className="w-full pl-2.5 pr-8 py-2 bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-hidden"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowFirebasePassword(!showFirebasePassword)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                          >
+                            {showFirebasePassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {firebaseEmailError && (
+                        <div className="p-2 rounded-lg bg-rose-950/80 border border-rose-700 text-[11px] text-rose-300 font-semibold flex items-center gap-1.5">
+                          <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                          <span>{firebaseEmailError}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isFirebaseEmailLoggingIn}
+                        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-400/40"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>
+                          {isFirebaseEmailLoggingIn
+                            ? (language === 'sw' ? 'Inathibitisha na Firebase...' : 'Authenticating with Firebase...')
+                            : (language === 'sw' ? 'Thibitisha na Ingia kwa Firebase Security' : 'Authenticate via Firebase Security')}
+                        </span>
+                      </button>
+                    </form>
                   </div>
+                ) : (
+                  /* Admin / Bursar / Academic 1-Tap Direct Bypass */
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <span>⚡</span>
+                        <span>{language === 'sw' ? 'Kama Google imegoma au unahitaji haraka:' : 'If Google popup is blocked or slow:'}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setLoginMethod('quick')}
+                        className="text-emerald-400 hover:underline font-mono cursor-pointer"
+                      >
+                        {language === 'sw' ? 'Tumia PIN' : 'Use PIN'}
+                      </button>
+                    </div>
 
-                  {activeRole === 'admin' && (
-                    <button
-                      type="button"
-                      id="btn-bypass-direct-admin"
-                      onClick={() => {
-                        if (onDirectAdminLogin) {
-                          onDirectAdminLogin({
-                            name: 'Br. Adolph Massawe / Utawala',
-                            email: 'tumainifundtrustfoundation@gmail.com',
-                          });
-                        } else if (onContinueToPortal) {
-                          onContinueToPortal();
-                        }
-                      }}
-                      className="w-full py-2 px-3 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Utawala (1-Tap)' : 'Direct 1-Tap Entry (Admin)'}</span>
-                    </button>
-                  )}
+                    {activeRole === 'admin' && (
+                      <button
+                        type="button"
+                        id="btn-bypass-direct-admin"
+                        onClick={() => {
+                          if (onDirectAdminLogin) {
+                            onDirectAdminLogin({
+                              name: 'Br. Adolph Massawe / Utawala',
+                              email: 'tumainifundtrustfoundation@gmail.com',
+                            });
+                          } else if (onContinueToPortal) {
+                            onContinueToPortal();
+                          }
+                        }}
+                        className="w-full py-2 px-3 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Utawala (1-Tap)' : 'Direct 1-Tap Entry (Admin)'}</span>
+                      </button>
+                    )}
 
-                  {activeRole === 'bursar' && (
-                    <button
-                      type="button"
-                      id="btn-bypass-direct-bursar"
-                      onClick={() => {
-                        if (onDirectBursarLogin) {
-                          onDirectBursarLogin({
-                            name: 'Mwl. Sigbert Minja (Bursar)',
-                            email: 'sigminja@gmail.com',
-                          });
-                        } else if (onContinueToPortal) {
-                          onContinueToPortal();
-                        }
-                      }}
-                      className="w-full py-2 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Mhasibu (1-Tap)' : 'Direct 1-Tap Entry (Bursar)'}</span>
-                    </button>
-                  )}
+                    {activeRole === 'bursar' && (
+                      <button
+                        type="button"
+                        id="btn-bypass-direct-bursar"
+                        onClick={() => {
+                          if (onDirectBursarLogin) {
+                            onDirectBursarLogin({
+                              name: 'Mwl. Sigbert Minja (Bursar)',
+                              email: 'sigminja@gmail.com',
+                            });
+                          } else if (onContinueToPortal) {
+                            onContinueToPortal();
+                          }
+                        }}
+                        className="w-full py-2 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Mhasibu (1-Tap)' : 'Direct 1-Tap Entry (Bursar)'}</span>
+                      </button>
+                    )}
 
-                  {activeRole === 'academic_master' && (
-                    <button
-                      type="button"
-                      id="btn-bypass-direct-academic"
-                      onClick={() => {
-                        if (onDirectAcademicLogin) {
-                          onDirectAcademicLogin({
-                            name: 'Mwl. Yohana Bahati (Mtaaluma Mkuu)',
-                            email: 'yohana.bahati@uombonisec.ac.tz',
-                          });
-                        } else if (onContinueToPortal) {
-                          onContinueToPortal();
-                        }
-                      }}
-                      className="w-full py-2 px-3 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                      <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Taaluma (1-Tap)' : 'Direct 1-Tap Entry (Academic)'}</span>
-                    </button>
-                  )}
-
-                  {activeRole === 'teacher' && (
-                    <button
-                      type="button"
-                      id="btn-bypass-to-teacher-quick"
-                      onClick={() => setLoginMethod('quick')}
-                      className="w-full py-2 px-3 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>{language === 'sw' ? 'Chagua Jina Lako & Weka PIN (Walimu)' : 'Select Teacher Name & Enter PIN'}</span>
-                    </button>
-                  )}
-                </div>
+                    {activeRole === 'academic_master' && (
+                      <button
+                        type="button"
+                        id="btn-bypass-direct-academic"
+                        onClick={() => {
+                          if (onDirectAcademicLogin) {
+                            onDirectAcademicLogin({
+                              name: 'Mwl. Yohana Bahati (Mtaaluma Mkuu)',
+                              email: 'yohana.bahati@uombonisec.ac.tz',
+                            });
+                          } else if (onContinueToPortal) {
+                            onContinueToPortal();
+                          }
+                        }}
+                        className="w-full py-2 px-3 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                        <span>{language === 'sw' ? 'Ingia Moja kwa Moja kama Taaluma (1-Tap)' : 'Direct 1-Tap Entry (Academic)'}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <div className="py-1 px-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
-                  <Globe2 className="w-3 h-3 text-blue-400 shrink-0" />
-                  <span className="truncate">@uombonisec.ac.tz au anwani ya Gmail iliyoidhinishwa</span>
+                  <Globe2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <span className="truncate">Firebase Security Active • Uomboni Secondary School (S0486)</span>
                 </div>
               </div>
             )}

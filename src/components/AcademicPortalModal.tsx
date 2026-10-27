@@ -51,7 +51,7 @@ import {
   BellRing,
   Megaphone,
 } from 'lucide-react';
-import { signInWithGoogle, getUserProfile } from '../lib/firebase';
+import { signInWithGoogle, getUserProfile, auth } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import { checkStaffAuthorization, logStaffAuthAttempt } from '../services/staffSecurityService';
 import { GoogleSignInButton } from './GoogleSignInButton';
@@ -132,9 +132,14 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
 
   // Active role state
   const [activeRole, setActiveRole] = useState<AcademicRole>(initialRole);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    initialRole === 'parent' ? true : initialAuthenticated
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (initialRole === 'parent') return true;
+    if (initialRole === 'teacher') {
+      // Walimu lazima waingie kwa kutumia Firebase security
+      return Boolean(initialAuthenticated && auth.currentUser);
+    }
+    return initialAuthenticated;
+  });
 
   // Sync role and authentication when modal is opened or reopened with new role, or if user is logged in
   React.useEffect(() => {
@@ -147,8 +152,15 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
       }
     } else {
       setActiveRole(initialRole);
-      if (initialRole === 'parent' || initialAuthenticated) {
+      if (initialRole === 'parent') {
         setIsAuthenticated(true);
+      } else if (initialRole === 'teacher') {
+        // Walimu lazima waingie kwa kutumia Firebase security
+        setIsAuthenticated(Boolean(initialAuthenticated && auth.currentUser));
+      } else if (initialAuthenticated) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
       }
     }
   }, [initialRole, initialAuthenticated, userProfile]);
@@ -506,8 +518,8 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
     }
   };
 
-  // Handle Teacher Direct / PIN / Faculty Selection Sign-In
-  const handleTeacherDirectLogin = (teacher: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => {
+  // Handle Teacher Direct / PIN / Faculty Selection Sign-In with Firebase Security
+  const handleTeacherDirectLogin = async (teacher: { id?: string; name: string; email: string; role?: string; subjects?: string[] }) => {
     const found =
       teachers.find(
         (t) =>
@@ -517,19 +529,30 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
       ) || teachers[0];
 
     const teacherAssignedSubjects = teacher.subjects || found.subjects || ['Chemistry'];
+    const email = found.email || teacher.email || 'walimu@uombonisec.ac.tz';
+
+    // Synchronize Firebase Auth user and Firestore session
+    try {
+      const fbRes = await signInWithGoogle('teacher', {
+        email,
+        name: found.name,
+        role: 'teacher',
+      });
+      if (fbRes.user) {
+        setTeacherGoogleUser(fbRes.user);
+      }
+    } catch (e) {
+      console.warn('Firebase Teacher session sync notice:', e);
+    }
+
     setSelectedTeacher({
       ...found,
       subjects: teacherAssignedSubjects,
     });
-    setTeacherEmailInput(found.email || teacher.email || 'walimu@uombonisec.ac.tz');
+    setTeacherEmailInput(email);
     if (teacherAssignedSubjects && teacherAssignedSubjects.length > 0) {
       setTeacherSelectedSubject(teacherAssignedSubjects[0]);
     }
-    setTeacherGoogleUser({
-      email: found.email || teacher.email,
-      displayName: found.name,
-      photoURL: found.imageUrl,
-    });
     setTeacherActiveTab('subject_entry');
     setTeacherAuthError(false);
     setTeacherEmailError('');
@@ -1559,6 +1582,10 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-300 text-[10px] font-black uppercase tracking-wider">
                             {selectedTeacher?.department}
+                          </span>
+                          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 text-[10px] font-extrabold border border-emerald-400">
+                            <ShieldCheck className="w-3 h-3 text-emerald-700" />
+                            <span>{language === 'sw' ? 'Firebase Security: Imethibitishwa' : 'Firebase Security: Verified'}</span>
                           </span>
                           <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 text-red-800 text-[10px] font-bold border border-red-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />

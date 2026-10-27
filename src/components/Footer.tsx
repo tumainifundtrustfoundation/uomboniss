@@ -69,12 +69,11 @@ export const Footer: React.FC<FooterProps> = ({
   };
 
   const handleOpenResultsEntryAction = () => {
+    window.location.hash = '#uingizaji-matokeo';
     if (onOpenResultsEntry) {
       onOpenResultsEntry();
     } else if (onOpenAcademicPortal) {
       onOpenAcademicPortal();
-    } else {
-      window.location.hash = '#uingizaji-matokeo';
     }
   };
 
@@ -286,12 +285,17 @@ export const Footer: React.FC<FooterProps> = ({
                 <button
                   onClick={handleOpenResultsEntryAction}
                   className="inline-flex items-start gap-2 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer text-left group"
-                  title="Lango Rasmi la Uingizaji wa Alama za Masomo kwa Walimu"
+                  title="Lango Rasmi la Uingizaji wa Alama za Masomo kwa Walimu (Firebase Security Enforced)"
                 >
                   <Edit3 className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0 mt-0.5" />
                   <div className="flex flex-col">
-                    <span className="font-bold text-amber-300 group-hover:text-white">Uingizaji wa Matokeo</span>
-                    <span className="text-[10px] text-[#FFFFF0]/70 font-normal">Kuweka alama za masomo (Walimu)</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-amber-300 group-hover:text-white">Uingizaji wa Matokeo</span>
+                      <span className="text-[8px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-bold uppercase tracking-wider">
+                        Firebase
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-emerald-300/80 font-normal">🔒 Ulinzi wa Firebase (Walimu Pekee)</span>
                   </div>
                 </button>
               </li>
@@ -358,25 +362,38 @@ export const Footer: React.FC<FooterProps> = ({
 
               {/* Dedicated Uingizaji wa Matokeo Button (Selector 1) */}
               <button
+                type="button"
                 onClick={handleOpenResultsEntryAction}
-                className="w-full text-left px-3 py-2.5 rounded-md bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-xs font-bold text-amber-300 flex items-center justify-between transition-colors cursor-pointer shadow-xs group"
-                title="Uingizaji wa Alama & Matokeo ya Mitihani kwa Walimu"
+                className="w-full text-left p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-500/50 hover:border-emerald-400 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm group"
+                title="Lango Rasmi la Walimu Kuingiza Alama za Mitihani - Ulinzi wa Firebase (Firebase Security Enforced)"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="flex items-center gap-1.5 font-bold text-amber-300 group-hover:text-white">
-                    <FileSpreadsheet className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                    <span>Ingiza Matokeo</span>
-                  </span>
-                  <span className="text-[10px] text-[#FFFFF0]/70 font-normal pl-5">
-                    Lango la Walimu wa Masomo
-                  </span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-md bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-stone-900 transition-colors">
+                    <FileSpreadsheet className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-amber-300 group-hover:text-white transition-colors">
+                        Ingiza Matokeo
+                      </span>
+                      <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full bg-amber-400 text-stone-950 shrink-0">
+                        Walimu
+                      </span>
+                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0 flex items-center gap-1 font-mono">
+                        <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" /> Firebase
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-emerald-300/90 font-medium truncate flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5 text-emerald-400 shrink-0" /> Ulinzi wa Firebase • Kuweka alama &amp; mitihani
+                    </span>
+                  </div>
                 </div>
-                <Edit3 className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
+                <Edit3 className="w-3.5 h-3.5 text-emerald-300 group-hover:translate-x-0.5 group-hover:scale-110 transition-all shrink-0 ml-1" />
               </button>
             </div>
 
             <p className="text-[11px] text-[#FFFFF0]/60 pt-1 leading-relaxed">
-              Official school records and teacher entries are strictly access-controlled.
+              Official school records and teacher entries are strictly access-controlled via Firebase Security.
             </p>
           </div>
 
