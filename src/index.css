@@ -693,7 +693,6 @@
 
 .liquid-btn {
   position: relative;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
@@ -701,6 +700,10 @@
   letter-spacing: -0.01em;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 2px rgba(16, 42, 67, 0.08);
+}
+
+.liquid-btn:not(.hidden) {
+  display: inline-flex;
 }
 
 .liquid-btn:hover {

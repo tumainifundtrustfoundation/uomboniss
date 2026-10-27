@@ -274,21 +274,28 @@
         }
       }
 
-      /* Center School Crest Logo */
+      /* Center School Crest Logo with Rich Blue Background */
       .uomboni-loader-logo-wrapper {
         position: relative;
         z-index: 3;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 165px;
-        height: 165px;
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #1E40AF 0%, #102A43 75%, #0B1B2B 100%);
+        border: 2.5px solid #FBBF24;
+        box-shadow: 0 0 25px rgba(30, 58, 138, 0.6), inset 0 0 15px rgba(10, 28, 46, 0.85);
+        padding: 10px;
+        box-sizing: border-box;
       }
 
       @media (min-width: 768px) {
         .uomboni-loader-logo-wrapper {
-          width: 205px;
-          height: 205px;
+          width: 215px;
+          height: 215px;
+          padding: 12px;
         }
       }
 
@@ -474,7 +481,7 @@
       }
     </style>
   </head>
-  <body class="font-sans antialiased uomboni-loader-locked">
+  <body class="font-sans antialiased overflow-x-hidden">
     <script>
       // Immediately purge deprecated static caches to prevent stale React hook desync
       try {
@@ -512,14 +519,10 @@
           </div>
         </div>
 
-        <!-- Typography & Loading Status -->
+        <!-- Typography & Loading Progress -->
         <div class="uomboni-loader-text-group">
           <h1 class="uomboni-loader-title">SHULE YA SEKONDARI UOMBONI</h1>
           <p class="uomboni-loader-motto">&ldquo;TUJIENDELEZE SISI WENYEWE&rdquo; &bull; MARANGU, MOSHI</p>
-          <div class="uomboni-loader-status-badge">
-            <span class="uomboni-loader-spinner-dot" aria-hidden="true"></span>
-            <span id="uomboni-loader-status-label" class="uomboni-loader-status-text">Inapakia mfumo wa shule... (30s)</span>
-          </div>
 
           <!-- 30 Seconds Progress Bar & Live Countdown -->
           <div class="uomboni-loader-progress-box">
@@ -527,17 +530,9 @@
               <div id="uomboni-loader-progress-bar" class="uomboni-loader-progress-fill"></div>
             </div>
             <div class="uomboni-loader-meta-row">
-              <span id="uomboni-loader-timer-text">Sekunde 30 zilizobaki</span>
+              <span id="uomboni-loader-timer-text">Inatayarisha...</span>
               <span id="uomboni-loader-percent-text">0%</span>
             </div>
-            <button
-              id="uomboni-loader-skip"
-              type="button"
-              class="uomboni-loader-skip-btn"
-              onclick="if(window.uomboniForceDismissLoader){window.uomboniForceDismissLoader();}"
-            >
-              Fungua Tovuti moja kwa moja &rarr;
-            </button>
           </div>
         </div>
       </div>
@@ -555,9 +550,8 @@
         var progressBar = document.getElementById('uomboni-loader-progress-bar');
         var timerText = document.getElementById('uomboni-loader-timer-text');
         var percentText = document.getElementById('uomboni-loader-percent-text');
-        var statusLabel = document.getElementById('uomboni-loader-status-label');
 
-        var TOTAL_DURATION_MS = 30000; // 30 sekunde kamili kama ilivyoombwa
+        var TOTAL_DURATION_MS = 1200; // Fast smooth entrance
         var startTime = Date.now();
         var isDismissed = false;
         var intervalId = null;
@@ -573,7 +567,6 @@
           if (progressBar) progressBar.style.width = '100%';
           if (percentText) percentText.textContent = '100%';
           if (timerText) timerText.textContent = 'Tayari!';
-          if (statusLabel) statusLabel.textContent = 'Mfumo u tayari!';
 
           loader.classList.add('uomboni-loader-fade-out');
           document.documentElement.classList.remove('uomboni-loader-locked');
@@ -583,7 +576,7 @@
             if (loader && loader.parentNode) {
               loader.parentNode.removeChild(loader);
             }
-          }, 650);
+          }, 500);
         }
 
         function updateProgress() {
@@ -600,10 +593,7 @@
             percentText.textContent = percent + '%';
           }
           if (timerText) {
-            timerText.textContent = remainingSec > 0 ? (remainingSec + 's zilizobaki') : 'Tayari!';
-          }
-          if (statusLabel) {
-            statusLabel.textContent = remainingSec > 0 ? ('Inapakia mfumo wa shule... (' + remainingSec + 's)') : 'Mfumo u tayari!';
+            timerText.textContent = percent >= 100 ? 'Tayari!' : 'Inatayarisha...';
           }
 
           if (elapsed >= TOTAL_DURATION_MS) {
@@ -611,20 +601,14 @@
           }
         }
 
-        intervalId = setInterval(updateProgress, 100);
+        intervalId = setInterval(updateProgress, 60);
         updateProgress();
 
-        // Dismiss function: waits for 30s by default unless force parameter is true
-        window.uomboniDismissLoader = function(force) {
-          if (force === true) {
-            forceDismiss();
-          }
-        };
-
+        window.uomboniDismissLoader = forceDismiss;
         window.uomboniForceDismissLoader = forceDismiss;
 
-        // Guaranteed safety timeout at 30.5 seconds
-        setTimeout(forceDismiss, 30500);
+        // Guaranteed safety timeout at 1.5 seconds
+        setTimeout(forceDismiss, 1500);
       })();
     </script>
 

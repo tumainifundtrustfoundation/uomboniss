@@ -169,48 +169,47 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
           {/* Right Column: About Narrative + Main Motto Banner */}
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#102A43]/10 text-[#102A43] text-xs font-bold tracking-wider uppercase mb-3 border border-[#102A43]/20">
-                <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>{language === 'sw' ? 'Kuhusu Shule ya Sekondari Uomboni' : 'About Uomboni Secondary School'}</span>
-              </div>
+              <span className="text-xs font-semibold text-[#C9A227] tracking-wider uppercase block mb-2">
+                {language === 'sw' ? 'Kuhusu Shule Yetu' : 'About Our School'}
+              </span>
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#102A43] tracking-tight leading-[1.2]">
                 {language === 'sw'
-                  ? 'Taasisi ya Elimu Bora, Malezi ya Kiroho na Maadili Mema'
-                  : 'A Sanctuary of Academic Competence, Spiritual Growth & Moral Discipline'}
+                  ? 'Elimu Bora, Malezi ya Kiroho na Maadili Mema'
+                  : 'Quality Education, Moral Formation & Discipline'}
               </h2>
-              <p className="mt-4 text-sm sm:text-base text-slate-700 leading-[1.8] font-normal">
+              <p className="mt-4 text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
                 {language === 'sw'
-                  ? 'Shule ya Sekondari Uomboni ni shule ya kutwa na bweni kwa wavulana na wasichana (Kidato cha 1 hadi 4) iliyopo katika mazingira tulivu, hewa safi na yenye uoto mzuri wa asili ya Marangu West kwenye mteremko wa Mlima Kilimanjaro. Chini ya usimamizi wa Jimbo Katoliki la Moshi, tunajizatiti kutoa elimu yenye viwango vya juu vya kitaaluma inayomjenga mwanafunzi kifikra, kimaadili, na kiroho.'
-                  : 'Uomboni Secondary School is an established co-educational Ordinary Level (Forms 1–4) day and boarding school situated in the tranquil, intellectually stimulating climate of Marangu West on the slopes of Mount Kilimanjaro. Under the auspices of the Catholic Diocese of Moshi, we are dedicated to providing accessible, high-quality secondary education rooted in academic rigor, self-discipline, and moral integrity.'}
+                  ? 'Shule ya Sekondari Uomboni ni shule ya kutwa na bweni kwa wavulana na wasichana (Kidato cha 1 hadi 4) iliyopo Marangu West, Mkoani Kilimanjaro. Chini ya Jimbo Katoliki la Moshi, tunatoa elimu inayomjenga mwanafunzi kitaaluma, kinidhamu na kiroho ili kufikia ufaulu wa juu na kuwa raia mwema.'
+                  : 'Uomboni Secondary School is a co-educational day and boarding secondary school (Forms 1–4) situated in Marangu West, Kilimanjaro. Owned and managed by the Catholic Diocese of Moshi, we provide holistic secondary education focused on academic competence, strong Christian values, and student discipline.'}
               </p>
             </div>
 
-            {/* Prominent Official Document Identity Card */}
+            {/* Official School Identity Card */}
             <div className="p-5 sm:p-6 rounded-xl bg-[#102A43] text-white border border-[#C9A227]/40 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
-                  {language === 'sw' ? '★ KAULIMBIU & UTAMBULISHO RASMI (OFFICIAL IDENTITY)' : '★ OFFICIAL SCHOOL IDENTITY & MOTTO'}
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
+                  {language === 'sw' ? 'Kauli Mbiu na Dira ya Shule' : 'School Motto & Vision'}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setShowFlyerModal(true)}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-amber-400/30 transition-all cursor-pointer"
-                    title={language === 'sw' ? 'Bofya kutazama Brosha Rasmi ya Shule' : 'Click to view official school brochure'}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 hover:text-amber-200 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-amber-400/30 transition-colors cursor-pointer"
+                    title={language === 'sw' ? 'Tazama Brosha ya Shule' : 'View School Flyer'}
                   >
                     <Eye className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{language === 'sw' ? 'Tazama Brosha' : 'View Brochure'}</span>
+                    <span>{language === 'sw' ? 'Brosha' : 'Brochure'}</span>
                   </button>
                   <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-400 text-slate-950 font-bold">
-                    Catholic Diocese of Moshi
+                    Jimbo Katoliki la Moshi
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-amber-400 tracking-widest block">
-                    {language === 'sw' ? 'Kauli Mbiu (Motto)' : 'Official Motto'}
+                  <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block">
+                    {language === 'sw' ? 'Kauli Mbiu (Motto)' : 'School Motto'}
                   </span>
                   <p className="font-serif text-2xl sm:text-3xl font-black text-amber-300 tracking-wide mt-0.5">
                     “Tujiendeleze sisi wenyewe.”
@@ -218,22 +217,22 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10 text-xs">
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                     <span className="text-[10px] font-bold text-amber-300 uppercase block">
                       {language === 'sw' ? 'Dira (Vision)' : 'Vision'}
                     </span>
-                    <p className="text-white/90 font-medium mt-0.5 leading-snug">
+                    <p className="text-white/90 font-medium mt-1 leading-snug">
                       {language === 'sw'
                         ? '“Kuwa kitovu cha ubora katika kutoa elimu bora nchini.”'
                         : '“To be the centre of excellence in providing quality education in the country.”'}
                     </p>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                     <span className="text-[10px] font-bold text-amber-300 uppercase block">
                       {language === 'sw' ? 'Dhima (Mission)' : 'Mission'}
                     </span>
-                    <p className="text-white/90 font-medium mt-0.5 leading-snug">
+                    <p className="text-white/90 font-medium mt-1 leading-snug">
                       {language === 'sw'
                         ? '“Kutoa elimu bora na ufaulu wa juu wa kitaaluma wenye tija.”'
                         : '“To provide quality education and impressive academic performance.”'}
@@ -242,7 +241,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, onOpenAd
                 </div>
 
                 <p className="text-[11px] text-amber-200/90 font-medium pt-1">
-                  Misingi ya Shule: <span className="font-black text-white">PRAYER AND WORK · EFFICIENCY · TEAM WORK · DISCIPLINE · ACCOUNTABILITY · TRANSPARENCY</span>
+                  Misingi: <span className="font-semibold text-white">Sala na Kazi (Ora et Labora) · Nidhamu · Ushirikiano · Uwazi</span>
                 </p>
               </div>
             </div>

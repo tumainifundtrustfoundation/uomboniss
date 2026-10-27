@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SchoolLogo } from './components/SchoolLogo';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { AboutSection } from './components/AboutSection';
 import { AcademicsSection } from './components/AcademicsSection';
 import { LeadershipTeachersSection } from './components/LeadershipTeachersSection';
 import { GallerySection } from './components/GallerySection';
@@ -395,6 +396,7 @@ function MainSchoolApp() {
   // Section Observer for Dynamic SEO on Scroll
   useEffect(() => {
     const sectionIds = [
+      'about',
       'academics',
       'teachers',
       'gallery',
@@ -429,7 +431,7 @@ function MainSchoolApp() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#102A43] flex flex-col items-center justify-center p-6 text-white text-center">
-        <div className="w-16 h-16 mb-4 animate-pulse bg-white p-2 rounded-lg">
+        <div className="w-16 h-16 mb-4 animate-pulse bg-[#1E3A8A] border border-[#C9A227]/40 p-2 rounded-full shadow-lg flex items-center justify-center">
           <SchoolLogo className="w-full h-full object-contain" />
         </div>
         <h2 className="text-xl font-bold tracking-tight text-white">
@@ -438,9 +440,8 @@ function MainSchoolApp() {
         <p className="text-xs text-[#C9A227] mt-1 font-semibold">
           Tujiendeleze sisi wenyewe · NECTA S0486
         </p>
-        <div className="mt-6 flex items-center gap-2 text-xs text-[#FFFFF0]/80">
-          <Loader2 className="w-4 h-4 animate-spin text-[#C9A227]" />
-          <span>Inapakia mfumo wa shule...</span>
+        <div className="mt-6 flex items-center justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-[#C9A227]" />
         </div>
       </div>
     );
@@ -555,7 +556,15 @@ function MainSchoolApp() {
           }}
         />
 
-
+        {/* 2. About Uomboni Secondary School */}
+        <AboutSection
+          onNavigate={handleNavigate}
+          onOpenAdmissions={() => {
+            closeAllModals();
+            setActiveView('admission-documents');
+            window.location.hash = '#admission-documents';
+          }}
+        />
 
         {/* 3. Academics & Performance */}
         <AcademicsSection

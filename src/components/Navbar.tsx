@@ -100,17 +100,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { id: 'home', label: language === 'sw' ? 'Mwanzo' : 'Home' },
+    { id: 'about', label: language === 'sw' ? 'Kuhusu' : 'About' },
     { id: 'academics', label: language === 'sw' ? 'Taaluma' : 'Academics' },
     { id: 'teachers', label: language === 'sw' ? 'Walimu' : 'Teachers' },
     { id: 'gallery', label: language === 'sw' ? 'Picha' : 'Gallery' },
     { id: 'faq', label: 'FAQ' },
     { id: 'location', label: language === 'sw' ? 'Ramani' : 'Location' },
-    { id: 'news', label: '🔥 News' },
     { id: 'contact', label: language === 'sw' ? 'Mawasiliano' : 'Contact' },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all">
+    <header className="sticky top-0 z-40 w-full transition-all overflow-x-clip">
       {/* Top Institutional Header Bar */}
       <div className="bg-[#102A43] text-[#FFFFF0] border-b border-[#C9A227]/20 text-[11px] sm:text-[12px] py-1.5 px-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -130,57 +130,47 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          {/* Right: Quick Tools (Progressively revealed to prevent overflow on mobile) */}
+          {/* Right: Quick Tools (Clean, only essential on mobile to prevent overflow) */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {onOpenNews && (
               <button
                 onClick={onOpenNews}
-                className="fire-news-btn inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-white transition-all cursor-pointer"
-                title="Habari Mpya & Matangazo ya Shule (School News)"
+                className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-white/90 hover:text-white transition-colors cursor-pointer"
+                title="Habari na Matangazo ya Shule"
               >
-                <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />
-                <span>{language === 'sw' ? 'Habari Mpya' : 'School News'}</span>
-                <span className="px-1 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[8px] font-black uppercase">
-                  HOT
-                </span>
+                <span>{language === 'sw' ? 'Habari' : 'News'}</span>
               </button>
             )}
             {onOpenResultsEntry && (
               <button
                 onClick={onOpenResultsEntry}
-                className="liquid-btn liquid-btn-gold hidden md:inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 cursor-pointer shadow-xs"
+                className="hidden md:inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded bg-[#c9a227] text-slate-950 hover:bg-amber-400 transition-colors cursor-pointer shadow-xs"
                 title="Lango Rasmi la Uingizaji wa Matokeo na Alama za Mitihani"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-amber-950" />
-                  <span>Uingizaji wa Matokeo</span>
-                </span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-slate-950" />
+                <span>Uingizaji wa Matokeo</span>
               </button>
             )}
             {/* Academic Portal Quick Link - Only visible to authenticated academic staff or admin */}
             {user && (userProfile?.role === 'admin' || userProfile?.role === 'teacher' || userProfile?.role === 'academic_master') && onOpenAcademicPortal && (
               <button
                 onClick={onOpenAcademicPortal}
-                className="liquid-btn liquid-btn-gold hidden lg:inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 cursor-pointer"
+                className="hidden lg:inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded bg-[#c9a227] text-slate-950 hover:bg-amber-400 transition-colors cursor-pointer"
                 title="Lango la Taaluma na Mitihani (Academic Portal)"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <GraduationCap className="w-3.5 h-3.5 text-amber-950" />
-                  <span>🎓 Portal ya Taaluma</span>
-                </span>
+                <GraduationCap className="w-3.5 h-3.5 text-slate-950" />
+                <span>Portal ya Taaluma</span>
               </button>
             )}
             {onOpenAdmissionDocuments && (
               <button
                 onClick={onOpenAdmissionDocuments}
                 id="topbar-student-admission-btn"
-                className="liquid-btn liquid-btn-red hidden sm:inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black text-white cursor-pointer shadow-md group"
-                title="Hati & Fomu Rasmi za Udahili (Student Admission)"
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold rounded bg-red-800 hover:bg-red-700 text-white cursor-pointer shadow-xs"
+                title="Hati & Fomu Rasmi za Udahili"
               >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-white" />
-                  <span className="tracking-wide">STUDENT ADMISSION</span>
-                </span>
+                <FileText className="w-3.5 h-3.5 text-white" />
+                <span>UDAHILI 2026/2027</span>
               </button>
             )}
             <div className="hidden lg:inline-flex">
@@ -192,14 +182,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline text-[#FFFFF0]/30">|</span>
             <button
               onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
-              className="liquid-btn liquid-btn-frosted inline-flex items-center gap-1 text-[11px] font-bold px-2.5 sm:px-3 py-1 text-[#FFFFF0] cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 sm:px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-[#FFFFF0] transition-colors cursor-pointer"
               title="Change Language"
             >
-              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5">
-                <Globe className="w-3 h-3 text-[#C9A227]" />
-                <span className="sm:hidden">{language === 'sw' ? 'EN' : 'SW'}</span>
-                <span className="hidden sm:inline">{language === 'sw' ? 'English' : 'Kiswahili'}</span>
-              </span>
+              <Globe className="w-3 h-3 text-[#C9A227]" />
+              <span className="sm:hidden">{language === 'sw' ? 'EN' : 'SW'}</span>
+              <span className="hidden sm:inline">{language === 'sw' ? 'English' : 'Kiswahili'}</span>
             </button>
           </div>
         </div>
@@ -279,16 +267,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-news-hot-btn"
                 onClick={onOpenNews}
-                className="fire-news-btn inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-white transition-all cursor-pointer"
-                title="Habari Mpya & Matangazo ya Shule (School News)"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-[#102A43] hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                title="Habari na Matangazo ya Shule"
               >
-                <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300 shrink-0" />
-                <span className="tracking-wide uppercase">
-                  {language === 'sw' ? 'Habari' : 'News'}
-                </span>
-                <span className="px-1.5 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider">
-                  HOT
-                </span>
+                <span>{language === 'sw' ? 'Habari' : 'News'}</span>
               </button>
             )}
 

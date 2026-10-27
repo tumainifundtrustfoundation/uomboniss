@@ -38,7 +38,7 @@ export function PWAInstallBanner({ onOpenInstallModal }: PWAInstallBannerProps) 
   return (
     <div
       id="pwa-install-floating-banner"
-      className="fixed bottom-20 left-3 right-3 sm:bottom-4 sm:left-auto sm:right-6 sm:max-w-md z-40 bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 border-2 border-emerald-500/70 rounded-3xl p-3 sm:p-4 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-5 duration-300"
+      className="hidden sm:block fixed bottom-4 right-6 max-w-md z-40 bg-slate-900/95 border border-emerald-500/40 rounded-2xl p-3.5 shadow-xl backdrop-blur-md animate-in slide-in-from-bottom-5 duration-300"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
