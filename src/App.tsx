@@ -36,6 +36,7 @@ import { InstallAppModal } from './components/InstallAppModal';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { FAQSection } from './components/FAQSection';
 import { MapSection } from './components/MapSection';
+import { TermsAndPrivacyModal, PolicyTab } from './components/TermsAndPrivacyModal';
 
 // Auth Views
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -84,6 +85,8 @@ function MainSchoolApp() {
   const [isArchitectureModalOpen, setIsArchitectureModalOpen] = useState(false);
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isPoliciesModalOpen, setIsPoliciesModalOpen] = useState(false);
+  const [policyActiveTab, setPolicyActiveTab] = useState<PolicyTab>('terms');
 
   // Dynamic Meta-Tag Generator: updates title, description, OG tags & canonical in document head
   useDynamicMetaTags({
@@ -125,6 +128,16 @@ function MainSchoolApp() {
     }
   }, [user, userProfile, isAdminLoggedIn, isBursarLoggedIn]);
 
+  // Dismiss initial full-screen loading screen smoothly once App is ready
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typeof (window as any).uomboniDismissLoader === 'function') {
+        (window as any).uomboniDismissLoader();
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Central modal dismisser: guarantees NO two modals or login screens can overlap
   const closeAllModals = () => {
     setIsStaffGateOpen(false);
@@ -142,6 +155,7 @@ function MainSchoolApp() {
     setIsArchitectureModalOpen(false);
     setIsNewsModalOpen(false);
     setIsInstallModalOpen(false);
+    setIsPoliciesModalOpen(false);
   };
 
   const handleCloseModal = () => {
@@ -203,6 +217,17 @@ function MainSchoolApp() {
     setAcademicInitialRole(role);
     setIsAcademicInitialAuthenticated(authenticated);
     setIsAcademicPortalOpen(true);
+  };
+
+  const handleOpenPolicy = (tab: PolicyTab = 'terms') => {
+    closeAllModals();
+    setPolicyActiveTab(tab);
+    setIsPoliciesModalOpen(true);
+  };
+
+  const handleOpenResultsEntry = () => {
+    closeAllModals();
+    handleOpenAcademicPortal('teacher', true);
   };
 
   const handleNavigate = (sectionId: string) => {
@@ -325,6 +350,28 @@ function MainSchoolApp() {
       } else if (hash === '#vitu-muhimu' || hash === '#mahitaji' || hash === '#vitu' || hash === '#requirements') {
         closeAllModals();
         setIsVituMuhimuModalOpen(true);
+      } else if (
+        pathname === '/uingizaji-matokeo' ||
+        pathname === '/ingiza-matokeo' ||
+        pathname === '/score-entry' ||
+        hash === '#uingizaji-matokeo' ||
+        hash === '#uingizaji_matokeo' ||
+        hash === '#ingiza-matokeo' ||
+        hash === '#score-entry' ||
+        hash === '#marks-entry' ||
+        hash === '#matokeo-entry'
+      ) {
+        handleOpenResultsEntry();
+      } else if (pathname === '/terms' || hash === '#terms' || hash === '#terms-and-conditions' || hash === '#masharti') {
+        handleOpenPolicy('terms');
+      } else if (pathname === '/privacy' || hash === '#privacy' || hash === '#privacy-policy' || hash === '#sera-faragha') {
+        handleOpenPolicy('privacy');
+      } else if (pathname === '/refund' || hash === '#refund' || hash === '#refund-policy' || hash === '#marejesho') {
+        handleOpenPolicy('refund');
+      } else if (pathname === '/cookie' || hash === '#cookie' || hash === '#cookie-policy' || hash === '#vidakuzi') {
+        handleOpenPolicy('cookie');
+      } else if (pathname === '/content' || hash === '#content' || hash === '#content-submission' || hash === '#content-policy' || hash === '#maudhui') {
+        handleOpenPolicy('content');
       }
     };
 
@@ -485,6 +532,7 @@ function MainSchoolApp() {
           closeAllModals();
           setActiveView('login');
         }}
+        onOpenResultsEntry={handleOpenResultsEntry}
       />
 
       <main className="flex-grow">
@@ -572,6 +620,8 @@ function MainSchoolApp() {
           closeAllModals();
           setIsSchoolResultsOpen(true);
         }}
+        onOpenResultsEntry={handleOpenResultsEntry}
+        onOpenPolicy={handleOpenPolicy}
       />
 
       {/* Modals - strictly mutually exclusive, cannot overlap */}
@@ -743,6 +793,18 @@ function MainSchoolApp() {
           <NewsModal
             isOpen={isNewsModalOpen}
             onClose={handleCloseModal}
+          />
+        </Suspense>
+      )}
+
+      {/* Official School Policies Modal (Terms, Privacy, Refund, Cookies, Content Submission) */}
+      {isPoliciesModalOpen && (
+        <Suspense fallback={<ModalFallback />}>
+          <TermsAndPrivacyModal
+            isOpen={isPoliciesModalOpen}
+            onClose={handleCloseModal}
+            initialTab={policyActiveTab}
+            onOpenResultsEntry={handleOpenResultsEntry}
           />
         </Suspense>
       )}

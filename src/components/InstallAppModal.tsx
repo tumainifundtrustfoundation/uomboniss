@@ -23,7 +23,7 @@ interface InstallAppModalProps {
 export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
   const { language } = useLanguage();
   const { customLogoUrl } = useData();
-  const officialLogo = customLogoUrl || '/uomboni_official_logo.jpg';
+  const officialLogo = customLogoUrl || '/uomboni_official_logo.png';
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [activeDeviceTab, setActiveDeviceTab] = useState<'android' | 'ios' | 'pc'>('android');

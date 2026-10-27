@@ -2,7 +2,7 @@
 // Provides fast offline resilience for public assets and custom offline navigation fallback.
 // PRIVACY DIRECTIVE: Never caches private student records, exam results, or authenticated API endpoints.
 
-const CACHE_VERSION = 'uomboni-pwa-v12';
+const CACHE_VERSION = 'uomboni-pwa-v13';
 const STATIC_CACHE = `uomboni-static-${CACHE_VERSION}`;
 const FONTS_CACHE = `uomboni-fonts-${CACHE_VERSION}`;
 const MEDIA_CACHE = `uomboni-media-${CACHE_VERSION}`;
@@ -21,6 +21,7 @@ const PRECACHE_ASSETS = [
   '/apple-touch-icon.png',
   '/favicon-32x32.png',
   '/favicon-16x16.png',
+  '/uomboni_official_logo.png',
   '/uomboni_official_logo.jpg'
 ];
 

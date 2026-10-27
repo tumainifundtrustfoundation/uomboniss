@@ -804,5 +804,351 @@
   border-color: #991b1b;
 }
 
+/* ==========================================================================
+   UOMBONI SECONDARY SCHOOL — REUSABLE FULL-SCREEN ANIMATED LOADER
+   ========================================================================== */
+html.uomboni-loader-locked,
+body.uomboni-loader-locked {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+.uomboni-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1E3A8A 0%, #102A43 45%, #0A1C2E 80%, #050E18 100%);
+  color: #FFFFF0;
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.uomboni-loader-overlay.uomboni-loader-fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.uomboni-loader-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+  text-align: center;
+}
+
+.uomboni-loader-visual {
+  position: relative;
+  width: 270px;
+  height: 270px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-visual {
+    width: 320px;
+    height: 320px;
+    margin-bottom: 28px;
+  }
+}
+
+.uomboni-loader-glow {
+  position: absolute;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, rgba(37, 99, 235, 0.28) 45%, transparent 75%);
+  filter: blur(24px);
+  animation: uomboni-glow-pulse 3s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-glow {
+    width: 250px;
+    height: 250px;
+    filter: blur(32px);
+  }
+}
+
+.uomboni-loader-ring {
+  position: absolute;
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.uomboni-loader-ring-outer {
+  width: 254px;
+  height: 254px;
+  border: 2.5px solid rgba(148, 163, 184, 0.25);
+  border-top-color: #FBBF24;
+  border-bottom-color: #F59E0B;
+  animation: uomboni-spin-clockwise 3.2s linear infinite;
+  will-change: transform;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-ring-outer {
+    width: 304px;
+    height: 304px;
+    border-width: 3px;
+  }
+}
+
+.uomboni-loader-ring-middle {
+  width: 220px;
+  height: 220px;
+  border: 2px dashed rgba(203, 213, 225, 0.2);
+  border-top: 2.5px solid #FDE047;
+  border-left: 2px solid rgba(253, 224, 71, 0.6);
+  animation: uomboni-spin-counter 4.4s linear infinite;
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-ring-middle {
+    width: 264px;
+    height: 264px;
+  }
+}
+
+.uomboni-loader-ring-inner {
+  width: 184px;
+  height: 184px;
+  border: 1.5px solid rgba(148, 163, 184, 0.28);
+  border-right-color: #FBBF24;
+  animation: uomboni-spin-clockwise 2.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-ring-inner {
+    width: 224px;
+    height: 224px;
+    border-width: 2px;
+  }
+}
+
+.uomboni-loader-logo-wrapper {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-logo-wrapper {
+    width: 185px;
+    height: 185px;
+  }
+}
+
+.uomboni-loader-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+  user-select: none;
+}
+
+.uomboni-loader-text-group {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+.uomboni-loader-title {
+  font-family: var(--font-playfair, 'Playfair Display', Georgia, serif);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #FEF08A;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-title {
+    font-size: 21px;
+    letter-spacing: 0.1em;
+  }
+}
+
+.uomboni-loader-motto {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #93C5FD;
+  margin: 0 0 14px 0;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .uomboni-loader-motto {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    margin-bottom: 18px;
+  }
+}
+
+.uomboni-loader-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 18px;
+  border-radius: 9999px;
+  background: rgba(16, 42, 67, 0.7);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.uomboni-loader-spinner-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #FBBF24;
+  border-top-color: transparent;
+  animation: uomboni-spin-clockwise 0.8s linear infinite;
+}
+
+.uomboni-loader-status-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #F3F4F6;
+  letter-spacing: 0.02em;
+}
+
+.uomboni-loader-progress-box {
+  width: 100%;
+  max-width: 280px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.uomboni-loader-progress-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.uomboni-loader-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #F59E0B, #FBBF24, #FEF08A);
+  border-radius: 9999px;
+  transition: width 0.15s linear;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+}
+
+.uomboni-loader-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  color: #93C5FD;
+  letter-spacing: 0.03em;
+  padding: 0 2px;
+}
+
+.uomboni-loader-skip-btn {
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #E2E8F0;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.uomboni-loader-skip-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #FBBF24;
+  color: #FEF08A;
+}
+
+@keyframes uomboni-spin-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes uomboni-spin-counter {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes uomboni-glow-pulse {
+  0% { transform: scale(0.92); opacity: 0.55; }
+  100% { transform: scale(1.08); opacity: 0.95; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uomboni-loader-ring-outer,
+  .uomboni-loader-ring-middle,
+  .uomboni-loader-ring-inner,
+  .uomboni-loader-spinner-dot {
+    animation: none !important;
+    border-color: #FBBF24 !important;
+  }
+  .uomboni-loader-glow {
+    animation: none !important;
+    opacity: 0.7 !important;
+  }
+  .uomboni-loader-overlay {
+    transition: opacity 0.15s ease-out !important;
+  }
+}
+
 
 

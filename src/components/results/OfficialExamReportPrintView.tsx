@@ -544,11 +544,11 @@ export const OfficialExamReportPrintView: React.FC<OfficialExamReportPrintViewPr
             {/* Left crest logo */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center">
               <img
-                src="/images/uomboni_official_logo.jpg"
+                src="/uomboni_official_logo.png"
                 alt="Uomboni Secondary School Official Crest"
                 className="max-h-full max-w-full object-contain"
                 onError={(e) => {
-                  (e.currentTarget as any).src = '/logo.uomboni.jpg';
+                  (e.currentTarget as any).src = '/uomboni_official_logo.jpg';
                 }}
               />
             </div>
@@ -572,11 +572,11 @@ export const OfficialExamReportPrintView: React.FC<OfficialExamReportPrintViewPr
             {/* Right decorative crest / balance */}
             <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 hidden sm:flex items-center justify-center">
               <img
-                src="/images/uomboni_official_logo.jpg"
+                src="/uomboni_official_logo.png"
                 alt="Uomboni Secondary School"
                 className="max-h-full max-w-full object-contain opacity-95"
                 onError={(e) => {
-                  (e.currentTarget as any).src = '/logo.uomboni.jpg';
+                  (e.currentTarget as any).src = '/uomboni_official_logo.jpg';
                 }}
               />
             </div>

@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Flame,
   FileText,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -36,6 +37,7 @@ interface NavbarProps {
   onOpenVituMuhimu?: () => void;
   onOpenWelcome?: () => void;
   onOpenLogin?: () => void;
+  onOpenResultsEntry?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -53,6 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenVituMuhimu,
   onOpenWelcome,
   onOpenLogin,
+  onOpenResultsEntry,
 }) => {
   const { language, setLanguage } = useLanguage();
   const { user, userProfile, logout } = useAuth();
@@ -137,6 +140,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>{language === 'sw' ? 'Habari Mpya' : 'School News'}</span>
                 <span className="px-1 py-0.5 rounded-xs bg-amber-400 text-slate-950 text-[8px] font-black uppercase">
                   HOT
+                </span>
+              </button>
+            )}
+            {onOpenResultsEntry && (
+              <button
+                onClick={onOpenResultsEntry}
+                className="liquid-btn liquid-btn-gold hidden md:inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 cursor-pointer shadow-xs"
+                title="Lango Rasmi la Uingizaji wa Matokeo na Alama za Mitihani"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-amber-950" />
+                  <span>Uingizaji wa Matokeo</span>
                 </span>
               </button>
             )}
@@ -303,6 +318,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
+            {onOpenResultsEntry && (
+              <button
+                id="nav-results-entry-btn"
+                onClick={onOpenResultsEntry}
+                className="liquid-btn liquid-btn-gold inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black cursor-pointer shadow-xs"
+                title="Lango Rasmi la Uingizaji wa Alama na Matokeo ya Mitihani"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-amber-950" />
+                  <span>Ingiza Matokeo</span>
+                </span>
+              </button>
+            )}
+
             {user && (userProfile?.role === 'admin' || userProfile?.role === 'parent') && onOpenParentPortal && (
               <button
                 id="nav-parent-portal-btn"
@@ -460,6 +489,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="relative z-10 flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-amber-950 shrink-0" />
                     <span>🏛️ Administration (Utawala &amp; Udahili)</span>
+                  </span>
+                </button>
+              )}
+
+              {onOpenResultsEntry && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenResultsEntry();
+                  }}
+                  className="liquid-btn liquid-btn-gold w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-black cursor-pointer shadow-md"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <FileSpreadsheet className="w-4 h-4 text-amber-950 shrink-0" />
+                    <span>📝 Uingizaji wa Matokeo (Marks Entry)</span>
                   </span>
                 </button>
               )}

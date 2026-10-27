@@ -18,8 +18,8 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
   const { customLogoUrl } = useData();
   const [imageError, setImageError] = useState(false);
 
-  // Official school logo path - 100% original, unaltered identity directly from uploaded asset
-  const officialLogoPath = '/uomboni_official_logo.jpg';
+  // Official school logo path - 100% authentic identity directly from official diocese emblem
+  const officialLogoPath = '/uomboni_official_logo.png';
   const logoSrc = (!imageError && customLogoUrl) ? customLogoUrl : officialLogoPath;
 
   const sizeMap: Record<string, string> = {
@@ -46,13 +46,15 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
         <img
           src={logoSrc}
           alt="Official School Logo of Uomboni Secondary School (Catholic Diocese of Moshi — Prayer, Education, Work)"
-          className="w-full h-full object-contain select-none"
+          className="w-full h-full object-contain select-none drop-shadow-sm"
           style={{ aspectRatio: '1 / 1' }}
           loading="eager"
           decoding="async"
-          onError={() => {
+          onError={(e) => {
             if (!imageError && customLogoUrl) {
               setImageError(true);
+            } else if ((e.currentTarget as HTMLImageElement).src.endsWith('.png')) {
+              (e.currentTarget as HTMLImageElement).src = '/uomboni_official_logo.jpg';
             }
           }}
         />

@@ -13,7 +13,7 @@ export function PWAInstallBanner({ onOpenInstallModal }: PWAInstallBannerProps) 
   const [isVisible, setIsVisible] = useState(true);
   const [isStandalone, setIsStandalone] = useState(false);
 
-  const officialLogo = customLogoUrl || '/uomboni_official_logo.jpg';
+  const officialLogo = customLogoUrl || '/uomboni_official_logo.png';
 
   useEffect(() => {
     // Check if running inside installed standalone PWA

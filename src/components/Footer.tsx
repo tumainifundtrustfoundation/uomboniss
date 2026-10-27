@@ -14,8 +14,13 @@ import {
   Youtube,
   MessageCircle,
   FileText,
-  Flame
+  Flame,
+  FileSpreadsheet,
+  Edit3,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
+import { PolicyTab } from './TermsAndPrivacyModal';
 
 interface FooterProps {
   onNavigate?: (sectionId: string) => void;
@@ -30,6 +35,8 @@ interface FooterProps {
   onOpenJoiningInstructions?: () => void;
   onOpenVituMuhimu?: () => void;
   onOpenResults?: () => void;
+  onOpenResultsEntry?: () => void;
+  onOpenPolicy?: (tab: PolicyTab) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -45,6 +52,8 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenJoiningInstructions,
   onOpenVituMuhimu,
   onOpenResults,
+  onOpenResultsEntry,
+  onOpenPolicy,
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -59,11 +68,29 @@ export const Footer: React.FC<FooterProps> = ({
     }
   };
 
+  const handleOpenResultsEntryAction = () => {
+    if (onOpenResultsEntry) {
+      onOpenResultsEntry();
+    } else if (onOpenAcademicPortal) {
+      onOpenAcademicPortal();
+    } else {
+      window.location.hash = '#uingizaji-matokeo';
+    }
+  };
+
+  const handleOpenPolicyAction = (tab: PolicyTab) => {
+    if (onOpenPolicy) {
+      onOpenPolicy(tab);
+    } else {
+      window.location.hash = `#${tab}`;
+    }
+  };
+
   return (
     <footer className="bg-[#102A43] text-[#FFFFF0] border-t border-[#C9A227]/30">
       {/* Main Footer Directory */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8">
           {/* Col 1: School Identity (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
@@ -144,22 +171,22 @@ export const Footer: React.FC<FooterProps> = ({
             </h4>
             <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
               <li>
-                <button onClick={() => handleNav('home')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                <button onClick={() => handleNav('home')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
                   Home
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('about')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                <button onClick={() => handleNav('about')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
                   About Us
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
                   Academics
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('teachers')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                <button onClick={() => handleNav('teachers')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
                   Our Teachers
                 </button>
               </li>
@@ -169,10 +196,10 @@ export const Footer: React.FC<FooterProps> = ({
                     if (onOpenNews) onOpenNews();
                     else handleNav('news');
                   }}
-                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer group"
+                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer group text-left"
                 >
                   <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-500 animate-bounce" />
-                  <span>Habari Mpya (Hot News)</span>
+                  <span>Habari Mpya (News)</span>
                 </button>
               </li>
               <li>
@@ -181,111 +208,55 @@ export const Footer: React.FC<FooterProps> = ({
                     if (onOpenAdmissionDocuments) onOpenAdmissionDocuments();
                     else window.location.hash = '#admission-documents';
                   }}
-                  className="hover:text-white transition-colors cursor-pointer text-amber-300 font-bold flex items-center gap-1.5"
+                  className="hover:text-white transition-colors cursor-pointer text-amber-300 font-bold flex items-center gap-1.5 text-left"
                 >
-                  <FileText className="w-3.5 h-3.5 text-red-400" />
-                  <span>Hati za Udahili (Admission Docs)</span>
+                  <FileText className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                  <span>Hati za Udahili</span>
+                </button>
+              </li>
+              {/* Prominent Results Entry Link */}
+              <li>
+                <button
+                  onClick={handleOpenResultsEntryAction}
+                  className="text-amber-300 hover:text-white font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-left"
+                  title="Uingizaji wa Alama na Matokeo ya Mitihani"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Uingizaji wa Matokeo</span>
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('gallery')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
+                <button onClick={() => handleNav('gallery')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
                   Photo Gallery (Picha)
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('faq')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Maswali Yanayoulizwa (FAQ)
+                <button onClick={() => handleNav('faq')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
+                  Maswali (FAQ)
                 </button>
               </li>
               <li>
-                <button
-                  onClick={() => {
-                    if (onOpenAdmin) onOpenAdmin();
-                    else handleNav('about');
-                  }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold"
-                >
-                  Administration (Utawala)
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('location')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold flex items-center gap-1">
-                  <span>📍 Ramani ya Shule (Campus Map)</span>
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('contact')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Mawasiliano (Contact Us)
+                <button onClick={() => handleNav('contact')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
+                  Mawasiliano (Contact)
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Academics (2 cols) */}
+          {/* Col 3: Academics & Results (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Academics
+              Academics &amp; Results
             </h4>
             <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
               <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Form One
+                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
+                  Form One &amp; Two
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Form Two (FTNA)
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Form Three
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Form Four (CSEE)
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Science &amp; ICT
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer">
-                  Languages &amp; Arts
-                </button>
-              </li>
-              <li className="pt-1.5 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    if (onOpenAcademicPortal) onOpenAcademicPortal();
-                    else handleNav('academics');
-                  }}
-                  className="inline-flex items-center gap-1.5 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer"
-                >
-                  <span>🎓 Portal ya Taaluma (Broadsheets)</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 4: Administration & Examination Results (2 cols) */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
-              Administration &amp; Results
-            </h4>
-            <ul className="space-y-2 text-xs text-[#FFFFF0]/85">
-              <li>
-                <button
-                  onClick={() => {
-                    if (onOpenAdmin) onOpenAdmin();
-                    else handleNav('about');
-                  }}
-                  className="hover:text-white transition-colors cursor-pointer text-amber-300 font-bold flex items-center gap-1.5"
-                >
-                  <span>🏛️ Jopo la Utawala (Administration)</span>
+                <button onClick={() => handleNav('academics')} className="hover:text-[#C9A227] transition-colors cursor-pointer text-left">
+                  Form Three &amp; Four
                 </button>
               </li>
               <li>
@@ -294,7 +265,7 @@ export const Footer: React.FC<FooterProps> = ({
                     if (onOpenResults) onOpenResults();
                     else handleNav('academics');
                   }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
                 >
                   Matokeo ya NECTA (S0486)
                 </button>
@@ -305,35 +276,57 @@ export const Footer: React.FC<FooterProps> = ({
                     if (onOpenResults) onOpenResults();
                     else handleNav('academics');
                   }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left"
                 >
                   Matokeo ya Mitihani ya Shule
                 </button>
               </li>
+              {/* Direct Uingizaji wa Matokeo Link (Selector 2) */}
+              <li className="pt-2 border-t border-white/10">
+                <button
+                  onClick={handleOpenResultsEntryAction}
+                  className="inline-flex items-start gap-2 text-amber-300 font-bold hover:text-white transition-colors cursor-pointer text-left group"
+                  title="Lango Rasmi la Uingizaji wa Alama za Masomo kwa Walimu"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0 mt-0.5" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-amber-300 group-hover:text-white">Uingizaji wa Matokeo</span>
+                    <span className="text-[10px] text-[#FFFFF0]/70 font-normal">Kuweka alama za masomo (Walimu)</span>
+                  </div>
+                </button>
+              </li>
+              {/* Broadsheets za Madarasa Link (Selector 3) */}
               <li>
                 <button
                   onClick={() => {
-                    if (onOpenStaffPortal) onOpenStaffPortal();
+                    if (onOpenAcademicPortal) onOpenAcademicPortal();
+                    else handleNav('academics');
                   }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                  className="inline-flex items-start gap-2 text-emerald-400 font-semibold hover:text-white transition-colors cursor-pointer text-left group"
+                  title="Jedwali kamili la matokeo na ufaulu wa darasa zima"
                 >
-                  Lango la Walimu (Staff Portal)
+                  <span className="shrink-0 mt-0.5">🎓</span>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-emerald-300 group-hover:text-white">Broadsheets za Madarasa</span>
+                    <span className="text-[10px] text-[#FFFFF0]/70 font-normal">Jedwali kuu la ufaulu wa kidato</span>
+                  </div>
                 </button>
               </li>
               <li>
                 <button
                   onClick={() => {
-                    if (onOpenParentPortal) onOpenParentPortal();
+                    if (onOpenAdmin) onOpenAdmin();
+                    else handleNav('about');
                   }}
-                  className="hover:text-[#C9A227] transition-colors cursor-pointer"
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-amber-300 font-semibold text-left"
                 >
-                  Lango la Wazazi (Parent Portal)
+                  🏛️ Utawala (Administration)
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 5: Parents & Portals (2 cols) */}
+          {/* Col 4: Parents & Portals (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-bold text-[#C9A227] uppercase tracking-wider">
               Parents &amp; Portals
@@ -343,7 +336,7 @@ export const Footer: React.FC<FooterProps> = ({
                 onClick={onOpenStudentPortal}
                 className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
               >
-                <span>Student Portal (Wanafunzi)</span>
+                <span>Student Portal</span>
                 <GraduationCap className="w-3.5 h-3.5 text-[#C9A227]" />
               </button>
               <button
@@ -357,32 +350,146 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 onClick={onOpenStaffPortal}
                 className="w-full text-left px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center justify-between transition-colors cursor-pointer"
-                title="Chumba cha Walimu (Private Staffroom) — Lango la Ndani la Watumishi"
+                title="Chumba cha Walimu (Private Staffroom)"
               >
-                <span>Chumba cha Walimu (Staffroom)</span>
+                <span>Staff Portal</span>
                 <KeyRound className="w-3.5 h-3.5 text-[#C9A227]" />
+              </button>
+
+              {/* Dedicated Uingizaji wa Matokeo Button (Selector 1) */}
+              <button
+                onClick={handleOpenResultsEntryAction}
+                className="w-full text-left px-3 py-2.5 rounded-md bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-xs font-bold text-amber-300 flex items-center justify-between transition-colors cursor-pointer shadow-xs group"
+                title="Uingizaji wa Alama & Matokeo ya Mitihani kwa Walimu"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="flex items-center gap-1.5 font-bold text-amber-300 group-hover:text-white">
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                    <span>Ingiza Matokeo</span>
+                  </span>
+                  <span className="text-[10px] text-[#FFFFF0]/70 font-normal pl-5">
+                    Lango la Walimu wa Masomo
+                  </span>
+                </div>
+                <Edit3 className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
               </button>
             </div>
 
-            <p className="text-[11px] text-[#FFFFF0]/60 pt-2 leading-relaxed">
+            <p className="text-[11px] text-[#FFFFF0]/60 pt-1 leading-relaxed">
               Official school records and teacher entries are strictly access-controlled.
             </p>
+          </div>
+
+          {/* Col 5: POLICIES Section (Matching user screenshot exactly) */}
+          <div className="lg:col-span-2 space-y-3">
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider font-sans">
+                POLICIES
+              </h4>
+              <div className="w-8 h-[2.5px] bg-[#FDE047] mt-1.5 mb-3.5 rounded-full"></div>
+            </div>
+            <ul className="space-y-2.5 text-xs text-[#FFFFF0]/85">
+              <li>
+                <button
+                  onClick={() => handleOpenPolicyAction('terms')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left block"
+                >
+                  Terms &amp; Conditions
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleOpenPolicyAction('privacy')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left block"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleOpenPolicyAction('refund')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left block"
+                >
+                  Refund Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleOpenPolicyAction('cookie')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left block"
+                >
+                  Cookie Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleOpenPolicyAction('content')}
+                  className="hover:text-[#C9A227] transition-colors cursor-pointer text-left block"
+                >
+                  Content Submission Policy
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
 
       {/* Bottom Copyright Bar */}
       <div className="border-t border-white/10 bg-[#0A1C2E] py-6 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FFFFF0]/70">
-          <div>
-            &copy; 2026 Uomboni Secondary School. All Rights Reserved.
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#FFFFF0]/70">
+          <div className="text-center md:text-left">
+            &copy; 2026 Uomboni Secondary School. All Rights Reserved. · NECTA S0486
           </div>
 
-          <div className="flex items-center gap-6">
-            <span>NECTA Registration: S0486</span>
+          {/* Policy quick shortcuts in footer copyright line */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[#FFFFF0]/80">
+            <button
+              onClick={() => handleOpenPolicyAction('terms')}
+              className="hover:text-[#C9A227] transition-colors cursor-pointer"
+            >
+              Terms
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => handleOpenPolicyAction('privacy')}
+              className="hover:text-[#C9A227] transition-colors cursor-pointer"
+            >
+              Privacy
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => handleOpenPolicyAction('refund')}
+              className="hover:text-[#C9A227] transition-colors cursor-pointer"
+            >
+              Refunds
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => handleOpenPolicyAction('cookie')}
+              className="hover:text-[#C9A227] transition-colors cursor-pointer"
+            >
+              Cookies
+            </button>
+            <span>·</span>
+            <button
+              onClick={() => handleOpenPolicyAction('content')}
+              className="hover:text-[#C9A227] transition-colors cursor-pointer"
+            >
+              Content Submission
+            </button>
+            <span>·</span>
+            <button
+              onClick={handleOpenResultsEntryAction}
+              className="text-amber-300 hover:text-white font-bold transition-colors cursor-pointer"
+            >
+              Uingizaji wa Matokeo
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 text-[#FFFFF0] hover:text-[#C9A227] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-[#FFFFF0] hover:text-[#C9A227] transition-colors cursor-pointer font-semibold"
             >
               <span>Back to Top</span>
               <ArrowUp className="w-3.5 h-3.5 text-[#C9A227]" />

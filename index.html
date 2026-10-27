@@ -116,8 +116,367 @@
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     </noscript>
+
+    <!-- UOMBONI SECONDARY SCHOOL — ANIMATED LOADING SCREEN STYLES -->
+    <style id="uomboni-loader-styles">
+      html.uomboni-loader-locked,
+      body.uomboni-loader-locked {
+        overflow: hidden !important;
+        touch-action: none !important;
+      }
+
+      .uomboni-loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at center, #1E3A8A 0%, #102A43 45%, #0A1C2E 80%, #050E18 100%);
+        color: #FFFFF0;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .uomboni-loader-overlay.uomboni-loader-fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .uomboni-loader-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 440px;
+        margin: auto;
+        text-align: center;
+      }
+
+      /* Visual Core: Glow, Rings, Center School Crest */
+      .uomboni-loader-visual {
+        position: relative;
+        width: 270px;
+        height: 270px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-visual {
+          width: 320px;
+          height: 320px;
+          margin-bottom: 28px;
+        }
+      }
+
+      /* Subtle Blue Glow Behind Logo */
+      .uomboni-loader-glow {
+        position: absolute;
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, rgba(37, 99, 235, 0.28) 45%, transparent 75%);
+        filter: blur(24px);
+        animation: uomboni-glow-pulse 3s ease-in-out infinite alternate;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-glow {
+          width: 250px;
+          height: 250px;
+          filter: blur(32px);
+        }
+      }
+
+      /* Concentric Animated Circular Rings */
+      .uomboni-loader-ring {
+        position: absolute;
+        border-radius: 50%;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Outer Ring: Yellow & Muted Blue-Gray rotating smoothly */
+      .uomboni-loader-ring-outer {
+        width: 254px;
+        height: 254px;
+        border: 2.5px solid rgba(148, 163, 184, 0.25);
+        border-top-color: #FBBF24;
+        border-bottom-color: #F59E0B;
+        animation: uomboni-spin-clockwise 3.2s linear infinite;
+        will-change: transform;
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-ring-outer {
+          width: 304px;
+          height: 304px;
+          border-width: 3px;
+        }
+      }
+
+      /* Middle Ring: Dashed Muted Blue-Gray with Yellow Arc rotating counter-clockwise */
+      .uomboni-loader-ring-middle {
+        width: 220px;
+        height: 220px;
+        border: 2px dashed rgba(203, 213, 225, 0.2);
+        border-top: 2.5px solid #FDE047;
+        border-left: 2px solid rgba(253, 224, 71, 0.6);
+        animation: uomboni-spin-counter 4.4s linear infinite;
+        will-change: transform;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-ring-middle {
+          width: 264px;
+          height: 264px;
+        }
+      }
+
+      /* Inner Ring: Blue-Gray with Gold Tick rotating smoothly */
+      .uomboni-loader-ring-inner {
+        width: 184px;
+        height: 184px;
+        border: 1.5px solid rgba(148, 163, 184, 0.28);
+        border-right-color: #FBBF24;
+        animation: uomboni-spin-clockwise 2.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+        will-change: transform;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-ring-inner {
+          width: 224px;
+          height: 224px;
+          border-width: 2px;
+        }
+      }
+
+      /* Center School Crest Logo */
+      .uomboni-loader-logo-wrapper {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-logo-wrapper {
+          width: 185px;
+          height: 185px;
+        }
+      }
+
+      .uomboni-loader-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        aspect-ratio: 1 / 1;
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      /* Typography & Status Badge */
+      .uomboni-loader-text-group {
+        position: relative;
+        z-index: 4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+      }
+
+      .uomboni-loader-title {
+        font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #FEF08A;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-title {
+          font-size: 21px;
+          letter-spacing: 0.1em;
+        }
+      }
+
+      .uomboni-loader-motto {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: #93C5FD;
+        margin: 0 0 14px 0;
+        text-transform: uppercase;
+      }
+
+      @media (min-width: 768px) {
+        .uomboni-loader-motto {
+          font-size: 12px;
+          letter-spacing: 0.08em;
+          margin-bottom: 18px;
+        }
+      }
+
+      .uomboni-loader-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 18px;
+        border-radius: 9999px;
+        background: rgba(16, 42, 67, 0.7);
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+
+      .uomboni-loader-spinner-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #FBBF24;
+        border-top-color: transparent;
+        animation: uomboni-spin-clockwise 0.8s linear infinite;
+      }
+
+      .uomboni-loader-status-text {
+        font-size: 12px;
+        font-weight: 600;
+        color: #F3F4F6;
+        letter-spacing: 0.02em;
+      }
+
+      /* 30 Seconds Animated Progress Bar */
+      .uomboni-loader-progress-box {
+        width: 100%;
+        max-width: 280px;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .uomboni-loader-progress-track {
+        width: 100%;
+        height: 7px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      .uomboni-loader-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #F59E0B, #FBBF24, #FEF08A);
+        border-radius: 9999px;
+        transition: width 0.15s linear;
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+      }
+
+      .uomboni-loader-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 11px;
+        font-weight: 600;
+        color: #93C5FD;
+        letter-spacing: 0.03em;
+        padding: 0 2px;
+      }
+
+      .uomboni-loader-skip-btn {
+        margin-top: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #E2E8F0;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 4px 14px;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+
+      .uomboni-loader-skip-btn:hover {
+        background: rgba(251, 191, 36, 0.2);
+        border-color: #FBBF24;
+        color: #FEF08A;
+      }
+
+      /* Keyframe Animations */
+      @keyframes uomboni-spin-clockwise {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes uomboni-spin-counter {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+      }
+
+      @keyframes uomboni-glow-pulse {
+        0% { transform: scale(0.92); opacity: 0.55; }
+        100% { transform: scale(1.08); opacity: 0.95; }
+      }
+
+      /* Respect Reduced Motion */
+      @media (prefers-reduced-motion: reduce) {
+        .uomboni-loader-ring-outer,
+        .uomboni-loader-ring-middle,
+        .uomboni-loader-ring-inner,
+        .uomboni-loader-spinner-dot {
+          animation: none !important;
+          border-color: #FBBF24 !important;
+        }
+        .uomboni-loader-glow {
+          animation: none !important;
+          opacity: 0.7 !important;
+        }
+        .uomboni-loader-overlay {
+          transition: opacity 0.15s ease-out !important;
+        }
+      }
+    </style>
   </head>
-  <body className="font-sans antialiased">
+  <body class="font-sans antialiased uomboni-loader-locked">
     <script>
       // Immediately purge deprecated static caches to prevent stale React hook desync
       try {
@@ -132,26 +491,145 @@
         }
       } catch (e) {}
     </script>
-    <div id="root">
-      <!-- Instant First-Paint Splash for Slow Connections & Low Bandwidth -->
-      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#064e3b;color:#ffffff;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:20px;text-align:center;">
-        <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid #f59e0b;display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-          </svg>
+
+    <!-- Professional Full-Screen Animated Loading Screen -->
+    <div id="uomboni-loading-screen" class="uomboni-loader-overlay" role="status" aria-live="polite">
+      <div class="uomboni-loader-container">
+        <!-- Visual Concentric Rings & Glow with Center Logo -->
+        <div class="uomboni-loader-visual">
+          <div class="uomboni-loader-glow" aria-hidden="true"></div>
+          <div class="uomboni-loader-ring uomboni-loader-ring-outer" aria-hidden="true"></div>
+          <div class="uomboni-loader-ring uomboni-loader-ring-middle" aria-hidden="true"></div>
+          <div class="uomboni-loader-ring uomboni-loader-ring-inner" aria-hidden="true"></div>
+
+          <div class="uomboni-loader-logo-wrapper">
+            <img
+              src="/uomboni_official_logo.png"
+              alt="Official School Logo of Uomboni Secondary School"
+              class="uomboni-loader-logo"
+              width="185"
+              height="185"
+              onerror="if(this.src.indexOf('.png')!==-1){this.src='/uomboni_official_logo.jpg';}"
+            />
+          </div>
         </div>
-        <h1 style="font-size:22px;font-weight:800;letter-spacing:0.05em;color:#fef08a;margin:0 0 6px 0;">SHULE YA SEKONDARI UOMBONI</h1>
-        <p style="font-size:13px;color:#a7f3d0;margin:0 0 24px 0;letter-spacing:0.04em;">&ldquo;TUJIENDELEZE SISI WENYEWE&rdquo; &bull; MARANGU, MOSHI</p>
-        <div style="display:flex;align-items:center;gap:10px;background:rgba(0,0,0,0.25);padding:10px 20px;border-radius:9999px;border:1px solid rgba(255,255,255,0.15);">
-          <div style="width:16px;height:16px;border:2px solid #fbbf24;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-          <span style="font-size:13px;font-weight:600;color:#f3f4f6;">Inapakia mfumo wa shule...</span>
+
+        <!-- Typography & Loading Status -->
+        <div class="uomboni-loader-text-group">
+          <h1 class="uomboni-loader-title">SHULE YA SEKONDARI UOMBONI</h1>
+          <p class="uomboni-loader-motto">&ldquo;TUJIENDELEZE SISI WENYEWE&rdquo; &bull; MARANGU, MOSHI</p>
+          <div class="uomboni-loader-status-badge">
+            <span class="uomboni-loader-spinner-dot" aria-hidden="true"></span>
+            <span id="uomboni-loader-status-label" class="uomboni-loader-status-text">Inapakia mfumo wa shule... (30s)</span>
+          </div>
+
+          <!-- 30 Seconds Progress Bar & Live Countdown -->
+          <div class="uomboni-loader-progress-box">
+            <div class="uomboni-loader-progress-track">
+              <div id="uomboni-loader-progress-bar" class="uomboni-loader-progress-fill"></div>
+            </div>
+            <div class="uomboni-loader-meta-row">
+              <span id="uomboni-loader-timer-text">Sekunde 30 zilizobaki</span>
+              <span id="uomboni-loader-percent-text">0%</span>
+            </div>
+            <button
+              id="uomboni-loader-skip"
+              type="button"
+              class="uomboni-loader-skip-btn"
+              onclick="if(window.uomboniForceDismissLoader){window.uomboniForceDismissLoader();}"
+            >
+              Fungua Tovuti moja kwa moja &rarr;
+            </button>
+          </div>
         </div>
-        <style>
-          @keyframes spin { to { transform: rotate(360deg); } }
-        </style>
       </div>
     </div>
+
+    <!-- Main React App Mounting Container -->
+    <div id="root"></div>
+
+    <!-- Loading Screen Lifecycle Controller (30-second duration) -->
+    <script>
+      (function() {
+        var loader = document.getElementById('uomboni-loading-screen');
+        if (!loader) return;
+
+        var progressBar = document.getElementById('uomboni-loader-progress-bar');
+        var timerText = document.getElementById('uomboni-loader-timer-text');
+        var percentText = document.getElementById('uomboni-loader-percent-text');
+        var statusLabel = document.getElementById('uomboni-loader-status-label');
+
+        var TOTAL_DURATION_MS = 30000; // 30 sekunde kamili kama ilivyoombwa
+        var startTime = Date.now();
+        var isDismissed = false;
+        var intervalId = null;
+
+        function forceDismiss() {
+          if (isDismissed) return;
+          isDismissed = true;
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+          }
+
+          if (progressBar) progressBar.style.width = '100%';
+          if (percentText) percentText.textContent = '100%';
+          if (timerText) timerText.textContent = 'Tayari!';
+          if (statusLabel) statusLabel.textContent = 'Mfumo u tayari!';
+
+          loader.classList.add('uomboni-loader-fade-out');
+          document.documentElement.classList.remove('uomboni-loader-locked');
+          document.body.classList.remove('uomboni-loader-locked');
+
+          setTimeout(function() {
+            if (loader && loader.parentNode) {
+              loader.parentNode.removeChild(loader);
+            }
+          }, 650);
+        }
+
+        function updateProgress() {
+          if (isDismissed) return;
+          var elapsed = Date.now() - startTime;
+          var progress = Math.min(1, elapsed / TOTAL_DURATION_MS);
+          var percent = Math.floor(progress * 100);
+          var remainingSec = Math.max(0, Math.ceil((TOTAL_DURATION_MS - elapsed) / 1000));
+
+          if (progressBar) {
+            progressBar.style.width = percent + '%';
+          }
+          if (percentText) {
+            percentText.textContent = percent + '%';
+          }
+          if (timerText) {
+            timerText.textContent = remainingSec > 0 ? (remainingSec + 's zilizobaki') : 'Tayari!';
+          }
+          if (statusLabel) {
+            statusLabel.textContent = remainingSec > 0 ? ('Inapakia mfumo wa shule... (' + remainingSec + 's)') : 'Mfumo u tayari!';
+          }
+
+          if (elapsed >= TOTAL_DURATION_MS) {
+            forceDismiss();
+          }
+        }
+
+        intervalId = setInterval(updateProgress, 100);
+        updateProgress();
+
+        // Dismiss function: waits for 30s by default unless force parameter is true
+        window.uomboniDismissLoader = function(force) {
+          if (force === true) {
+            forceDismiss();
+          }
+        };
+
+        window.uomboniForceDismissLoader = forceDismiss;
+
+        // Guaranteed safety timeout at 30.5 seconds
+        setTimeout(forceDismiss, 30500);
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
     <script>
       try {
