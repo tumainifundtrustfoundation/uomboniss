@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, Facebook, Youtube } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
 export const ContactSection: React.FC = () => {
@@ -109,6 +109,42 @@ export const ContactSection: React.FC = () => {
                     Saturday: 9:00 AM – 1:00 PM (By Appointment)<br />
                     Sunday: Closed for Worship &amp; Rest
                   </p>
+                </div>
+              </div>
+
+              {/* Official Social Media & Video Channels */}
+              <div className="pt-4 border-t border-slate-100">
+                <span className="text-xs font-bold text-[#102A43] block mb-2">Mitandao Rasmi ya Shule &amp; Video</span>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <a
+                    href="https://web.facebook.com/profile.php?id=61596072835470"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center gap-2.5 p-2 rounded-lg bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 text-[#1877F2] text-xs font-bold transition-all group"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-[#1877F2] text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <Facebook className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[11px] text-slate-500 font-medium">Ukurasa Rasmi</span>
+                      <span className="truncate">Facebook Profile</span>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://www.youtube.com/@uombonisecondaryschool"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center gap-2.5 p-2 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 text-xs font-bold transition-all group"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-red-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <Youtube className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[11px] text-slate-500 font-medium">Channel ya Shule</span>
+                      <span className="truncate">@uombonisecondaryschool</span>
+                    </div>
+                  </a>
                 </div>
               </div>
             </div>

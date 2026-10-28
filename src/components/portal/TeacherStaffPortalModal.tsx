@@ -45,13 +45,20 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
   // Auto-connect logged in teacher or admin from AuthContext without forcing duplicate PIN login
   useEffect(() => {
     if (userProfile && ['teacher', 'staff', 'admin', 'academic_master'].includes(userProfile.role)) {
+      const savedTeacherId = typeof window !== 'undefined' ? localStorage.getItem('uomboni_active_teacher_id') : null;
       const match =
+        (savedTeacherId && (teachers || []).find((t: any) => t.id === savedTeacherId)) ||
         (teachers || []).find(
           (t: any) =>
             (user?.email && t.email?.toLowerCase() === user.email.toLowerCase()) ||
             (userProfile.email && t.email?.toLowerCase() === userProfile.email.toLowerCase()) ||
-            (userProfile.fullName && t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()))
-        ) || teachers[0];
+            (userProfile.fullName && (
+              t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()) ||
+              userProfile.fullName.toLowerCase().includes(t.name.toLowerCase())
+            ))
+        ) ||
+        (teachers || []).find((t: any) => t.id === 'tch-003') ||
+        (teachers && teachers.length > 0 ? teachers[0] : null);
 
       if (match) {
         setAuthenticatedTeacher({
@@ -88,6 +95,9 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
     const verification = verifyTeacherIndividualLogin(selectedLoginTeacherId, teacherPinInput.trim());
 
     if (verification.success && verification.teacher) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('uomboni_active_teacher_id', verification.teacher.id);
+      }
       setAuthenticatedTeacher({
         id: verification.teacher.id,
         name: verification.teacher.name,
@@ -113,9 +123,13 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
         {authenticatedTeacher || (user && userProfile && ['teacher', 'admin', 'academic_master', 'staff'].includes(userProfile.role)) ? (
           <div className="flex-1 overflow-hidden flex flex-col">
             <ProfessionalStaffDashboard
-              onClose={onClose}
+              onClose={() => {
+                setAuthenticatedTeacher(null);
+                onClose();
+              }}
               onOpenAcademicMasterPortal={onOpenAcademicPortal}
               isModal={true}
+              initialTeacherId={authenticatedTeacher?.id}
             />
           </div>
         ) : (

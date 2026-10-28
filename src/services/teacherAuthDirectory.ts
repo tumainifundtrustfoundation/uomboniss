@@ -416,7 +416,7 @@ export function verifyTeacherIndividualLogin(
     };
   }
 
-  const cleanEntered = enteredPin.trim();
+  const cleanEntered = (enteredPin || '').trim();
   if (!cleanEntered) {
     return {
       success: false,

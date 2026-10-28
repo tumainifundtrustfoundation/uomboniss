@@ -264,6 +264,32 @@ export const AdminSchoolProfileTab: React.FC = () => {
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-400 font-mono"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {language === 'sw' ? 'Ukurasa Rasmi wa Facebook' : 'Official Facebook Page URL'}
+              </label>
+              <input
+                type="url"
+                value={formData?.facebookUrl || 'https://web.facebook.com/profile.php?id=61596072835470'}
+                onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
+                placeholder="https://web.facebook.com/profile.php?id=..."
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-400 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {language === 'sw' ? 'Channel Rasmi ya YouTube' : 'Official YouTube Channel URL'}
+              </label>
+              <input
+                type="url"
+                value={formData?.youtubeUrl || 'https://www.youtube.com/@uombonisecondaryschool'}
+                onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
+                placeholder="https://www.youtube.com/@..."
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-400 font-mono"
+              />
+            </div>
           </div>
         </div>
 

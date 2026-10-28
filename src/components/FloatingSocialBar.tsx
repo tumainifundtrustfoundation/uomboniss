@@ -5,6 +5,8 @@ import {
   MessageSquareText,
   Phone,
   ArrowUp,
+  Facebook,
+  Youtube,
 } from 'lucide-react';
 
 export const FloatingSocialBar: React.FC = () => {
@@ -70,6 +72,30 @@ export const FloatingSocialBar: React.FC = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-emerald-500"></span>
           </span>
+        </a>
+
+        {/* Official Facebook Page Button */}
+        <a
+          href="https://web.facebook.com/profile.php?id=61596072835470"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#1877F2] hover:bg-blue-600 text-white flex items-center justify-center shadow-md transition-all hover:scale-110"
+          title="Facebook Rasmi: Uomboni Secondary School"
+          aria-label="Facebook"
+        >
+          <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+        </a>
+
+        {/* Official YouTube Channel Button */}
+        <a
+          href="https://www.youtube.com/@uombonisecondaryschool"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF0000] hover:bg-red-700 text-white flex items-center justify-center shadow-md transition-all hover:scale-110"
+          title="YouTube Channel: @uombonisecondaryschool"
+          aria-label="YouTube Channel"
+        >
+          <Youtube className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
         </a>
 
         {/* Direct Call */}

@@ -529,6 +529,8 @@ export interface SchoolProfile {
   headmasterPhone?: string;
   headmasterWelcomeSw?: string;
   headmasterWelcomeEn?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
 }
 
 // ==========================================

@@ -91,12 +91,14 @@ export interface ProfessionalStaffDashboardProps {
   onClose?: () => void;
   onOpenAcademicMasterPortal?: () => void;
   isModal?: boolean;
+  initialTeacherId?: string;
 }
 
 export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProps> = ({
   onClose,
   onOpenAcademicMasterPortal,
   isModal = false,
+  initialTeacherId,
 }) => {
   const { language } = useLanguage();
   const { user, userProfile, logout, setActiveView } = useAuth();
@@ -121,32 +123,71 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
         user.email.toLowerCase()
       ));
 
+  // Teacher Identity and Switcher State
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(() => {
+    if (initialTeacherId) return initialTeacherId;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('uomboni_active_teacher_id');
+      if (saved) return saved;
+    }
+    return '';
+  });
+
+  useEffect(() => {
+    if (initialTeacherId) {
+      setSelectedTeacherId(initialTeacherId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('uomboni_active_teacher_id', initialTeacherId);
+      }
+    }
+  }, [initialTeacherId]);
+
   // Match teacher profile in database
   const activeTeacher: Teacher = useMemo(() => {
+    // 1. Explicitly selected teacher in switcher
+    if (selectedTeacherId && teachers && teachers.length > 0) {
+      const matchById = teachers.find((t: Teacher) => t.id === selectedTeacherId);
+      if (matchById) return matchById;
+    }
+    // 2. Saved active teacher ID in localStorage
+    const savedId = typeof window !== 'undefined' ? localStorage.getItem('uomboni_active_teacher_id') : null;
+    if (savedId && teachers && teachers.length > 0) {
+      const matchById = teachers.find((t: Teacher) => t.id === savedId);
+      if (matchById) return matchById;
+    }
+    // 3. Match from user profile email or authenticated user email or name
     if (teachers && teachers.length > 0) {
       const match = teachers.find(
         (t: Teacher) =>
           (user?.email && t.email?.toLowerCase() === user.email.toLowerCase()) ||
           (userProfile?.email && t.email?.toLowerCase() === userProfile.email.toLowerCase()) ||
-          (userProfile?.fullName && t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()))
+          (userProfile?.fullName && (
+            t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()) ||
+            userProfile.fullName.toLowerCase().includes(t.name.toLowerCase())
+          ))
       );
       if (match) return match;
+
+      // 4. Default to Mwl. Yohana Bahati if available or the first teacher
+      const yohana = teachers.find((t: Teacher) => t.id === 'tch-003' || t.name.toLowerCase().includes('yohana'));
+      if (yohana) return yohana;
+
       return teachers[0];
     }
     return {
-      id: 'tch-004',
-      name: userProfile?.fullName || 'Mwl. Herman',
-      role: 'Mwalimu wa Masomo (Teacher)',
-      roleSw: 'Mwalimu wa Masomo',
-      roleEn: 'Subject Teacher',
-      qualification: 'B.A. Education',
-      subjects: ['Chemistry', 'Basic Mathematics'],
-      department: 'Sayansi (Science)',
-      email: user?.email || 'tumainifundtrustfoundation@gmail.com',
-      phone: '+255 782 558 127',
-      experienceYears: 10,
+      id: 'tch-003',
+      name: userProfile?.fullName || 'Mwl. Yohana Bahati',
+      role: 'Mtaaluma Mkuu (Academic Master)',
+      roleSw: 'Mtaaluma Mkuu',
+      roleEn: 'Academic Master',
+      qualification: 'B.Sc. Ed / M.Ed',
+      subjects: ['Physics', 'Basic Mathematics'],
+      department: 'Sayansi na Utawala',
+      email: user?.email || 'yohanabahati665@gmail.com',
+      phone: '+255 745 548 225',
+      experienceYears: 12,
     };
-  }, [teachers, user, userProfile]);
+  }, [teachers, user, userProfile, selectedTeacherId]);
 
   // Assigned subjects for the teacher (Admins/Academic Master have access to all)
   // Assigned subjects for the teacher (Admins/Academic Master have access to all)
@@ -1008,6 +1049,9 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
       const ok = window.confirm('Una mabadiliko ambayo hayajahifadhiwa. Una uhakika unataka kutoka sasa?');
       if (!ok) return;
     }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('uomboni_active_teacher_id');
+    }
     logout();
     if (onClose) onClose();
     setActiveView('website');
@@ -1064,12 +1108,32 @@ export const ProfessionalStaffDashboard: React.FC<ProfessionalStaffDashboardProp
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* User badge */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white/10 rounded-xl border border-white/15 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-bold text-white max-w-[130px] truncate">{activeTeacher.name}</span>
-            <span className="text-[10px] uppercase font-bold text-[#C9A227]">
-              ({isAdminOrAcademic ? 'Mtaaluma / Admin' : 'Mwalimu'})
+          {/* Interactive Teacher Selector & Indicator */}
+          <div className="flex items-center gap-2 px-2.5 py-1 bg-white/10 rounded-xl border border-white/15 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+              <span className="text-[10px] text-amber-200/90 font-bold hidden xl:inline">Mwalimu:</span>
+              <select
+                value={activeTeacher.id}
+                onChange={(e) => {
+                  const newId = e.target.value;
+                  setSelectedTeacherId(newId);
+                  try {
+                    localStorage.setItem('uomboni_active_teacher_id', newId);
+                  } catch (err) {}
+                }}
+                className="bg-[#0c2033] text-white text-xs font-bold py-1 px-2 rounded-lg border border-white/20 outline-none cursor-pointer focus:ring-1 focus:ring-[#C9A227] max-w-[180px] truncate"
+                title="Chagua au badilisha akaunti ya mwalimu"
+              >
+                {(teachers && teachers.length > 0 ? teachers : []).map((t: Teacher) => (
+                  <option key={t.id} value={t.id} className="bg-slate-900 text-white py-1">
+                    {t.name} {t.subjects ? `(${Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="hidden sm:inline-block text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#C9A227] text-slate-950">
+              {isAdminOrAcademic ? 'Admin / Mtaaluma' : 'Mwalimu'}
             </span>
           </div>
 

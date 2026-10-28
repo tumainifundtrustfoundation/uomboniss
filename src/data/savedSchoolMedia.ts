@@ -3414,6 +3414,8 @@ export const SAVED_SCHOOL_PROFILE = {
   "slogan": "Tujiendeleze sisi wenyewe.",
   "diocese": "Catholic Diocese of Moshi (Jimbo Katoliki la Moshi)",
   "website": "www.uomboniss.ac.tz",
+  "facebookUrl": "https://web.facebook.com/profile.php?id=61596072835470",
+  "youtubeUrl": "https://www.youtube.com/@uombonisecondaryschool",
   "email": "uombonisecondary@gmail.com",
   "vision": "To be the centre of excellence in providing quality education in the country.",
   "visionSw": "Kuwa kitovu cha ubora katika kutoa elimu bora nchini kote.",

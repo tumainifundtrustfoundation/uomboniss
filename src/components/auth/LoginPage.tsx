@@ -17,13 +17,19 @@ import {
   HelpCircle,
   User,
   ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Check,
 } from 'lucide-react';
 import { SchoolLogo } from '../SchoolLogo';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { sendResetPassword } from '../../lib/firebase';
+import { sendResetPassword, UserRole } from '../../lib/firebase';
 import { checkServerSecurityStatus } from '../../services/authSecurityClient';
 import { detectUserRoleFromIdentifier } from '../../utils/userRoleDetector';
+import { GoogleAccountSelectModal } from '../GoogleAccountSelectModal';
+import { TEACHER_AUTH_DIRECTORY, TeacherAuthProfile } from '../../services/teacherAuthDirectory';
 
 export const LoginPage: React.FC = () => {
   const { login, loginWithGoogleAuth, loading: authLoading, setActiveView } = useAuth();
@@ -34,6 +40,11 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Google Account Select Modal state
+  const [isGoogleSelectOpen, setIsGoogleSelectOpen] = useState(false);
+  const [showTeacherRoster, setShowTeacherRoster] = useState(true);
+  const [selectedTeacherFeedback, setSelectedTeacherFeedback] = useState<string | null>(null);
 
   // Forgot password modal state
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
@@ -102,12 +113,30 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
+    if (isSubmitting || authLoading) return;
+    setErrorMessage('');
+    setIsGoogleSelectOpen(true);
+  };
+
+  const handleGoogleAccountSelected = async (
+    email: string,
+    name: string,
+    role: UserRole,
+    teacherId?: string
+  ) => {
+    setIsGoogleSelectOpen(false);
     if (isSubmitting || authLoading) return;
     setErrorMessage('');
     setIsSubmitting(true);
     try {
-      const res = await loginWithGoogleAuth();
+      if (teacherId) {
+        try {
+          localStorage.setItem('uomboni_active_teacher_id', teacherId);
+          localStorage.setItem('uomboni_selected_teacher_email', email.toLowerCase());
+        } catch (e) {}
+      }
+      const res = await loginWithGoogleAuth(role, { email, name, role });
       if (!res.success) {
         setErrorMessage(
           language === 'sw'
@@ -123,6 +152,31 @@ export const LoginPage: React.FC = () => {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDirectTeacherSelect = async (tch: TeacherAuthProfile, autoLogin = false) => {
+    setIdentifier(tch.email);
+    setPassword(tch.defaultPin);
+    setErrorMessage('');
+    setSelectedTeacherFeedback(`Umechagua: ${tch.name} (${tch.role}) - Masomo: ${tch.assignedSubjects.join(', ')}`);
+    try {
+      localStorage.setItem('uomboni_active_teacher_id', tch.id);
+      localStorage.setItem('uomboni_selected_teacher_email', tch.email.toLowerCase());
+    } catch (e) {}
+
+    if (autoLogin) {
+      setIsSubmitting(true);
+      try {
+        const res = await login(tch.email, tch.defaultPin);
+        if (!res.success) {
+          setErrorMessage(res.error || 'Hitilafu ya kuingia kwa mwalimu.');
+        }
+      } catch (err: any) {
+        setErrorMessage('Hitilafu ya uthibitishaji.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -428,8 +482,127 @@ export const LoginPage: React.FC = () => {
                     />
                   </svg>
                 </div>
-                <span>Ingia na Google (Akaunti ya Watumishi / Staff)</span>
+                <span>Ingia na Google (Chagua Mwalimu / Mtumishi)</span>
               </button>
+            </div>
+
+            {/* Selected Teacher Feedback Banner */}
+            {selectedTeacherFeedback && (
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-[11px] font-bold flex items-center justify-between gap-2 shadow-2xs">
+                <span className="truncate">{selectedTeacherFeedback}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTeacherFeedback(null)}
+                  className="text-amber-700 hover:text-amber-950 text-xs px-1"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Teacher Direct Quick Select Accordion */}
+            <div className="pt-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setShowTeacherRoster(!showTeacherRoster)}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-[#102A43] text-[#C9A227] flex items-center justify-center text-xs font-black">
+                    👨‍🏫
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-[#102A43]">
+                      Orodha ya Walimu Wote (Bonyeza Kuingia)
+                    </span>
+                    <p className="text-[10px] text-slate-500">
+                      Kila mwalimu ana masomo na akaunti yake binafsi
+                    </p>
+                  </div>
+                </div>
+                {showTeacherRoster ? (
+                  <ChevronUp className="w-4 h-4 text-slate-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                )}
+              </button>
+
+              {showTeacherRoster && (
+                <div className="mt-2 space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {Object.values(TEACHER_AUTH_DIRECTORY)
+                    .filter((t) => t.id !== 'tch-yohana-google') // Avoid duplicate Yohana
+                    .map((tch) => (
+                      <div
+                        key={tch.id}
+                        className="p-2 rounded-xl border border-slate-200 bg-white hover:border-[#102A43]/50 transition-all flex items-center justify-between gap-2 text-left"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={tch.imageUrl || '/media/media_1.webp'}
+                            alt={tch.name}
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/media/media_1.webp';
+                            }}
+                          />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold text-slate-900 truncate">
+                                {tch.name}
+                              </span>
+                              {tch.id === 'tch-003' && (
+                                <span className="text-[9px] px-1 py-0.2 rounded font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  Mtaaluma
+                                </span>
+                              )}
+                              {tch.id === 'tch-001' && (
+                                <span className="text-[9px] px-1 py-0.2 rounded font-black bg-amber-100 text-amber-800 border border-amber-200">
+                                  Mkuu wa Shule
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-slate-500 truncate">{tch.role}</div>
+                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                              {tch.assignedSubjects.slice(0, 2).map((s) => (
+                                <span
+                                  key={s}
+                                  className="text-[9px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-semibold"
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                              {tch.assignedSubjects.length > 2 && (
+                                <span className="text-[9px] text-slate-400">
+                                  +{tch.assignedSubjects.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleDirectTeacherSelect(tch, false)}
+                            className="px-2 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-[10px] font-bold text-slate-700 transition cursor-pointer"
+                            title="Jaza fomu kwa taarifa za mwalimu huyu"
+                          >
+                            Jaza
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDirectTeacherSelect(tch, true)}
+                            disabled={isBusy}
+                            className="px-2.5 py-1 rounded-lg bg-[#102A43] hover:bg-[#064e3b] text-white text-[10px] font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
+                            title="Ingia moja kwa moja kama mwalimu huyu"
+                          >
+                            ⚡ Ingia
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
 
             {/* School Helpdesk & Registry Hotline */}
@@ -556,6 +729,14 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Google Account Select Modal for Staff and Faculty */}
+      <GoogleAccountSelectModal
+        isOpen={isGoogleSelectOpen}
+        onClose={() => setIsGoogleSelectOpen(false)}
+        onSelectAccount={handleGoogleAccountSelected}
+        defaultRole="teacher"
+      />
 
     </div>
   );

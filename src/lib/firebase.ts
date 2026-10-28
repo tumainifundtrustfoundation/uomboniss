@@ -489,16 +489,73 @@ async function authenticateIframeGoogleUser(
   profile: UserProfile;
   isFallback: boolean;
 }> {
-  const chosenEmail = customEmail || 'tumainifundtrustfoundation@gmail.com';
-  const targetRole: UserRole = preferredRole || (chosenEmail.includes('adolph') ? 'admin' : 'admin');
+  // If no custom email provided, check localStorage for chosen teacher or context
+  let chosenEmail = (customEmail || '').toLowerCase().trim();
+  if (!chosenEmail && typeof localStorage !== 'undefined') {
+    const savedTeacherEmail = localStorage.getItem('uomboni_selected_teacher_email');
+    if (savedTeacherEmail) chosenEmail = savedTeacherEmail.toLowerCase().trim();
+  }
+
+  // If still not specified, select based on preferred role
+  if (!chosenEmail) {
+    if (preferredRole === 'teacher') {
+      chosenEmail = 'yohanabahati665@gmail.com';
+    } else if (preferredRole === 'academic_master') {
+      chosenEmail = 'yohanabahati665@gmail.com';
+    } else if (preferredRole === 'bursar') {
+      chosenEmail = 'sigminja@gmail.com';
+    } else {
+      chosenEmail = 'adolphmassawe@gmail.com';
+    }
+  }
+
+  // Look up teacher in official Teacher Auth Directory
+  const matchedStaff = Object.values(TEACHER_AUTH_DIRECTORY).find(
+    (t) => t.email.toLowerCase() === chosenEmail || t.id.toLowerCase() === chosenEmail
+  );
+
+  let targetRole: UserRole = preferredRole || 'teacher';
+  let displayName = customName || '';
+
+  if (matchedStaff) {
+    displayName = customName || matchedStaff.name;
+    const isAcademic = matchedStaff.role.toLowerCase().includes('academic') || matchedStaff.role.toLowerCase().includes('taaluma');
+    const isAdmin = matchedStaff.role.toLowerCase().includes('mkuu wa shule') || matchedStaff.role.toLowerCase().includes('headmaster');
+    const isBursar = matchedStaff.role.toLowerCase().includes('bursar') || matchedStaff.role.toLowerCase().includes('mhasibu');
+    
+    if (preferredRole) {
+      targetRole = preferredRole;
+    } else if (isAdmin) {
+      targetRole = 'admin';
+    } else if (isBursar) {
+      targetRole = 'bursar';
+    } else if (isAcademic) {
+      targetRole = 'academic_master';
+    } else {
+      targetRole = 'teacher';
+    }
+  } else if (chosenEmail.includes('adolph') || chosenEmail.includes('tumaini')) {
+    targetRole = 'admin';
+    displayName = customName || 'Br. Adolph Massawe (Mkuu wa Shule)';
+  } else if (chosenEmail.includes('minja') || chosenEmail.includes('bursar')) {
+    targetRole = 'bursar';
+    displayName = customName || 'Mwl. Sigbert Minja (Bursar)';
+  } else if (chosenEmail.includes('bahati')) {
+    targetRole = 'academic_master';
+    displayName = customName || 'Mwl. Yohana Bahati (Academic Master)';
+  } else {
+    targetRole = preferredRole || 'teacher';
+    displayName = customName || chosenEmail.split('@')[0];
+  }
+
   const uid = 'google-user-' + chosenEmail.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 30);
-  const displayName = customName || (targetRole === 'admin' ? 'Br. Adolph Massawe (Mkuu wa Shule)' : chosenEmail.split('@')[0]);
+  const photoURL = matchedStaff?.imageUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80';
 
   const syntheticUser: User = {
     uid,
     email: chosenEmail,
     displayName,
-    photoURL: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+    photoURL,
     emailVerified: true,
     isAnonymous: false,
     metadata: {},
@@ -507,8 +564,8 @@ async function authenticateIframeGoogleUser(
         providerId: 'google.com',
         email: chosenEmail,
         displayName,
-        photoURL: null,
-        phoneNumber: null,
+        photoURL,
+        phoneNumber: matchedStaff?.phone || null,
         uid,
       },
     ],
@@ -519,12 +576,11 @@ async function authenticateIframeGoogleUser(
     getIdTokenResult: async () => ({} as any),
     reload: async () => {},
     toJSON: () => ({}),
-    phoneNumber: '+255 782 558 127',
+    phoneNumber: matchedStaff?.phone || '+255 782 558 127',
     providerId: 'google.com',
   } as unknown as User;
 
   const now = new Date().toISOString();
-  const matchedStaff = Object.values(TEACHER_AUTH_DIRECTORY).find((t) => t.email.toLowerCase() === chosenEmail.toLowerCase());
   const fallbackProfile: UserProfile = {
     uid,
     fullName: displayName,
@@ -532,10 +588,18 @@ async function authenticateIframeGoogleUser(
     phone: matchedStaff?.phone || '+255 782 558 127',
     role: targetRole,
     status: 'approved',
-    assignedDepartments: matchedStaff ? [matchedStaff.department] : (targetRole === 'admin' ? ['Utawala Mkuu (Executive Administration)', 'Taaluma (Academic Affairs)'] : ['Sayansi (Science Department)']),
-    assignedSubjects: matchedStaff?.assignedSubjects || (targetRole === 'admin' ? ['Chemistry', 'Biology', 'Physics', 'Basic Mathematics'] : ['Chemistry', 'Biology']),
-    assignedClasses: ['Kidato cha 3 (Form 3)', 'Kidato cha 4 (Form 4)'],
-    photoURL: syntheticUser.photoURL,
+    assignedDepartments: matchedStaff
+      ? [matchedStaff.department]
+      : targetRole === 'admin'
+      ? ['Utawala Mkuu', 'Taaluma']
+      : ['Sayansi (Science)'],
+    assignedSubjects: matchedStaff?.assignedSubjects || (
+      targetRole === 'admin'
+        ? ['Civics', 'History', 'Geography', 'Kiswahili', 'English Language', 'Physics', 'Chemistry', 'Biology', 'Basic Mathematics', 'Commerce', 'Bookkeeping', 'Religious Education']
+        : ['Chemistry', 'Basic Mathematics']
+    ),
+    assignedClasses: ['Kidato cha 1', 'Kidato cha 2', 'Kidato cha 3', 'Kidato cha 4'],
+    photoURL,
     school: 'UOMBONI SECONDARY SCHOOL',
     createdAt: now,
     updatedAt: now,
@@ -547,6 +611,7 @@ async function authenticateIframeGoogleUser(
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem('uomboni_preview_profile', JSON.stringify(fallbackProfile));
+      localStorage.setItem('uomboni_selected_teacher_email', chosenEmail);
     } catch {}
   }
 
@@ -1177,21 +1242,40 @@ export async function loginWithEmailPassword(
         const isAcademic = teacherProfile.role.toLowerCase().includes('academic') || teacherProfile.role.toLowerCase().includes('taaluma');
         const roleToAssign: UserRole = isAcademic ? 'academic_master' : 'teacher';
 
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('uomboni_active_teacher_id', teacherProfile.id);
+            localStorage.setItem('uomboni_selected_teacher_email', teacherProfile.email);
+          } catch {}
+        }
+
         const demoRes = await signInAsDemoRole(roleToAssign);
+        const completeTeacherProfile: UserProfile = {
+          ...demoRes.profile,
+          fullName: teacherProfile.name,
+          email: teacherProfile.email,
+          phone: teacherProfile.phone,
+          role: roleToAssign,
+          assignedSubjects: teacherProfile.assignedSubjects,
+          assignedDepartments: [teacherProfile.department],
+          photoURL: teacherProfile.imageUrl || null,
+        };
+
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('uomboni_preview_profile', JSON.stringify(completeTeacherProfile));
+          } catch {}
+        }
+
         return {
           success: true,
           user: {
             ...demoRes.user,
             displayName: teacherProfile.name,
             email: teacherProfile.email,
+            photoURL: teacherProfile.imageUrl || null,
           },
-          profile: {
-            ...demoRes.profile,
-            fullName: teacherProfile.name,
-            email: teacherProfile.email,
-            phone: teacherProfile.phone,
-            role: roleToAssign,
-          },
+          profile: completeTeacherProfile,
         };
       }
 

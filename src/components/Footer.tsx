@@ -144,20 +144,22 @@ export const Footer: React.FC<FooterProps> = ({
             {/* Social media links */}
             <div className="pt-3 flex items-center gap-3">
               <a
-                href="https://facebook.com"
+                href={schoolProfile?.facebookUrl || 'https://web.facebook.com/profile.php?id=61596072835470'}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#C9A227] hover:text-[#102A43] text-[#FFFFF0] flex items-center justify-center transition-colors"
+                aria-label="Facebook Rasmi ya Uomboni Secondary School"
+                title="Facebook Rasmi: Uomboni Secondary School"
+                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#1877F2] hover:text-white text-[#FFFFF0] flex items-center justify-center transition-all hover:scale-110 shadow-xs"
               >
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="https://youtube.com"
+                href={schoolProfile?.youtubeUrl || 'https://www.youtube.com/@uombonisecondaryschool'}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="YouTube"
-                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#C9A227] hover:text-[#102A43] text-[#FFFFF0] flex items-center justify-center transition-colors"
+                aria-label="YouTube Channel Rasmi ya Uomboni Secondary School (@uombonisecondaryschool)"
+                title="YouTube Channel: @uombonisecondaryschool"
+                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#FF0000] hover:text-white text-[#FFFFF0] flex items-center justify-center transition-all hover:scale-110 shadow-xs"
               >
                 <Youtube className="w-4 h-4" />
               </a>
@@ -165,8 +167,9 @@ export const Footer: React.FC<FooterProps> = ({
                 href="https://wa.me/255782558127"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#C9A227] hover:text-[#102A43] text-[#FFFFF0] flex items-center justify-center transition-colors"
+                aria-label="WhatsApp ya Uomboni Secondary School"
+                title="WhatsApp: +255 782 558 127"
+                className="w-8 h-8 rounded-md bg-white/10 hover:bg-[#25D366] hover:text-white text-[#FFFFF0] flex items-center justify-center transition-all hover:scale-110 shadow-xs"
               >
                 <MessageCircle className="w-4 h-4" />
               </a>

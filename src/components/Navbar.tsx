@@ -20,6 +20,8 @@ import {
   Flame,
   FileText,
   FileSpreadsheet,
+  Facebook,
+  Youtube,
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -128,6 +130,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Mail className="w-3.5 h-3.5 text-[#C9A227] shrink-0" />
               <span>{schoolProfile?.email || 'uombonisec@gmail.com'}</span>
             </span>
+
+            {/* Official Social Media Links */}
+            <div className="hidden xl:inline-flex items-center gap-1.5 pl-2 border-l border-white/20">
+              <a
+                href="https://web.facebook.com/profile.php?id=61596072835470"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Facebook Rasmi: Uomboni Secondary School"
+                aria-label="Facebook"
+                className="w-5 h-5 rounded-md flex items-center justify-center bg-white/10 hover:bg-[#1877F2] text-white transition-all hover:scale-110"
+              >
+                <Facebook className="w-3 h-3" />
+              </a>
+              <a
+                href="https://www.youtube.com/@uombonisecondaryschool"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="YouTube Channel: @uombonisecondaryschool"
+                aria-label="YouTube"
+                className="w-5 h-5 rounded-md flex items-center justify-center bg-white/10 hover:bg-[#FF0000] text-white transition-all hover:scale-110"
+              >
+                <Youtube className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           {/* Right: Quick Tools (Clean, only essential on mobile to prevent overflow) */}
@@ -580,6 +606,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </button>
               )}
+
+              {/* Mobile Social Links */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-center gap-3">
+                <a
+                  href="https://web.facebook.com/profile.php?id=61596072835470"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1877F2]/20 border border-[#1877F2]/40 text-[#1877F2] text-xs font-bold"
+                >
+                  <Facebook className="w-3.5 h-3.5" />
+                  <span>Facebook</span>
+                </a>
+                <a
+                  href="https://www.youtube.com/@uombonisecondaryschool"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 border border-red-600/40 text-red-400 text-xs font-bold"
+                >
+                  <Youtube className="w-3.5 h-3.5" />
+                  <span>YouTube Channel</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
