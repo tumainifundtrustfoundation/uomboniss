@@ -59,6 +59,7 @@ import { SchoolLogo } from './SchoolLogo';
 import { AcademicStudentRosterTab } from './academic/AcademicStudentRosterTab';
 import { AcademicDirectivesManagerTab } from './academic/AcademicDirectivesManagerTab';
 import { AcademicExamTypesManagerTab } from './academic/AcademicExamTypesManagerTab';
+import { ExcelResultsEntryGrid } from './portal/ExcelResultsEntryGrid';
 import { StudentResult, Teacher, StudentProfile, SubjectResult, ResultsPdfDocument } from '../types';
 import {
   downloadStudentResultSlipPdf,
@@ -1919,101 +1920,18 @@ export const AcademicPortalModal: React.FC<AcademicPortalModalProps> = ({
                   {/* ========================================================================= */}
                   {teacherActiveTab === 'master_grid' && (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-[#FFFDF8] border-2 border-red-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-                        <div>
-                          <h5 className="text-sm font-black text-stone-900 flex items-center gap-2">
-                            <Table className="w-4 h-4 text-red-700" />
-                            <span>{language === 'sw' ? 'Daftari Kamili la Masomo Yote (Master Marksheet Matrix)' : 'All-Subjects Master Matrix'}</span>
-                          </h5>
-                          <p className="text-xs text-stone-600 mt-0.5">
-                            {language === 'sw'
-                              ? `Mwalimu ${selectedTeacher?.name}: Masomo yako pekee ya kuingiza maksi ni: ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'}. Masomo mengine yanalindwa kwa usalama.`
-                              : `Teacher ${selectedTeacher?.name}: Your assigned subjects are: ${selectedTeacher?.subjects?.join(', ')}. Other subjects are securely locked.`}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => exportResultsToExcel(broadsheetResults, `UOMBONI_MASTER_MARKSHEET_${broadsheetForm}.xlsx`)}
-                            className="px-3.5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-[#FFFFF0] text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>{language === 'sw' ? 'Pakua Excel' : 'Export Excel'}</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Teacher assigned subject reminder badge */}
-                      <div className="p-3 rounded-2xl bg-[#FAF7EE] border-2 border-red-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                        <div className="flex items-center gap-2 text-red-900 font-medium">
-                          <ShieldCheck className="w-4 h-4 text-red-700 shrink-0" />
-                          <span>
-                            {language === 'sw'
-                              ? `Uthibitisho wa Ulinzi: Umeidhinishwa kuingiza alama kwa somo la ${selectedTeacher?.subjects?.join(', ') || 'Somo Lako'} pekee.`
-                              : `Access Controlled: You may only input scores for your assigned subjects (${selectedTeacher?.subjects?.join(', ')}).`}
-                          </span>
-                        </div>
-                        <span className="px-2.5 py-0.5 rounded-full bg-red-700 text-[#FFFFF0] text-[10px] font-black uppercase tracking-wider self-start sm:self-center shadow-xs">
-                          ★ Somo Lako Pekee
-                        </span>
-                      </div>
-
-                      <div className="bg-[#FFFDF8] rounded-3xl border-2 border-red-200/80 overflow-hidden shadow-md">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs">
-                            <thead className="bg-[#FAF7EE] text-stone-700 uppercase text-[10px] font-black border-b border-red-200">
-                              <tr>
-                                <th className="py-2.5 px-3">#</th>
-                                <th className="py-2.5 px-3">Namba</th>
-                                <th className="py-2.5 px-4 min-w-44">Jina la Mwanafunzi</th>
-                                {STANDARD_SUBJECTS.map((sub) => (
-                                  <th key={sub.code} className="py-2.5 px-2 text-center font-mono">
-                                    {sub.name.substring(0, 4).toUpperCase()}
-                                  </th>
-                                ))}
-                                <th className="py-2.5 px-3 text-center">Jumla</th>
-                                <th className="py-2.5 px-3 text-center">Wastani</th>
-                                <th className="py-2.5 px-3 text-center">Pointi</th>
-                                <th className="py-2.5 px-3 text-center">Division</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-red-100 font-medium text-stone-800">
-                              {broadsheetResults.map((student, idx) => (
-                                <tr key={`${student.id}-${student.examNumber || idx}-${idx}`} className="hover:bg-[#FAF7EE] transition-colors">
-                                  <td className="py-2.5 px-3 text-stone-500 font-mono">{idx + 1}</td>
-                                  <td className="py-2.5 px-3 font-mono text-red-800 font-bold">{student.examNumber}</td>
-                                  <td className="py-2.5 px-4 font-bold text-stone-900">{student.studentName}</td>
-                                  {STANDARD_SUBJECTS.map((sub) => {
-                                    const match = student.subjects.find(
-                                      (s) => s.code === sub.code || s.name.toLowerCase() === sub.name.toLowerCase()
-                                    );
-                                    return (
-                                      <td key={sub.code} className="py-2.5 px-2 text-center font-mono text-stone-700">
-                                        {match ? (
-                                          <span className="font-bold">
-                                            {match.score}
-                                            <span className="text-[10px] text-red-700 ml-0.5">{match.grade}</span>
-                                          </span>
-                                        ) : (
-                                          <span className="text-stone-400">-</span>
-                                        )}
-                                      </td>
-                                    );
-                                  })}
-                                  <td className="py-2.5 px-3 text-center font-mono text-stone-700">{student.totalMarks}</td>
-                                  <td className="py-2.5 px-3 text-center font-black text-red-700 font-mono">{student.averageMarks}%</td>
-                                  <td className="py-2.5 px-3 text-center font-bold text-stone-900 font-mono">{student.points}</td>
-                                  <td className="py-2.5 px-3 text-center">
-                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${getDivisionBadge(student.division)}`}>
-                                      {student.division}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+                      <ExcelResultsEntryGrid
+                        userProfile={userProfile}
+                        currentUserEmail={selectedTeacher?.email || user?.email || userProfile?.email}
+                        isAdminOrAcademic={userProfile?.role === 'admin' || userProfile?.role === 'academic_master' || isAdminLoggedIn}
+                        studentsList={students}
+                        assignedSubjects={selectedTeacher?.subjects || userProfile?.assignedSubjects || ['Civics']}
+                        assignedClasses={['Form 1', 'Form 2', 'Form 3', 'Form 4']}
+                        initialForm={teacherSelectedForm || 'Form 2'}
+                        initialExamType={teacherSelectedExam || 'Mtihani wa Mwaka (Annual Exam)'}
+                        initialAcademicYear="2025/2026"
+                        initialTerm="Muhula wa 2 (Term 2)"
+                      />
                     </div>
                   )}
 

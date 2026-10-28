@@ -43,6 +43,11 @@ import { savePublishedResult, getStudents, getClasses } from '../../services/sch
 import { recordAuditLog } from '../../services/auditLoggingService';
 import { auth, UserProfile } from '../../lib/firebase';
 import { StudentProfile, PendingSubjectSubmission } from '../../types';
+import { FORM_ONE_STUDENT_PROFILES, FORM_ONE_STUDENT_RESULTS } from '../../data/formOneStudents';
+import { FORM_TWO_STUDENT_PROFILES, FORM_TWO_STUDENT_RESULTS } from '../../data/formTwoStudents';
+import { FORM_THREE_STUDENT_PROFILES, FORM_THREE_STUDENT_RESULTS } from '../../data/formThreeStudents';
+import { FORM_FOUR_STUDENT_PROFILES, FORM_FOUR_STUDENT_RESULTS } from '../../data/formFourStudents';
+import { CSSC_FORM_TWO_JOINT_RESULTS_2026 } from '../../data/csscJointExamResults2026';
 
 export interface ExcelGridStudentRow {
   rollNo: number;
@@ -185,11 +190,28 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
   // Generate grid rows from students list and cached submissions
   const loadGridData = useCallback(async () => {
     // 1. Filter students for selected Form & Stream
-    const matchedStudents = (studentsList || []).filter((s) => {
+    let matchedStudents = (studentsList || []).filter((s) => {
       const matchesForm = (s.form || '').toLowerCase().includes(selectedForm.toLowerCase().replace('form ', ''));
       const matchesStream = selectedStream === 'ALL' || !s.stream || s.stream === selectedStream;
       return matchesForm && matchesStream;
     });
+
+    // Fallback to official class roster if studentsList is empty or lacks this form
+    if (matchedStudents.length === 0) {
+      if (selectedForm.includes('2')) {
+        matchedStudents = FORM_TWO_STUDENT_PROFILES;
+      } else if (selectedForm.includes('1')) {
+        matchedStudents = FORM_ONE_STUDENT_PROFILES;
+      } else if (selectedForm.includes('3')) {
+        matchedStudents = FORM_THREE_STUDENT_PROFILES;
+      } else {
+        matchedStudents = FORM_FOUR_STUDENT_PROFILES;
+      }
+      if (selectedStream !== 'ALL') {
+        const streamFiltered = matchedStudents.filter((s) => s.stream === selectedStream);
+        if (streamFiltered.length > 0) matchedStudents = streamFiltered;
+      }
+    }
 
     if (matchedStudents.length === 0) {
       setGridRows([]);
@@ -226,6 +248,13 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
       setWorkflowReturnNotes(null);
     }
 
+    // Baseline fallback results for this class
+    let fallbackResults: any[] = [];
+    if (selectedForm.includes('2')) fallbackResults = FORM_TWO_STUDENT_RESULTS;
+    else if (selectedForm.includes('4')) fallbackResults = FORM_FOUR_STUDENT_RESULTS;
+    else if (selectedForm.includes('1')) fallbackResults = FORM_ONE_STUDENT_RESULTS;
+    else if (selectedForm.includes('3')) fallbackResults = FORM_THREE_STUDENT_RESULTS;
+
     // Build Student Rows
     const rows: ExcelGridStudentRow[] = matchedStudents.map((st, idx) => {
       const studentMarks: Record<string, number | '' | 'ABS'> = {};
@@ -246,6 +275,31 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
                 foundScore = 'ABS';
               } else if (typeof sc.score === 'number') {
                 foundScore = sc.score;
+              }
+            }
+          }
+        }
+
+        // If not found in submissions, check official school results
+        if (foundScore === '') {
+          const matchedRes = fallbackResults.find(
+            (r) =>
+              (st.examNumber && r.examNumber && r.examNumber.toLowerCase() === st.examNumber.toLowerCase()) ||
+              (r.studentName && r.studentName.toLowerCase() === st.fullName.toLowerCase())
+          );
+          if (matchedRes && Array.isArray(matchedRes.subjects)) {
+            const subRes = matchedRes.subjects.find(
+              (s: any) =>
+                s.name.toLowerCase() === sub.name.toLowerCase() ||
+                s.code === sub.code ||
+                s.name.toLowerCase().includes(sub.name.toLowerCase()) ||
+                sub.name.toLowerCase().includes(s.name.toLowerCase())
+            );
+            if (subRes) {
+              if (subRes.remarks?.includes('ABS') || (subRes.score === 0 && subRes.remarks?.includes('Hakufanya'))) {
+                foundScore = 'ABS';
+              } else if (typeof subRes.score === 'number') {
+                foundScore = subRes.score;
               }
             }
           }
@@ -1769,6 +1823,7 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
               <option value="B">Stream B</option>
               <option value="Science">Science Stream</option>
               <option value="Arts">Arts Stream</option>
+              <option value="Commercial">Commercial Stream</option>
             </select>
           </div>
 
@@ -1782,12 +1837,14 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
               onChange={(e) => setSelectedExamType(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-[#102A43] focus:outline-none focus:border-[#102A43]"
             >
+              <option value="Weekly Test (Jaribio la Wiki)">Weekly Test (Jaribio la Wiki)</option>
               <option value="Jaribio la Mwezi (Monthly Test)">Jaribio la Mwezi (Monthly Test)</option>
               <option value="Mtihani wa Nusu Muhula (Mid-Term Exam)">Mtihani wa Nusu Muhula (Mid-Term)</option>
-              <option value="Mtihani wa Muhula (Terminal Exam)">Mtihani wa Muhula (Terminal)</option>
+              <option value="Mtihani wa Muhula (Terminal Exam)">Mtihani wa Muhula (Terminal Exam)</option>
               <option value="Mtihani wa Mwaka (Annual Exam)">Mtihani wa Mwaka (Annual Exam)</option>
-              <option value="NECTA Mock 2025">NECTA Mock 2025</option>
-              <option value="Pre-NECTA 2025">Pre-NECTA 2025</option>
+              <option value="NECTA Mock Exam">NECTA Mock Exam</option>
+              <option value="Pre-NECTA Exam">Pre-NECTA Exam</option>
+              <option value="CSSC Joint Examination">CSSC Joint Examination</option>
             </select>
           </div>
 
@@ -2072,37 +2129,56 @@ export const ExcelResultsEntryGrid: React.FC<ExcelResultsEntryGridProps> = ({
                               cellError ? 'bg-rose-50/60' : ''
                             }`}
                           >
-                            <input
-                              id={cellId}
-                              type="text"
-                              value={cellVal !== undefined ? cellVal : ''}
-                              placeholder="—"
-                              disabled={isReadOnly}
-                              onChange={(e) => handleCellChange(sIdx, sub.name, e.target.value)}
-                              onKeyDown={(e) => handleCellKeyDown(sIdx, sub.name, e)}
-                              onPaste={(e) => handleGridPaste(sIdx, sub.name, e)}
-                              onFocus={() => setFocusedCell({ studentIndex: sIdx, subjectKey: sub.name })}
-                              className={`w-full h-8 px-1.5 text-center font-mono font-bold text-xs rounded-lg transition-all focus:outline-none ${
-                                isReadOnly
-                                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                  : cellError
-                                  ? 'border-2 border-rose-500 bg-rose-50 text-rose-950 ring-1 ring-rose-400'
-                                  : cellVal === 'ABS'
-                                  ? 'border border-rose-300 bg-rose-100 text-rose-900 font-black'
-                                  : typeof cellVal === 'number'
-                                  ? 'border border-emerald-300 bg-emerald-50/40 text-emerald-950 focus:border-emerald-600 focus:bg-white'
-                                  : 'border border-slate-200 bg-white text-slate-700 focus:border-blue-500'
-                              }`}
-                              title={
-                                cellError ||
-                                (!isAssigned
-                                  ? 'Huna ruhusa ya kuhariri somo hili (Somo halijapangiwa kwako)'
-                                  : `${sub.name}: ${cellVal !== '' ? cellVal : 'Hakuna alama'}`)
-                              }
-                            />
-                            {cellError && (
-                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-600 ring-2 ring-white" />
-                            )}
+                            <div className="relative flex items-center">
+                              <input
+                                id={cellId}
+                                type="text"
+                                value={cellVal !== undefined ? cellVal : ''}
+                                placeholder="—"
+                                disabled={isReadOnly}
+                                onChange={(e) => handleCellChange(sIdx, sub.name, e.target.value)}
+                                onKeyDown={(e) => handleCellKeyDown(sIdx, sub.name, e)}
+                                onPaste={(e) => handleGridPaste(sIdx, sub.name, e)}
+                                onFocus={() => setFocusedCell({ studentIndex: sIdx, subjectKey: sub.name })}
+                                className={`w-full h-8 px-1.5 ${typeof cellVal === 'number' ? 'pr-5 text-left pl-2' : 'text-center'} font-mono font-bold text-xs rounded-lg transition-all focus:outline-none ${
+                                  isReadOnly
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : cellError
+                                    ? 'border-2 border-rose-500 bg-rose-50 text-rose-950 ring-1 ring-rose-400'
+                                    : cellVal === 'ABS'
+                                    ? 'border border-rose-300 bg-rose-100 text-rose-900 font-black'
+                                    : typeof cellVal === 'number'
+                                    ? 'border border-emerald-300 bg-emerald-50/40 text-emerald-950 focus:border-emerald-600 focus:bg-white'
+                                    : 'border border-slate-200 bg-white text-slate-700 focus:border-blue-500'
+                                }`}
+                                title={
+                                  cellError ||
+                                  (!isAssigned
+                                    ? 'Huna ruhusa ya kuhariri somo hili (Somo halijapangiwa kwako)'
+                                    : `${sub.name}: ${cellVal !== '' ? cellVal : 'Hakuna alama'}`)
+                                }
+                              />
+                              {typeof cellVal === 'number' && (
+                                <span
+                                  className={`absolute right-1 text-[9px] font-black pointer-events-none px-1 rounded shadow-2xs ${
+                                    scoreToNectaGrade((cellVal / maxMarks) * 100).grade === 'A'
+                                      ? 'text-emerald-800 bg-emerald-200/90'
+                                      : scoreToNectaGrade((cellVal / maxMarks) * 100).grade === 'B'
+                                      ? 'text-blue-800 bg-blue-200/90'
+                                      : scoreToNectaGrade((cellVal / maxMarks) * 100).grade === 'C'
+                                      ? 'text-amber-800 bg-amber-200/90'
+                                      : scoreToNectaGrade((cellVal / maxMarks) * 100).grade === 'D'
+                                      ? 'text-orange-800 bg-orange-200/90'
+                                      : 'text-rose-800 bg-rose-200/90'
+                                  }`}
+                                >
+                                  {scoreToNectaGrade((cellVal / maxMarks) * 100).grade}
+                                </span>
+                              )}
+                              {cellError && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-600 ring-2 ring-white" />
+                              )}
+                            </div>
                           </td>
                         );
                       })}

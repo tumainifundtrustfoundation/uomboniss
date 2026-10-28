@@ -90,6 +90,7 @@ import { AdminAdmissionDocsTab } from './admin/AdminAdmissionDocsTab';
 import { AdminSchoolVideosTab } from './admin/AdminSchoolVideosTab';
 import { AdminSystemArchitectureTab } from './admin/AdminSystemArchitectureTab';
 import { SystemArchitectureModal } from './SystemArchitectureModal';
+import { ExcelResultsEntryGrid } from './portal/ExcelResultsEntryGrid';
 
 interface AdminPortalModalProps {
   isOpen: boolean;
@@ -238,6 +239,7 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   >('applications');
 
   const [isAdminArchModalOpen, setIsAdminArchModalOpen] = useState(false);
+  const [resultsViewMode, setResultsViewMode] = useState<'excel_grid' | 'published_slips'>('excel_grid');
 
   // Online Applications State
   const [appSearch, setAppSearch] = useState('');
@@ -5889,14 +5891,27 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
                       </p>
                     </div>
 
-                    <button
-                      onClick={downloadExcelTemplate}
-                      id="admin-btn-download-template"
-                      className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>{language === 'sw' ? 'Pakua Kiolezo cha Excel' : 'Download Excel Template'}</span>
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setActiveTab('results');
+                          setResultsViewMode('excel_grid');
+                        }}
+                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-amber-300" />
+                        <span>{language === 'sw' ? 'Fungua Jedwali la Kuingiza Matokeo' : 'Open Results Entry Matrix'}</span>
+                      </button>
+
+                      <button
+                        onClick={downloadExcelTemplate}
+                        id="admin-btn-download-template"
+                        className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>{language === 'sw' ? 'Pakua Kiolezo cha Excel' : 'Download Excel Template'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Feedback Banners */}
@@ -6058,8 +6073,73 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
               {/* TAB: STUDENT RESULTS LIST & INDIVIDUAL PDF SLIP */}
               {activeTab === 'results' && (
                 <div className="space-y-6">
-                  {/* Action Bar */}
-                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                  {/* Sub-tab Switcher: Excel Matrix vs Published Records */}
+                  <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setResultsViewMode('excel_grid')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+                          resultsViewMode === 'excel_grid'
+                            ? 'bg-[#102A43] text-white shadow-sm ring-2 ring-emerald-400/50'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                        <span>Jedwali la Kuingiza Matokeo (Excel Matrix & Bulk Entry)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setResultsViewMode('published_slips')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition cursor-pointer ${
+                          resultsViewMode === 'published_slips'
+                            ? 'bg-[#102A43] text-white shadow-sm ring-2 ring-blue-400/50'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 text-blue-400" />
+                        <span>Hati za PDF za Wanafunzi & Broadsheet ({studentResults.length})</span>
+                      </button>
+                    </div>
+
+                    <div className="text-xs text-slate-500 font-medium hidden sm:block">
+                      {resultsViewMode === 'excel_grid'
+                        ? 'Mfumo kamili wa kuingiza alama mfululizo, kunakili kutoka Excel, na daraja za NECTA.'
+                        : 'Hati rasmi za matokeo na vyeti vya PDF vya wanafunzi.'}
+                    </div>
+                  </div>
+
+                  {resultsViewMode === 'excel_grid' ? (
+                    <ExcelResultsEntryGrid
+                      userProfile={userProfile}
+                      currentUserEmail={user?.email || userProfile?.email || 'tumainifundtrustfoundation@gmail.com'}
+                      isAdminOrAcademic={true}
+                      studentsList={students}
+                      assignedSubjects={[
+                        'Civics',
+                        'History',
+                        'Geography',
+                        'Kiswahili',
+                        'English Language',
+                        'Physics',
+                        'Chemistry',
+                        'Biology',
+                        'Basic Mathematics',
+                        'Commerce',
+                        'Book Keeping',
+                        'Religious Education',
+                      ]}
+                      assignedClasses={['Form 1', 'Form 2', 'Form 3', 'Form 4']}
+                      initialForm="Form 2"
+                      initialExamType="Mtihani wa Mwaka (Annual Exam)"
+                      initialAcademicYear="2025/2026"
+                      initialTerm="Muhula wa 2 (Term 2)"
+                    />
+                  ) : (
+                    <>
+                      {/* Action Bar */}
+                      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-bold text-slate-900">
                         Orodha ya Wanafunzi ({studentResults.length})
@@ -6240,8 +6320,10 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
                       </table>
                     </div>
                   </div>
-                </div>
+                </>
               )}
+            </div>
+          )}
 
               {/* TAB: PDF RESULTS BOOKLETS LIBRARY */}
               {activeTab === 'pdfLibrary' && (

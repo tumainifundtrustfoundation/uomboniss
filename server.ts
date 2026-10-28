@@ -36,8 +36,37 @@ const serverRootDir = typeof __dirname !== "undefined" ? __dirname : process.cwd
 initSchoolDatabase();
 
 async function startServer() {
+  function getPort(): number {
+    const portArgIndex = process.argv.findIndex((arg) => arg === "--port" || arg === "-p");
+    if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+      const parsed = parseInt(process.argv[portArgIndex + 1], 10);
+      if (!isNaN(parsed)) return parsed;
+    }
+    for (const arg of process.argv) {
+      if (arg.startsWith("--port=")) {
+        const parsed = parseInt(arg.split("=")[1], 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+    }
+    return Number(process.env.PORT) || 3000;
+  }
+
+  function getHost(): string {
+    const hostArgIndex = process.argv.findIndex((arg) => arg === "--host" || arg === "-h");
+    if (hostArgIndex !== -1 && process.argv[hostArgIndex + 1]) {
+      return process.argv[hostArgIndex + 1];
+    }
+    for (const arg of process.argv) {
+      if (arg.startsWith("--host=")) {
+        return arg.split("=")[1];
+      }
+    }
+    return process.env.HOST || "0.0.0.0";
+  }
+
+  const PORT = getPort();
+  const HOST = getHost();
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
 
   // Gzip / Deflate compression for ultra-fast network transfer (<70% payload size)
   app.use(compression({
@@ -917,7 +946,10 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
   // Vite middleware in dev or static files in production with Prerendered SEO injection
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: "custom",
     });
     app.use(vite.middlewares);
@@ -970,8 +1002,16 @@ Lugha ya majibu: Jibu kwa ${language === "en" ? "Kiingereza fasaha (English)" : 
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Uomboni Secondary School portal running on http://localhost:${PORT}`);
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`Uomboni Secondary School portal running on http://${HOST}:${PORT}`);
+  });
+
+  server.on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`Port ${PORT} is already in use.`);
+    } else {
+      console.error("Server error:", err);
+    }
   });
 }
 
