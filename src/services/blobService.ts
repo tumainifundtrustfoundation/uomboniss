@@ -102,9 +102,69 @@ export function validateImageFile(file: File | Blob, maxSizeBytes: number = 10 *
 }
 
 /**
+ * Client-side canvas image compression to produce permanent, compact WebP/JPEG data URLs
+ * guaranteeing image persistence in Firebase Firestore even when backend endpoint is unavailable.
+ */
+export function compressImageClientSide(
+  file: File | Blob,
+  maxWidth = 1200,
+  maxHeight = 900,
+  quality = 0.8
+): Promise<string> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      resolve('');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const resultStr = (e.target?.result as string) || '';
+      if (!resultStr.startsWith('data:image/')) {
+        resolve(resultStr);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            const webpData = canvas.toDataURL('image/webp', quality);
+            if (webpData.length > 50) {
+              resolve(webpData);
+              return;
+            }
+          } catch {}
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve(resultStr);
+        }
+      };
+      img.onerror = () => resolve(resultStr);
+      img.src = resultStr;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Core function to upload any file to Vercel Blob or server cloud storage.
  * Automatically converts file to Base64 and dispatches to `/api/blob/upload`
- * which uses @vercel/blob when configured, with local fallback for sandbox/preview.
+ * which uses @vercel/blob when configured, with local and Firestore client-side fallback.
  */
 export async function uploadBlobFile(
   file: File | Blob,
@@ -136,43 +196,63 @@ export async function uploadBlobFile(
           return;
         }
 
-        const res = await fetch('/api/blob/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: cleanFilename,
-            data: base64Data,
-            mimeType,
-            folder,
-          }),
-        });
+        let res: Response | null = null;
+        try {
+          res = await fetch('/api/blob/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: cleanFilename,
+              data: base64Data,
+              mimeType,
+              folder,
+            }),
+          });
+        } catch (fetchErr) {
+          console.warn('[Blob Upload] Network fetch to backend failed, applying Firestore client fallback:', fetchErr);
+        }
 
-        if (!res.ok) {
-          const errText = await res.text();
+        // If backend succeeded with Vercel Blob or local storage
+        if (res && res.ok) {
+          const json = await res.json();
+          const url = json.url || '';
+          const source = json.source || (url.includes('blob.vercel-storage.com') ? 'vercel_blob' : 'local_storage');
           resolve({
-            success: false,
-            url: '',
-            filename: cleanFilename,
-            size: file.size,
-            mimeType,
-            source: 'local_storage',
-            error: `Seva imeshindwa kupakia faili (${res.status}): ${errText}`,
+            success: true,
+            url,
+            pathname: json.pathname,
+            filename: json.filename || cleanFilename,
+            size: json.size || file.size,
+            mimeType: json.mimeType || mimeType,
+            source,
           });
           return;
         }
 
-        const json = await res.json();
-        const url = json.url || '';
-        const source = json.source || (url.includes('blob.vercel-storage.com') ? 'vercel_blob' : 'local_storage');
+        // Resilient Fallback: If on pure Vercel static deployment or backend unavailable,
+        // compress client-side and return permanent data URL to save in Firebase Firestore.
+        // This guarantees that photos NEVER break or disappear on refresh or mobile.
+        const compressedDataUrl = await compressImageClientSide(file);
+        if (compressedDataUrl) {
+          resolve({
+            success: true,
+            url: compressedDataUrl,
+            filename: cleanFilename,
+            size: compressedDataUrl.length,
+            mimeType: 'image/webp',
+            source: 'local_storage',
+          });
+          return;
+        }
 
         resolve({
-          success: true,
-          url,
-          pathname: json.pathname,
-          filename: json.filename || cleanFilename,
-          size: json.size || file.size,
-          mimeType: json.mimeType || mimeType,
-          source,
+          success: false,
+          url: '',
+          filename: cleanFilename,
+          size: file.size,
+          mimeType,
+          source: 'local_storage',
+          error: 'Imeshindwa kusoma na kubana picha kwa ajili ya kuhifadhi.',
         });
       } catch (err: any) {
         resolve({
@@ -438,6 +518,41 @@ export async function saveGalleryPhotoToFirestore(photo: GalleryPhoto): Promise<
   }
 
   return anySuccess;
+}
+
+/**
+ * Retrieves all stored school gallery photos from Firebase Firestore.
+ * First checks the centralized snapshot in school_data/galleryPhotos,
+ * then falls back to querying the gallery_photos collection.
+ */
+export async function getGalleryPhotosFromFirestore(): Promise<GalleryPhoto[]> {
+  try {
+    // 1. Check snapshot in school_data/galleryPhotos
+    const snapDoc = await getDoc(doc(db, 'school_data', 'galleryPhotos'));
+    if (snapDoc.exists()) {
+      const data = snapDoc.data();
+      if (data && Array.isArray(data.data) && data.data.length > 0) {
+        return data.data as GalleryPhoto[];
+      }
+    }
+
+    // 2. Query individual gallery_photos collection
+    const snap = await getDocs(collection(db, 'gallery_photos'));
+    if (!snap.empty) {
+      return snap.docs.map((d) => d.data() as GalleryPhoto);
+    }
+  } catch (err: any) {
+    if (err?.code === 'permission-denied') {
+      try {
+        handleFirestoreError(err, OperationType.LIST, 'gallery_photos');
+      } catch (logErr) {
+        console.warn('[Blob Service] Handled Firestore error on get gallery photos:', logErr);
+      }
+    } else {
+      console.warn('[Blob Service] Error fetching gallery photos from Firestore:', err?.message || err);
+    }
+  }
+  return [];
 }
 
 /**

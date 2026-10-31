@@ -56,9 +56,7 @@ export const TeacherStaffPortalModal: React.FC<TeacherStaffPortalModalProps> = (
               t.name.toLowerCase().includes(userProfile.fullName.toLowerCase()) ||
               userProfile.fullName.toLowerCase().includes(t.name.toLowerCase())
             ))
-        ) ||
-        (teachers || []).find((t: any) => t.id === 'tch-003') ||
-        (teachers && teachers.length > 0 ? teachers[0] : null);
+        );
 
       if (match) {
         setAuthenticatedTeacher({

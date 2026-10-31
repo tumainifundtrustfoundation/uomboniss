@@ -80,7 +80,7 @@ import {
 import { parseExcelResultsFile, downloadExcelTemplate, exportResultsToExcel } from '../utils/excelService';
 import { downloadStudentResultSlipPdf, downloadClassBroadsheetPdf, downloadAdmissionVerificationLetterPdf } from '../utils/pdfService';
 import { processImageFile } from '../utils/imageUploadHelper';
-import { uploadSchoolGalleryImage } from '../services/blobService';
+import { uploadSchoolGalleryImage, compressImageClientSide } from '../services/blobService';
 import { getActiveTeacherPin, setCustomTeacherPin } from '../services/teacherAuthDirectory';
 import { AdminStudentCouncilTab } from './admin/AdminStudentCouncilTab';
 import { AdminSchoolProfileTab } from './admin/AdminSchoolProfileTab';
@@ -1230,7 +1230,13 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
 
         if (uploadRes.url) {
           finalImageUrl = uploadRes.url;
+        } else if (selectedGalleryFile) {
+          finalImageUrl = await compressImageClientSide(selectedGalleryFile);
         }
+      }
+
+      if ((!finalImageUrl || finalImageUrl.startsWith('blob:')) && selectedGalleryFile) {
+        finalImageUrl = await compressImageClientSide(selectedGalleryFile);
       }
 
       const newPhoto: GalleryPhoto = {
@@ -1487,10 +1493,10 @@ Kumbuka: Kila mwalimu ana nenosiri lake la siri. Usisambaze kwa mtu mwingine.`;
                     {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="mt-1.5 text-[11px] text-amber-300/80">
+                <p className="mt-1.5 text-[11px] text-slate-400 font-medium">
                   {language === 'sw'
-                    ? 'Weka PIN au nenosiri rasmi la utawala (Mfano: PIN ya Mwl. Yohana 745225, Mkuu wa Shule 782558, au uomboni2026).'
-                    : 'Enter authorized passcode or PIN (e.g. 745225, 782558, or uomboni2026).'}
+                    ? 'Weka nenosiri au PIN rasmi ya utawala iliyoidhinishwa kulinda data za taasisi.'
+                    : 'Enter authorized administrative passcode or PIN to access governance portal.'}
                 </p>
               </div>
 

@@ -534,9 +534,12 @@
               <div id="uomboni-loader-progress-bar" class="uomboni-loader-progress-fill"></div>
             </div>
             <div class="uomboni-loader-meta-row">
-              <span id="uomboni-loader-timer-text">Inatayarisha...</span>
+              <span id="uomboni-loader-timer-text">Inatayarisha... (sekunde 30)</span>
               <span id="uomboni-loader-percent-text">0%</span>
             </div>
+            <button id="uomboni-loader-skip-btn" class="uomboni-loader-skip-btn" type="button" aria-label="Ruka upakiaji na uingie shuleni">
+              Ruka (Skip &rarr;)
+            </button>
           </div>
         </div>
       </div>
@@ -545,7 +548,7 @@
     <!-- Main React App Mounting Container -->
     <div id="root"></div>
 
-    <!-- Loading Screen Lifecycle Controller (30-second duration) -->
+    <!-- Loading Screen Lifecycle Controller -->
     <script>
       (function() {
         var loader = document.getElementById('uomboni-loading-screen');
@@ -554,11 +557,17 @@
         var progressBar = document.getElementById('uomboni-loader-progress-bar');
         var timerText = document.getElementById('uomboni-loader-timer-text');
         var percentText = document.getElementById('uomboni-loader-percent-text');
+        var skipBtn = document.getElementById('uomboni-loader-skip-btn');
 
-        var TOTAL_DURATION_MS = 1200; // Fast smooth entrance
+        // Rapid smooth entrance: 1.5s in standalone, 600ms in preview iframe
+        var isIframe = window.self !== window.top;
+        var TOTAL_DURATION_MS = isIframe ? 600 : 1500;
         var startTime = Date.now();
         var isDismissed = false;
         var intervalId = null;
+
+        document.documentElement.classList.add('uomboni-loader-locked');
+        document.body.classList.add('uomboni-loader-locked');
 
         function forceDismiss() {
           if (isDismissed) return;
@@ -570,7 +579,7 @@
 
           if (progressBar) progressBar.style.width = '100%';
           if (percentText) percentText.textContent = '100%';
-          if (timerText) timerText.textContent = 'Tayari!';
+          if (timerText) timerText.textContent = 'Karibu Uomboni!';
 
           loader.classList.add('uomboni-loader-fade-out');
           document.documentElement.classList.remove('uomboni-loader-locked');
@@ -580,7 +589,16 @@
             if (loader && loader.parentNode) {
               loader.parentNode.removeChild(loader);
             }
-          }, 500);
+          }, 400);
+        }
+
+        // Tap/click to dismiss instantly
+        loader.addEventListener('click', forceDismiss);
+        if (skipBtn) {
+          skipBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            forceDismiss();
+          });
         }
 
         function updateProgress() {
@@ -588,7 +606,6 @@
           var elapsed = Date.now() - startTime;
           var progress = Math.min(1, elapsed / TOTAL_DURATION_MS);
           var percent = Math.floor(progress * 100);
-          var remainingSec = Math.max(0, Math.ceil((TOTAL_DURATION_MS - elapsed) / 1000));
 
           if (progressBar) {
             progressBar.style.width = percent + '%';
@@ -597,7 +614,7 @@
             percentText.textContent = percent + '%';
           }
           if (timerText) {
-            timerText.textContent = percent >= 100 ? 'Tayari!' : 'Inatayarisha...';
+            timerText.textContent = percent >= 100 ? 'Karibu Uomboni!' : 'Inapakia... ' + percent + '%';
           }
 
           if (elapsed >= TOTAL_DURATION_MS) {
@@ -605,14 +622,15 @@
           }
         }
 
-        intervalId = setInterval(updateProgress, 60);
+        intervalId = setInterval(updateProgress, 40);
         updateProgress();
 
+        // Global dismiss functions
         window.uomboniDismissLoader = forceDismiss;
         window.uomboniForceDismissLoader = forceDismiss;
 
-        // Guaranteed safety timeout at 1.5 seconds
-        setTimeout(forceDismiss, 1500);
+        // Guaranteed safety timeout: dismiss at 2s max
+        setTimeout(forceDismiss, isIframe ? 1000 : 2000);
       })();
     </script>
 

@@ -39,6 +39,13 @@ import {
   getStudentResultsFromFirestore,
 } from '../services/schoolFirestoreService';
 import {
+  saveGalleryPhotoToFirestore,
+  deleteGalleryPhotoFromStorage,
+  getGalleryPhotosFromFirestore,
+} from '../services/blobService';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import {
   saveAcademicDirectiveToFirestore,
   getAcademicDirectivesFromFirestore,
   getDirectivesFromLocalStorage,
@@ -1126,7 +1133,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setAcademicCalendar(firestoreData.academicCalendar);
               safeSetStorage('uomboni_calendar', firestoreData.academicCalendar);
             }
+            if (Array.isArray(firestoreData.galleryPhotos) && firestoreData.galleryPhotos.length > 0 && !isRecentEdit('galleryPhotos')) {
+              setGalleryPhotos(firestoreData.galleryPhotos);
+              safeSetStorage('uomboni_gallery', firestoreData.galleryPhotos);
+            }
           });
+        }
+
+        // Dedicated check for Firestore gallery collection if not present in main doc
+        if (!isRecentEdit('galleryPhotos')) {
+          const directGallery = await getGalleryPhotosFromFirestore();
+          if (Array.isArray(directGallery) && directGallery.length > 0) {
+            setGalleryPhotos(directGallery);
+            safeSetStorage('uomboni_gallery', directGallery);
+          }
         }
       } catch (fsErr) {
         console.warn('Firestore initial fetch notice:', fsErr);
@@ -1354,7 +1374,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. Initial live sync on mount directly from backend
     fetchSchoolDataFromServer(false);
 
-    // 2. Poll server version every 3 seconds to detect updates made from any browser/device immediately
+    // 2. Real-time Firestore synchronization for gallery photos across devices
+    let unsubscribeGallery: (() => void) | null = null;
+    try {
+      unsubscribeGallery = onSnapshot(doc(db, 'school_data', 'galleryPhotos'), (snapshot) => {
+        if (snapshot.exists()) {
+          const d = snapshot.data();
+          if (Array.isArray(d?.data) && d.data.length > 0) {
+            const isRecentEdit = (k: string) => {
+              const ts = localEditTimestamps.current[k] || 0;
+              return Date.now() - ts < 4500;
+            };
+            if (!isRecentEdit('galleryPhotos')) {
+              setGalleryPhotos(d.data);
+              safeSetStorage('uomboni_gallery', d.data);
+            }
+          }
+        }
+      }, (err) => {
+        console.warn('Real-time gallery snapshot notice:', err);
+      });
+    } catch (e) {
+      console.warn('Could not initialize gallery onSnapshot:', e);
+    }
+
+    // 3. Poll server version every 8 seconds to detect updates made from any browser/device immediately
     const checkServerVersion = async () => {
       if (typeof navigator !== 'undefined' && !navigator.onLine) return;
       try {
@@ -1379,7 +1423,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       checkServerVersion();
     }, 8000);
 
-    // 3. Check immediately when user switches tabs, focuses window, or regains network
+    // 4. Check immediately when user switches tabs, focuses window, or regains network
     const handleFocus = () => {
       checkServerVersion();
     };
@@ -1398,6 +1442,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       unsubscribe();
+      if (unsubscribeGallery) unsubscribeGallery();
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('online', handleOnline);
@@ -2595,9 +2640,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addGalleryPhoto = (photo: GalleryPhoto) => {
     setGalleryPhotos((prev) => {
-      const updated = [photo, ...prev];
+      const updated = [photo, ...prev.filter((p) => p.id !== photo.id)];
       safeSetStorage('uomboni_gallery', updated);
       pushEntityToServer('galleryPhotos', updated);
+      saveGalleryPhotoToFirestore(photo).catch(() => {});
+      saveLiveSchoolDataToFirestore('galleryPhotos', updated).catch(() => {});
       return updated;
     });
   };
@@ -2607,6 +2654,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = prev.map((p) => (p.id === photo.id ? photo : p));
       safeSetStorage('uomboni_gallery', updated);
       pushEntityToServer('galleryPhotos', updated);
+      saveGalleryPhotoToFirestore(photo).catch(() => {});
+      saveLiveSchoolDataToFirestore('galleryPhotos', updated).catch(() => {});
       return updated;
     });
   };
@@ -2615,19 +2664,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGalleryPhotos(photos);
     safeSetStorage('uomboni_gallery', photos);
     pushEntityToServer('galleryPhotos', photos);
+    saveLiveSchoolDataToFirestore('galleryPhotos', photos).catch(() => {});
   };
 
   const resetGalleryToDefaults = () => {
     setGalleryPhotos(INITIAL_GALLERY);
     safeSetStorage('uomboni_gallery', INITIAL_GALLERY);
     pushEntityToServer('galleryPhotos', INITIAL_GALLERY);
+    saveLiveSchoolDataToFirestore('galleryPhotos', INITIAL_GALLERY).catch(() => {});
   };
 
   const deleteGalleryPhoto = (id: string) => {
     setGalleryPhotos((prev) => {
+      const target = prev.find((p) => p.id === id);
       const updated = prev.filter((p) => p.id !== id);
       safeSetStorage('uomboni_gallery', updated);
       pushEntityToServer('galleryPhotos', updated);
+      deleteGalleryPhotoFromStorage(id, target?.imageUrl).catch(() => {});
+      saveLiveSchoolDataToFirestore('galleryPhotos', updated).catch(() => {});
       return updated;
     });
   };
